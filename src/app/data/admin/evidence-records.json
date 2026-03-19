@@ -1,0 +1,94 @@
+{
+  "ev-001": {
+    "id": "ev-001",
+    "url": "https://example.com/gots-cert-hemp-traders",
+    "type": "certification",
+    "title": "GOTS Certificate — HempTraders Europe",
+    "description": "Global Organic Textile Standard certification for hemp fiber processing.",
+    "linkedEntityId": "hemp-traders-eu",
+    "linkedEntityType": "supplier",
+    "verifiedDate": "2026-01-15",
+    "reviewer": "Atlas Review Board",
+    "status": "verified"
+  },
+  "ev-002": {
+    "id": "ev-002",
+    "url": "https://example.com/oeko-tex-hemp-traders",
+    "type": "certification",
+    "title": "OEKO-TEX Standard 100 — HempTraders Europe",
+    "linkedEntityId": "hemp-traders-eu",
+    "linkedEntityType": "supplier",
+    "verifiedDate": "2026-01-15",
+    "status": "verified"
+  },
+  "ev-003": {
+    "id": "ev-003",
+    "url": "https://example.com/bci-cotton-co",
+    "type": "certification",
+    "title": "Better Cotton Initiative — Cotton Co. India",
+    "linkedEntityId": "cotton-co-india",
+    "linkedEntityType": "supplier",
+    "verifiedDate": "2026-01-10",
+    "status": "verified"
+  },
+  "ev-004": {
+    "id": "ev-004",
+    "url": "https://example.com/european-flax-safilin",
+    "type": "certification",
+    "title": "European Flax Certification — Safilin",
+    "linkedEntityId": "linen-mills-france",
+    "linkedEntityType": "supplier",
+    "verifiedDate": "2026-02-01",
+    "status": "verified"
+  },
+  "ev-005": {
+    "id": "ev-005",
+    "url": "https://example.com/zq-merino-nz",
+    "type": "certification",
+    "title": "ZQ Merino Certification — NZ Merino Company",
+    "linkedEntityId": "merino-nz",
+    "linkedEntityType": "supplier",
+    "verifiedDate": "2026-02-05",
+    "status": "verified"
+  },
+  "ev-006": {
+    "id": "ev-006",
+    "url": "https://example.com/rws-nz-merino",
+    "type": "certification",
+    "title": "Responsible Wool Standard — NZ Merino Company",
+    "linkedEntityId": "merino-nz",
+    "linkedEntityType": "supplier",
+    "verifiedDate": "2026-02-05",
+    "status": "verified"
+  },
+  "ev-007": {
+    "id": "ev-007",
+    "url": "https://example.com/natural-dye-lab-report",
+    "type": "lab-test",
+    "title": "Colorfastness Lab Report — Natural Dye Works",
+    "description": "Independent lab testing for wash and light fastness of natural indigo dyed fabrics.",
+    "linkedEntityId": "natural-dye-works",
+    "linkedEntityType": "supplier",
+    "status": "reviewed"
+  },
+  "ev-hemp-water": {
+    "id": "ev-hemp-water",
+    "url": "https://example.com/sei-hemp-water-study",
+    "type": "research-paper",
+    "title": "Hemp Water Footprint — Stockholm Environment Institute",
+    "linkedEntityId": "hemp",
+    "linkedEntityType": "material",
+    "verifiedDate": "2025-11-01",
+    "status": "verified"
+  },
+  "ev-cotton-water": {
+    "id": "ev-cotton-water",
+    "url": "https://example.com/wwf-cotton-water",
+    "type": "research-paper",
+    "title": "Cotton Water Footprint — WWF",
+    "linkedEntityId": "cotton",
+    "linkedEntityType": "material",
+    "verifiedDate": "2025-09-15",
+    "status": "verified"
+  }
+}

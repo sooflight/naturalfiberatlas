@@ -1,0 +1,12 @@
+:root {
+  --atlas-admin-bg: #0f1115;
+  --atlas-admin-fg: #e8ebf3;
+  --atlas-admin-muted: #a4adbf;
+  --atlas-admin-border: #2a3040;
+  --atlas-admin-accent: #3b82f6;
+}
+
+.atlas-admin-root {
+  color: var(--atlas-admin-fg);
+  background: var(--atlas-admin-bg);
+}

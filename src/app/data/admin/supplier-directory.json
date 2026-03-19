@@ -1,0 +1,91 @@
+{
+  "suppliers": {
+    "hemp-traders-eu": {
+      "id": "hemp-traders-eu",
+      "name": "HempTraders Europe",
+      "description": "European supplier of organic hemp fiber, yarn, and fabric for textile manufacturers.",
+      "website": "https://example.com/hemp-traders",
+      "status": "verified",
+      "lastUpdated": "2026-02-20",
+      "capabilities": {
+        "materialTypes": ["hemp", "flax-linen"],
+        "processes": ["spinning", "weaving"],
+        "certifications": ["GOTS", "OEKO-TEX Standard 100"]
+      },
+      "geography": { "region": "Europe", "country": "Netherlands", "city": "Rotterdam" },
+      "trust": { "verificationStatus": "verified", "evidenceIds": ["ev-001", "ev-002"], "lastReviewed": "2026-01-15" }
+    },
+    "cotton-co-india": {
+      "id": "cotton-co-india",
+      "name": "Cotton Co. India",
+      "description": "India-based organic cotton grower and processor serving global brands.",
+      "website": "https://example.com/cotton-co",
+      "contactEmail": "info@example.com",
+      "status": "verified",
+      "lastUpdated": "2026-02-18",
+      "capabilities": {
+        "materialTypes": ["cotton", "pima"],
+        "processes": ["growing", "ginning", "spinning"],
+        "certifications": ["GOTS", "BCI", "Fairtrade"]
+      },
+      "geography": { "region": "Asia", "country": "India", "city": "Coimbatore" },
+      "trust": { "verificationStatus": "verified", "evidenceIds": ["ev-003"], "lastReviewed": "2026-01-10" }
+    },
+    "linen-mills-france": {
+      "id": "linen-mills-france",
+      "name": "Safilin Linen Mills",
+      "description": "French linen mill specializing in fine linen yarn and fabric from European Flax certified flax.",
+      "status": "verified",
+      "lastUpdated": "2026-02-15",
+      "capabilities": {
+        "materialTypes": ["flax-linen"],
+        "processes": ["retting", "spinning", "weaving", "finishing"],
+        "certifications": ["European Flax", "GOTS", "OEKO-TEX"]
+      },
+      "geography": { "region": "Europe", "country": "France", "city": "Sailly-sur-la-Lys" },
+      "trust": { "verificationStatus": "verified", "evidenceIds": ["ev-004"], "lastReviewed": "2026-02-01" }
+    },
+    "merino-nz": {
+      "id": "merino-nz",
+      "name": "NZ Merino Company",
+      "description": "New Zealand-based ethical merino wool supplier with full traceability from farm to fabric.",
+      "website": "https://example.com/nz-merino",
+      "status": "published",
+      "lastUpdated": "2026-02-10",
+      "capabilities": {
+        "materialTypes": ["merino", "sheep-wool"],
+        "processes": ["shearing", "scouring", "spinning"],
+        "certifications": ["ZQ Merino", "RWS", "OEKO-TEX"]
+      },
+      "geography": { "region": "Oceania", "country": "New Zealand", "city": "Christchurch" },
+      "trust": { "verificationStatus": "verified", "evidenceIds": ["ev-005", "ev-006"], "lastReviewed": "2026-02-05" }
+    },
+    "natural-dye-works": {
+      "id": "natural-dye-works",
+      "name": "Natural Dye Works",
+      "description": "Artisan dye house specializing in plant-based and traditional natural dyeing for luxury textiles.",
+      "status": "reviewed",
+      "lastUpdated": "2026-02-12",
+      "capabilities": {
+        "materialTypes": ["indigo", "madder", "weld"],
+        "processes": ["dyeing", "finishing"],
+        "certifications": ["GOTS-compatible"]
+      },
+      "geography": { "region": "Asia", "country": "India", "city": "Jaipur" },
+      "trust": { "verificationStatus": "pending", "evidenceIds": ["ev-007"] }
+    }
+  },
+  "links": [
+    { "materialId": "hemp", "supplierId": "hemp-traders-eu", "relationship": "processor", "confidence": "verified" },
+    { "materialId": "hemp", "supplierId": "hemp-traders-eu", "relationship": "distributor", "confidence": "verified" },
+    { "materialId": "flax-linen", "supplierId": "hemp-traders-eu", "relationship": "distributor", "confidence": "estimated" },
+    { "materialId": "flax-linen", "supplierId": "linen-mills-france", "relationship": "processor", "confidence": "verified" },
+    { "materialId": "flax-linen", "supplierId": "linen-mills-france", "relationship": "spinner", "confidence": "verified" },
+    { "materialId": "cotton", "supplierId": "cotton-co-india", "relationship": "grower", "confidence": "verified" },
+    { "materialId": "cotton", "supplierId": "cotton-co-india", "relationship": "spinner", "confidence": "verified" },
+    { "materialId": "pima", "supplierId": "cotton-co-india", "relationship": "grower", "confidence": "estimated" },
+    { "materialId": "merino", "supplierId": "merino-nz", "relationship": "grower", "confidence": "verified" },
+    { "materialId": "sheep-wool", "supplierId": "merino-nz", "relationship": "grower", "confidence": "verified" },
+    { "materialId": "indigo", "supplierId": "natural-dye-works", "relationship": "dyer", "confidence": "estimated" }
+  ]
+}

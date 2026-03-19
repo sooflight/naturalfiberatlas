@@ -1,0 +1,30 @@
+
+# Playwright
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/playwright/.auth/
+
+# Build output
+dist/
+
+# Coverage
+coverage/
+
+# Local env (may contain secrets)
+.env.local
+.env*.local
+
+# macOS
+.DS_Store
+
+# Cursor debug logs
+.cursor/*.log
+
+# Backup files
+*.backup.json
+*.backup.ts
+*.backup.1.ts
+*.backup.2.ts

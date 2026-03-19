@@ -1,0 +1,656 @@
+/* ═══════════════════════════════════════════════════════════════════
+   Natural Fiber Atlas — Design tokens & base styles
+   Dark-only theme.  All color decisions are inline in components;
+   these tokens exist only to satisfy Tailwind's base layer defaults
+   (body bg/fg, border color, outline ring).
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --font-size: 16px;
+  --font-weight-medium: 500;
+  --font-weight-normal: 400;
+  --font-ui: 'PICA', 'Pica', serif;
+  --font-quote: 'PICA', 'Pica', serif;
+  --background: #111111;
+  --foreground: #f5f5f5;
+  --border: rgba(255, 255, 255, 0.08);
+  --ring: rgba(255, 255, 255, 0.2);
+  --radius: 0.625rem;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50 border-0;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    -webkit-tap-highlight-color: transparent;
+    overscroll-behavior: none;
+  }
+
+  html {
+    font-size: var(--font-size);
+  }
+
+  h1 {
+    font-size: var(--text-2xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h2 {
+    font-size: var(--text-xl);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h3 {
+    font-size: var(--text-lg);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  h4 {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  label {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+  }
+
+  button {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-medium);
+    line-height: 1.5;
+    font-family: inherit;
+    border: none;
+  }
+
+  input {
+    font-size: var(--text-base);
+    font-weight: var(--font-weight-normal);
+    line-height: 1.5;
+    font-family: inherit;
+  }
+
+  textarea,
+  select {
+    font-family: inherit;
+  }
+}
+
+blockquote,
+q,
+.detail-prose.italic {
+  font-family: var(--font-quote);
+  font-style: italic;
+}
+
+/* ── Animated border orbit ── */
+@property --border-angle {
+  syntax: "<angle>";
+  initial-value: 0deg;
+  inherits: false;
+}
+
+@keyframes border-orbit {
+  0%   { --border-angle: 0deg; }
+  100% { --border-angle: 360deg; }
+}
+
+@keyframes border-breathe {
+  0%, 100% { opacity: var(--breathe-low); }
+  50%      { opacity: var(--breathe-high); }
+}
+
+/* ── Glass-card specular sweep animation ── */
+@keyframes specular-sweep {
+  0% {
+    opacity: 0;
+    transform: skewX(-15deg) translateX(0);
+  }
+  15% {
+    opacity: 1;
+  }
+  85% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: skewX(-15deg) translateX(350%);
+  }
+}
+
+.group\/glass:hover .glass-specular-sweep {
+  animation: specular-sweep 2.2s cubic-bezier(0.22, 0.61, 0.36, 1) forwards;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Optimization #8 — GlassCard layer budget reduction
+   Merges: hover-border → ::before on orbit-border
+           top-edge-highlight → ::after on bevel
+           specular-sweep outer container eliminated
+   Saves 3 DOM elements × 119 cards = 357 fewer nodes.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* ── Border ring: hover variant via ::before ── */
+.glass-border-ring {
+  /* position established by Tailwind's `absolute` class on the element */
+}
+
+.glass-border-ring::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: conic-gradient(
+    from var(--border-angle),
+    rgba(255,220,180,0.45) 0deg,
+    rgba(255,200,150,0.15) 60deg,
+    transparent 140deg,
+    transparent 220deg,
+    rgba(255,200,150,0.15) 300deg,
+    rgba(255,220,180,0.45) 360deg
+  );
+  opacity: 0;
+  transition: opacity 500ms;
+  animation-name: border-orbit;
+  animation-duration: 7s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-delay: var(--glass-orbit-delay, 0s);
+}
+
+.group\/glass:hover .glass-border-ring:not(.is-selected)::before {
+  opacity: 1;
+}
+
+/* ── Bevel: top-edge highlight via ::after ── */
+.glass-bevel {
+  /* position established by Tailwind's `absolute` class on the element */
+}
+
+.glass-bevel::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255,255,255,0.25) 30%,
+    rgba(200,230,255,0.2) 50%,
+    rgba(255,255,255,0.25) 70%,
+    transparent
+  );
+  opacity: 0;
+  transition: opacity 400ms;
+}
+
+.group\/glass:hover .glass-bevel:not(.is-selected)::after {
+  opacity: 0.4;
+}
+
+.glass-bevel.is-selected::after {
+  opacity: 0.6;
+}
+
+/* ── Profile-card pill reveal ── */
+.pill-zone > span {
+  opacity: 0;
+  transform: translateY(5px);
+}
+
+.group\/glass:hover .pill-zone > span,
+.pill-zone.is-revealed > span {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Grid cell entrance fade ── */
+@keyframes cellFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.grid-cell {
+  opacity: 0;
+}
+
+.grid-cell.cell-visible {
+  opacity: 1;
+  animation: cellFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--stagger-index, 0) * 50ms);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Inhale / Exhale — CSS-driven profile layer transitions
+   ═══════════════════════════════════════════════════════════════════ */
+
+:root {
+  --spring-ease: linear(
+    0, 0.009, 0.035 2.1%, 0.141 4.4%, 0.723 12.9%, 0.938 16.7%,
+    1.017 19.4%, 1.058, 1.074 24%, 1.073 25.1%, 1.062 26.7%,
+    0.997 34.4%, 0.978 38.7%, 0.975 41.2%, 0.983 47.2%,
+    1.001 55.3%, 1.004 63.5%, 1 100%
+  );
+  --decel-ease: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.profile-layer {
+  opacity: 1;
+  transition-property: opacity;
+  transition-duration: 0.15s;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--stagger, 0s);
+}
+
+.profile-layer.is-receding {
+  opacity: 0;
+  transition-duration: 0.12s;
+}
+
+.profile-layer.is-hero {
+  opacity: 1;
+  transition-delay: 0s;
+}
+
+.profile-layer.is-hero .glass-border-ring.is-selected::before {
+  opacity: 1 !important;
+}
+
+.grid-cell.is-animating {
+  transition: none !important;
+  transform: perspective(600px) rotateX(0deg) rotateY(0deg) translateY(var(--col-offset, 0px)) !important;
+}
+
+.film-strip-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Tier 1 — Native UX polish
+   ═══════════════════════════════════════════════════════════════════ */
+
+.glass-card-shell,
+.grid-cell,
+.atlas-header,
+.atlas-category-pills {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.detail-prose {
+  -webkit-user-select: text;
+  user-select: text;
+}
+
+.atlas-grid {
+  touch-action: manipulation;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Mobile-specific overrides (< 640px)
+   Tighter radius, reduced stagger, touch-friendly pill handling
+   ═══════════════════════════════════════════════════════════════════ */
+
+@media (max-width: 639px) {
+  /* Smaller radius on mobile — 12px radius-xl is too aggressive on
+     small cards. Scaling down to 8px keeps the softness without
+     visual artefacts from subpixel anti-aliasing on iOS. */
+  :root {
+    --radius: 0.375rem;
+  }
+
+  /* Border ring mask-composite can cause rendering artefacts on
+     mobile WebKit. Soften the blur and reduce visual weight. */
+  .glass-border-ring {
+    filter: blur(0.8px) !important;
+    opacity: 0.7;
+  }
+
+  /* Disable hover pill reveal on touch — only show on selected.
+     Mobile hover states are "sticky" after touch and create clutter. */
+  .group\/glass:hover .pill-zone > span {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  /* Keep pills visible when explicitly selected */
+  .pill-zone.is-revealed > span {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+
+  /* Tighter pill gaps on mobile for denser card space */
+  .pill-zone {
+    gap: clamp(2px, 1cqi, 4px) !important;
+  }
+}
+
+/* ── ScreenPlate will-change lifecycle ──
+   Three-state compositor promotion for the morphing card:
+   1. Enter (no modifier class): will-change active, real backdrop-filter
+   2. Settled (.morph-settled): will-change released, real backdrop-filter
+   3. Exit (.is-morphing): will-change active, static frost swap
+   FLIP migration: only transform is animated (x/y/scale via translate),
+   left/top are static — no layout triggers per spring frame. */
+
+.screen-plate-morph {
+  will-change: transform;
+}
+
+.screen-plate-morph.morph-settled {
+  will-change: auto;
+}
+
+/* ── ScreenPlate scrollbar ── */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 2px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 2px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Progressive Image — LQIP blur-up transition
+   Two-layer stack: blurred placeholder underneath, sharp target on top.
+   The target fades in via opacity once loaded; the placeholder's blur
+   provides the "developing photograph" effect during the transition.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.progressive-image-wrapper {
+  /* Both child images fill the wrapper absolutely */
+}
+
+.progressive-image-lqip,
+.progressive-image-target {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+}
+
+.progressive-image-lqip {
+  /* Blurred + slightly scaled to hide edge artifacts from upscaling */
+  filter: blur(20px);
+  transform: scale(1.1);
+  z-index: 0;
+}
+
+.progressive-image-target {
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.45s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.progressive-image-target.is-loaded {
+  opacity: 1;
+}
+
+/* Suppress all internal layer transitions while the shell is still
+   compositing during the deferred phase. This prevents the ambient
+   image, glass overlay, and bevel from visually "assembling" when
+   the motion.div snaps to opacity 1. */
+.backdrop-deferred .progressive-image-target {
+  transition: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Grid Skeleton — lightweight virtualization placeholder
+   Compositor-isolated via `contain: content`. Single pseudo-element
+   shimmer sweep keeps animation cost near zero.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.grid-skeleton {
+  contain: content;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.skeleton-bar {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* Shimmer sweep — single pseudo-element gradient */
+.grid-skeleton::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    110deg,
+    transparent 25%,
+    rgba(255, 255, 255, 0.03) 37%,
+    transparent 50%
+  );
+  background-size: 200% 100%;
+  animation: skeletonShimmer 2.4s ease-in-out infinite;
+}
+
+@keyframes skeletonShimmer {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   will-change lifecycle — only active during transitions
+   Applied via parent wrapper CSS class, removed after settle.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.grid-cell.will-change-active {
+  will-change: transform, opacity;
+}
+
+.grid-cell.will-change-active .profile-layer {
+  will-change: opacity;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Technique #4: CSS Containment Boundaries
+   Isolates detail card wrapper paint/layout to prevent cross-card
+   repaints when backdrop-filter re-rasterises. Each detail card
+   becomes an independent compositing context — invalidation in one
+   card cannot cascade to siblings.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.detail-card-slot {
+  contain: layout style paint;
+  isolation: isolate;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Technique #6: Compositor Hint Scheduling
+   Two-phase will-change lifecycle specifically for detail card slots.
+   Phase A (.detail-primed): applied to ALL detail card containers
+   one frame BEFORE detail cards mount. Promotes compositor layers
+   early so the GPU texture allocation doesn't happen mid-animation.
+   Phase B (removed): after the inhale animation settles, will-change
+   is stripped to reclaim VRAM.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.detail-card-slot.detail-primed {
+  will-change: opacity, transform;
+}
+
+.detail-card-slot.detail-settled {
+  will-change: auto;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Technique #7: Backdrop-Filter Deferral
+   Detail cards that are still in their opacity-0 initial state should
+   NOT have backdrop-filter active — the filter is invisible anyway
+   and the compositor still rasterises the blurred region. The
+   `.backdrop-deferred` class disables backdrop-filter; it's removed
+   once the detail card starts its opacity transition.
+   This prevents 10+ simultaneous backdrop-filter rasterisations
+   from competing for compositor bandwidth during inhale.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.backdrop-deferred [class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background-color: rgba(18, 18, 18, 0.65);
+}
+
+.backdrop-deferred .progressive-image-wrapper {
+  /* Suppress LQIP transition during deferred phase — image appears
+     directly at target opacity once deferral ends */
+  transition: none !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Lightbox filmstrip — hide scrollbar across all browsers
+   ═══════════════════════════════════════════════════════════════════ */
+.scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Technique #2: Render-Before-Reveal (RBR)
+   Detail cards mount with this class for exactly 1 frame. The card
+   is rendered to the DOM (triggering layout, image decode, paint)
+   but is invisible. On the next frame, the class is removed and
+   the Motion opacity animation takes over — starting from a fully
+   rendered state instead of a blank one.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.render-before-reveal {
+  opacity: 0 !important;
+  pointer-events: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Detail content fade-in
+   The card shell (GlassCard layers) snaps visible instantly via the
+   motion.div's near-zero opacity transition. The plate content inside
+   fades in separately over CONTENT_FADE (0.528s), preventing the
+   layer-compositing flicker that occurred when all glass layers
+   transitioned opacity simultaneously.
+   ═══════════════════════════════════════════════════════════════════ */
+
+@keyframes detail-content-reveal {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.detail-content-fade {
+  opacity: 0;
+  animation: detail-content-reveal 0.528s cubic-bezier(0.25, 1, 0.5, 1) both;
+  /* animation-delay is set inline via style prop */
+  width: 100%;
+  height: 100%;
+}
+
+/* ── Static frost swap ──
+   During ScreenPlate FLIP morph, `backdrop-filter` is extremely expensive
+   (forces per-frame re-rasterisation of the blurred region). The
+   `.is-morphing` class, applied to the morphing card wrapper for the
+   duration of the spring animation, replaces the live backdrop-filter
+   with a static semi-opaque fill that approximates the frosted look.
+   This cuts compositor work by ~60% during the morph.
+
+   When the morph settles, the class is removed and the real
+   backdrop-filter fades back in via a short opacity transition. */
+
+.is-morphing [class*="backdrop-blur"] {
+  -webkit-backdrop-filter: none !important;
+  backdrop-filter: none !important;
+  background-color: var(--frost-fill, rgba(18, 18, 18, 0.82)) !important;
+  transition: background-color 0.25s ease;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Gesture Fluidity — Mobile Detail View
+   Full-screen vertically-scrollable plate stack with snap points.
+   Replaces the desktop grid-based plate assignment on small screens.
+   ═══════════════════════════════════════════════════════════════════ */
+
+.mobile-detail-scroll {
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+}
+
+/* Hide scrollbar on mobile detail view */
+.mobile-detail-scroll::-webkit-scrollbar {
+  display: none;
+}
+.mobile-detail-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Gallery rail horizontal scrollbar hide (matches scrollbar-none) */
+.mobile-detail-scroll .scrollbar-none::-webkit-scrollbar {
+  display: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Command Palette (cmdk) — Dark theme overrides
+   ═══════════════════════════════════════════════════════════════════ */
+
+[cmdk-group-heading] {
+  padding: 4px 12px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.2);
+}
+
+[cmdk-separator] {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.06);
+  margin: 4px 0;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Global scrollbar suppression — frontend-wide
+   Forces all scrollbars to remain hidden across major browsers.
+   ═══════════════════════════════════════════════════════════════════ */
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+*::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  display: none !important;
+}

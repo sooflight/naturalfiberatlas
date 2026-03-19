@@ -1,0 +1,35 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "baseUrl": ".",
+    "paths": {
+      "@/contexts/*": ["src/app/components/admin/runtime/*"],
+      "@/database-interface/*": ["src/app/components/admin/database-interface/*"],
+      "@/components/*": ["src/app/components/admin/*"],
+      "@/utils/*": ["src/app/utils/admin/*"],
+      "@/hooks/*": ["src/app/hooks/admin/*"],
+      "@/data/*": ["src/app/data/admin/*"],
+      "@/config/*": ["src/app/config/*"],
+      "@/lib/*": ["src/app/lib/*"],
+      "@/types/*": ["src/app/types/*"],
+      "@/cms/*": ["src/app/cms/*"],
+      "@/services/*": ["src/app/services/*"],
+      "@/styles/*": ["src/styles/*"],
+      "@/*": ["src/app/*"],
+      "@natural-fiber-atlas/admin-ui": ["packages/admin-ui/src/index.ts"],
+      "@natural-fiber-atlas/admin-ui/styles.css": ["packages/admin-ui/styles.css"]
+    },
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowSyntheticDefaultImports": true,
+    "esModuleInterop": true,
+    "resolveJsonModule": true,
+    "types": ["vite/client", "vitest/globals"]
+  },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "vitest.config.ts"]
+}

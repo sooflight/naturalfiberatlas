@@ -1,0 +1,12 @@
+@import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap&subset=latin');
+
+@font-face {
+  font-family: 'PICA';
+  src: url('/fonts/PICA.ttf') format('truetype'),
+       local('PICA'),
+       local('Pica'),
+       local('PICA Regular');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}

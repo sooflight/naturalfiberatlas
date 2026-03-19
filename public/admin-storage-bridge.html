@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Atlas Storage Bridge</title>
+  </head>
+  <body>
+    <script>
+      (function () {
+        var params = new URLSearchParams(window.location.search);
+        var targetOrigin = params.get("targetOrigin") || "*";
+        var isLocalhost = window.location.hostname === "localhost";
+        if (!isLocalhost) return;
+
+        var payload = {};
+        for (var index = 0; index < window.localStorage.length; index += 1) {
+          var key = window.localStorage.key(index);
+          if (!key) continue;
+          if (!key.startsWith("atlas:") && !key.startsWith("atlas-")) continue;
+          var value = window.localStorage.getItem(key);
+          if (typeof value !== "string") continue;
+          payload[key] = value;
+        }
+
+        var message = { type: "atlas-storage-dump", payload: payload };
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage(message, targetOrigin);
+        }
+        if (window.opener) {
+          window.opener.postMessage(message, targetOrigin);
+        }
+      })();
+    </script>
+  </body>
+</html>
