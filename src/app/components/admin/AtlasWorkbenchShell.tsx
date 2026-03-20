@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo, useEffect, lazy, Suspense } from "react";
 import { useLocation, useNavigate, useParams } from "react-router";
 import { 
-  Command, Save, ChevronRight, Layers, Settings
+  Command, Save, ChevronRight, Layers, Settings, Loader2, Rocket
 } from "lucide-react";
 import { cn } from "@/database-interface/lib/utils";
 import { AdminSaveProvider, useAdminSave } from "@/contexts/AdminSaveContext";
@@ -19,6 +19,7 @@ import {
   shouldToggleInspectorShortcut,
 } from "./atlas-workbench-shortcuts";
 import { dataSource } from "../../data/data-provider";
+import { useAtlasData } from "../../context/atlas-data-context";
 
 // Lazy load domains
 const Library = lazy(() => import("./Library"));
@@ -45,6 +46,14 @@ const SHELL_STORAGE_KEY = "atlas:workbench-shell-state";
 const WORKFLOW_MODE_IDS = new Set([
   "import", "overview", "batch", "health", "diff", "changesets", "sequence", "cards", "image-base",
 ]);
+
+type PublishState = {
+  status?: "idle" | "running" | "succeeded" | "failed";
+  step?: string;
+  error?: string | null;
+  commitSha?: string | null;
+  vercelStatus?: string | null;
+};
 
 function readPersistedShellState(): {
   topLevel?: TopLevelView;
@@ -105,6 +114,7 @@ function LoadingFallback({ label }: { label: string }) {
 }
 
 function AtlasWorkbenchShellContent() {
+  const { source } = useAtlasData();
   const persistedShellState = useMemo(() => readPersistedShellState(), []);
   const [topLevel, setTopLevel] = useState<TopLevelView>(persistedShellState.topLevel ?? "workspace");
   const [activeMode, setActiveMode] = useState<WorkbenchMode>(persistedShellState.activeMode ?? "browse");
@@ -116,6 +126,8 @@ function AtlasWorkbenchShellContent() {
   const [viewMode, setViewMode] = useState<ViewMode>(persistedShellState.viewMode ?? "list");
   const [selectionHistory, setSelectionHistory] = useState<string[]>([]);
   const [shouldAnimateStatusDot, setShouldAnimateStatusDot] = useState(false);
+  const [publishState, setPublishState] = useState<PublishState | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
   const [knowledgeAction, setKnowledgeAction] = useState<{
     action: "next-section" | "next-weak" | "toggle-reference" | "save-draft";
     at: number;
@@ -282,6 +294,94 @@ function AtlasWorkbenchShellContent() {
     }
   }, [adminSave.saveStatus, adminSave.isDirty]);
 
+  const pollPublishStatus = useCallback(async () => {
+    try {
+      const response = await fetch("/__admin/publish-status");
+      if (!response.ok) return;
+      const payload = (await response.json()) as PublishState;
+      setPublishState(payload);
+      setIsPublishing(payload.status === "running");
+    } catch {
+      // Ignore transient status polling errors.
+    }
+  }, []);
+
+  useEffect(() => {
+    void pollPublishStatus();
+  }, [pollPublishStatus]);
+
+  useEffect(() => {
+    if (!isPublishing) return;
+    const timer = window.setInterval(() => {
+      void pollPublishStatus();
+    }, 2000);
+    return () => window.clearInterval(timer);
+  }, [isPublishing, pollPublishStatus]);
+
+  const handleRunPromote = useCallback(async () => {
+    if (isPublishing) return;
+    const confirmed = window.confirm(
+      "Publish current admin changes?\n\nThis will run promote, verify, commit publish artifacts, and push to GitHub.",
+    );
+    if (!confirmed) return;
+    const note = window.prompt("Optional publish note (included in commit message):", "") ?? "";
+    const diffJson = source.exportDiffJSON();
+    if (!diffJson || diffJson.trim().length === 0) {
+      window.alert("No diff payload available to publish.");
+      return;
+    }
+    const parseJSON = <T,>(raw: string | null): T | undefined => {
+      if (!raw) return undefined;
+      try {
+        return JSON.parse(raw) as T;
+      } catch {
+        return undefined;
+      }
+    };
+    const localGlobalOrder = parseJSON<string[]>(localStorage.getItem("atlas:fiber-order"));
+    const localGroupOrders = parseJSON<Record<string, string[]>>(localStorage.getItem("atlas:fiber-order-groups"));
+    const localNavThumbOverrides = parseJSON<Record<string, unknown>>(localStorage.getItem("atlas:nav-parent-images"));
+    try {
+      setIsPublishing(true);
+      const response = await fetch("/__admin/publish", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          diffJson,
+          note,
+          fiberOrder: {
+            global: localGlobalOrder,
+            groups: localGroupOrders,
+          },
+          navThumbOverrides: localNavThumbOverrides,
+        }),
+      });
+      const payload = await response.json() as { ok?: boolean; error?: string; publish?: PublishState };
+      if (!response.ok || payload.ok === false) {
+        const message = payload.error || `Publish request failed (${response.status})`;
+        setPublishState((prev) => ({ ...(prev ?? {}), status: "failed", error: message }));
+        setIsPublishing(false);
+        return;
+      }
+      if (payload.publish) setPublishState(payload.publish);
+      void pollPublishStatus();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      setPublishState((prev) => ({ ...(prev ?? {}), status: "failed", error: message }));
+      setIsPublishing(false);
+    }
+  }, [isPublishing, pollPublishStatus, source]);
+
+  const promoteButtonLabel = useMemo(() => {
+    if (isPublishing) return `Publishing (${publishState?.step || "working"})`;
+    if (publishState?.status === "succeeded") {
+      const sha = publishState.commitSha ? publishState.commitSha.slice(0, 7) : "";
+      return sha ? `Published @ ${sha}` : "Published";
+    }
+    if (publishState?.status === "failed") return "Publish Failed";
+    return "Run Promote";
+  }, [isPublishing, publishState]);
+
   const activeLabel = topLevel === "settings" 
     ? "Settings" 
     : targetEntityId 
@@ -386,25 +486,37 @@ function AtlasWorkbenchShellContent() {
               </button>
             </div>
             {activeMode === "edit-knowledge" && <KnowledgeHeaderControls />}
-            <div className={cn(
-              "flex items-center gap-2 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-all duration-300",
-              adminSave.isDirty 
-                ? "bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.08)]" 
-                : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
-            )}>
-              <div className="relative flex h-2 w-2 items-center justify-center">
-                {shouldAnimateStatusDot && (
+            <button
+              type="button"
+              onClick={() => {
+                void handleRunPromote();
+              }}
+              disabled={isPublishing}
+              className={cn(
+                "flex items-center gap-2 px-2.5 py-1 rounded-full border text-[10px] font-bold uppercase tracking-widest transition-all duration-300",
+                publishState?.status === "failed"
+                  ? "bg-amber-500/10 text-amber-300 border-amber-500/30"
+                  : "bg-emerald-500/10 text-emerald-300 border-emerald-500/30",
+                "disabled:opacity-60",
+              )}
+              title={
+                publishState?.status === "failed" && publishState.error
+                  ? publishState.error
+                  : "Run promote + verify + commit + push"
+              }
+            >
+              <div className="relative flex h-3.5 w-3.5 items-center justify-center">
+                {shouldAnimateStatusDot && !isPublishing && (
                   <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400/70 animate-ping" />
                 )}
-                <span
-                  className={cn(
-                    "relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 transition-all duration-200",
-                    adminSave.isDirty && "bg-emerald-400",
-                  )}
-                />
+                {isPublishing ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Rocket className="h-3.5 w-3.5" />
+                )}
               </div>
-              {saveStatusLabel}
-            </div>
+              {promoteButtonLabel}
+            </button>
 
             {adminSave.isDirty && (
               <button

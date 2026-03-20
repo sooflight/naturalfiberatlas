@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
+import { spawn } from 'child_process';
 import JSZip from 'jszip';
 import type { IncomingMessage, RequestOptions, ServerResponse } from 'http';
 import { atlasNavigation as defaultIndexTree } from '../src/app/data/admin/atlas-navigation';
@@ -42,6 +43,137 @@ function postOnly(res: ServerResponse): boolean {
 }
 
 type RouteHandler = (req: IncomingMessage, res: ServerResponse) => void | Promise<void>;
+
+type PublishStep =
+  | 'idle'
+  | 'promote'
+  | 'detect'
+  | 'verify'
+  | 'commit'
+  | 'push'
+  | 'deploy-status';
+
+type PublishStatus = 'idle' | 'running' | 'succeeded' | 'failed';
+
+type PublishState = {
+  id: string;
+  status: PublishStatus;
+  step: PublishStep;
+  startedAt: string | null;
+  finishedAt: string | null;
+  logs: string[];
+  error: string | null;
+  note: string | null;
+  commitSha: string | null;
+  vercelStatus: string | null;
+  changedFiles: string[];
+};
+
+const PUBLISH_FILES = [
+  'src/app/data/promoted-overrides.json',
+  'new-images.json',
+  'src/app/data/fiber-order.json',
+  'src/app/data/nav-thumb-overrides.json',
+] as const;
+
+function nowIso(): string {
+  return new Date().toISOString();
+}
+
+function createInitialPublishState(): PublishState {
+  return {
+    id: '',
+    status: 'idle',
+    step: 'idle',
+    startedAt: null,
+    finishedAt: null,
+    logs: [],
+    error: null,
+    note: null,
+    commitSha: null,
+    vercelStatus: null,
+    changedFiles: [],
+  };
+}
+
+function appendPublishLog(state: PublishState, line: string): void {
+  const stamp = new Date().toISOString().slice(11, 19);
+  state.logs.push(`[${stamp}] ${line}`);
+  if (state.logs.length > 500) state.logs.splice(0, state.logs.length - 500);
+}
+
+function runCommand(
+  command: string,
+  args: string[],
+  opts: { cwd: string; onLine?: (line: string) => void; allowFailure?: boolean },
+): Promise<{ code: number; stdout: string; stderr: string }> {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, {
+      cwd: opts.cwd,
+      env: process.env,
+      shell: false,
+    });
+
+    let stdout = '';
+    let stderr = '';
+    let stdoutBuffer = '';
+    let stderrBuffer = '';
+
+    const flushLines = (chunk: string, isErr: boolean) => {
+      const next = (isErr ? stderrBuffer : stdoutBuffer) + chunk;
+      const parts = next.split(/\r?\n/);
+      const trailing = parts.pop() ?? '';
+      for (const line of parts) {
+        const cleaned = line.trimEnd();
+        if (!cleaned) continue;
+        opts.onLine?.(cleaned);
+      }
+      if (isErr) stderrBuffer = trailing;
+      else stdoutBuffer = trailing;
+    };
+
+    child.stdout.on('data', (buf: Buffer) => {
+      const chunk = buf.toString();
+      stdout += chunk;
+      flushLines(chunk, false);
+    });
+    child.stderr.on('data', (buf: Buffer) => {
+      const chunk = buf.toString();
+      stderr += chunk;
+      flushLines(chunk, true);
+    });
+
+    child.on('error', (error) => reject(error));
+    child.on('close', (code) => {
+      if (stdoutBuffer.trim()) opts.onLine?.(stdoutBuffer.trim());
+      if (stderrBuffer.trim()) opts.onLine?.(stderrBuffer.trim());
+      const exitCode = typeof code === 'number' ? code : 1;
+      if (exitCode !== 0 && !opts.allowFailure) {
+        const err = new Error(`${command} ${args.join(' ')} failed with code ${exitCode}`);
+        (err as Error & { stdout?: string; stderr?: string }).stdout = stdout;
+        (err as Error & { stdout?: string; stderr?: string }).stderr = stderr;
+        reject(err);
+        return;
+      }
+      resolve({ code: exitCode, stdout, stderr });
+    });
+  });
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function parseGitHubRepoSlug(remoteUrl: string): string | null {
+  const trimmed = remoteUrl.trim();
+  if (!trimmed) return null;
+  const httpsMatch = trimmed.match(/github\.com[/:]([^/]+)\/(.+?)(?:\.git)?$/);
+  if (!httpsMatch) return null;
+  const owner = httpsMatch[1];
+  const repo = httpsMatch[2].replace(/\.git$/, '');
+  if (!owner || !repo) return null;
+  return `${owner}/${repo}`;
+}
 
 function postRoute(handler: (body: Record<string, any>, res: ServerResponse) => Promise<void>): RouteHandler {
   return async (req, res) => {
@@ -231,6 +363,223 @@ function adminPlugin(): Plugin {
     passports: JSON.parse(JSON.stringify(MATERIAL_PASSPORTS)),
     aliases: JSON.parse(JSON.stringify(TAXONOMY_ALIASES)),
   };
+  const repoRoot = path.resolve(__dirname, '..');
+  const publishState: PublishState = createInitialPublishState();
+
+  const markPublishFailed = (message: string) => {
+    publishState.status = 'failed';
+    publishState.error = message;
+    publishState.finishedAt = nowIso();
+    appendPublishLog(publishState, `Publish failed: ${message}`);
+  };
+
+  const updateStep = (step: PublishStep, label: string) => {
+    publishState.step = step;
+    appendPublishLog(publishState, label);
+  };
+
+  const runPublishWorkflow = async (
+    payload: {
+      diffJson?: string;
+      note?: string;
+      fiberOrder?: { global?: string[]; groups?: Record<string, string[]> };
+      navThumbOverrides?: Record<string, unknown>;
+    },
+  ) => {
+    const runId = `${Date.now()}`;
+    publishState.id = runId;
+    publishState.status = 'running';
+    publishState.step = 'promote';
+    publishState.startedAt = nowIso();
+    publishState.finishedAt = null;
+    publishState.logs = [];
+    publishState.error = null;
+    publishState.note = typeof payload.note === 'string' ? payload.note.trim() : null;
+    publishState.commitSha = null;
+    publishState.vercelStatus = null;
+    publishState.changedFiles = [];
+    appendPublishLog(publishState, 'Publish job started.');
+
+    const tempDir = path.join(repoRoot, 'catalog', 'diffs');
+    const tempDiffFile = path.join(tempDir, `publish-diff-${runId}.json`);
+
+    try {
+      if (payload.fiberOrder && typeof payload.fiberOrder === 'object') {
+        const nextGlobal = Array.isArray(payload.fiberOrder.global) ? payload.fiberOrder.global : undefined;
+        const nextGroups =
+          payload.fiberOrder.groups &&
+          typeof payload.fiberOrder.groups === 'object' &&
+          !Array.isArray(payload.fiberOrder.groups)
+            ? payload.fiberOrder.groups
+            : undefined;
+        if (nextGlobal || nextGroups) {
+          const fiberOrderPath = path.join(repoRoot, 'src/app/data/fiber-order.json');
+          let existing: { global?: string[]; groups?: Record<string, string[]> } = {};
+          if (fs.existsSync(fiberOrderPath)) {
+            try {
+              existing = JSON.parse(fs.readFileSync(fiberOrderPath, 'utf-8'));
+            } catch {
+              existing = {};
+            }
+          }
+          const merged = {
+            global: nextGlobal ?? existing.global ?? [],
+            groups: { ...(existing.groups ?? {}), ...(nextGroups ?? {}) },
+          };
+          rotateJsonBackups(fiberOrderPath);
+          fs.writeFileSync(fiberOrderPath, `${JSON.stringify(merged, null, 2)}\n`, 'utf-8');
+          appendPublishLog(publishState, 'Synced src/app/data/fiber-order.json from admin local state.');
+        }
+      }
+
+      if (
+        payload.navThumbOverrides &&
+        typeof payload.navThumbOverrides === 'object' &&
+        !Array.isArray(payload.navThumbOverrides)
+      ) {
+        const navThumbPath = path.join(repoRoot, 'src/app/data/nav-thumb-overrides.json');
+        const filtered = Object.fromEntries(
+          Object.entries(payload.navThumbOverrides)
+            .filter(([key, value]) => key.trim().length > 0 && value != null),
+        );
+        rotateJsonBackups(navThumbPath);
+        fs.writeFileSync(navThumbPath, `${JSON.stringify(filtered, null, 2)}\n`, 'utf-8');
+        appendPublishLog(publishState, 'Synced src/app/data/nav-thumb-overrides.json from admin local state.');
+      }
+
+      if (typeof payload.diffJson === 'string' && payload.diffJson.trim().length > 0) {
+        fs.mkdirSync(tempDir, { recursive: true });
+        fs.writeFileSync(tempDiffFile, payload.diffJson, 'utf-8');
+        appendPublishLog(publishState, `Wrote transient diff payload to ${path.relative(repoRoot, tempDiffFile)}.`);
+      }
+
+      updateStep('promote', 'Running promote script.');
+      const promoteArgs = ['scripts/promote-atlas-diff.mjs'];
+      if (fs.existsSync(tempDiffFile)) {
+        promoteArgs.push(tempDiffFile);
+      } else {
+        throw new Error('Publish requires diff payload from admin state.');
+      }
+      await runCommand('node', promoteArgs, {
+        cwd: repoRoot,
+        onLine: (line) => appendPublishLog(publishState, `[promote] ${line}`),
+      });
+
+      publishState.step = 'detect';
+      appendPublishLog(publishState, 'Detecting publishable file changes.');
+      const changed = await runCommand('git', ['status', '--porcelain', '--', ...PUBLISH_FILES], {
+        cwd: repoRoot,
+      });
+      const changedFiles = changed.stdout
+        .split(/\r?\n/)
+        .map((line) => line.trim())
+        .filter(Boolean)
+        .map((line) => line.slice(3).trim());
+      publishState.changedFiles = changedFiles;
+      if (changedFiles.length === 0) {
+        publishState.status = 'succeeded';
+        publishState.finishedAt = nowIso();
+        publishState.step = 'idle';
+        appendPublishLog(publishState, 'No publishable deltas detected; nothing to commit.');
+        return;
+      }
+      appendPublishLog(publishState, `Changed publish files: ${changedFiles.join(', ')}`);
+
+      publishState.step = 'verify';
+      appendPublishLog(publishState, 'Running full verify gate (`npm run verify`).');
+      await runCommand('npm', ['run', 'verify'], {
+        cwd: repoRoot,
+        onLine: (line) => appendPublishLog(publishState, `[verify] ${line}`),
+      });
+
+      publishState.step = 'commit';
+      appendPublishLog(publishState, 'Staging publish artifacts.');
+      await runCommand('git', ['add', ...PUBLISH_FILES], { cwd: repoRoot });
+      const noteSuffix = publishState.note ? `\n\nNote: ${publishState.note}` : '';
+      const commitMessage = `chore(publish): sync admin catalog to production${noteSuffix}`;
+      await runCommand('git', ['commit', '-m', commitMessage], {
+        cwd: repoRoot,
+        onLine: (line) => appendPublishLog(publishState, `[commit] ${line}`),
+      });
+      const sha = await runCommand('git', ['rev-parse', 'HEAD'], { cwd: repoRoot });
+      publishState.commitSha = sha.stdout.trim();
+      appendPublishLog(publishState, `Created commit ${publishState.commitSha}.`);
+
+      publishState.step = 'push';
+      appendPublishLog(publishState, 'Pushing commit to remote.');
+      await runCommand('git', ['push'], {
+        cwd: repoRoot,
+        onLine: (line) => appendPublishLog(publishState, `[push] ${line}`),
+      });
+
+      publishState.step = 'deploy-status';
+      appendPublishLog(publishState, 'Checking GitHub combined status for Vercel deployment.');
+      const remoteName = (await runCommand('git', ['remote'], { cwd: repoRoot })).stdout
+        .split(/\r?\n/)
+        .map((v) => v.trim())
+        .find((v) => v === 'naturalfiberatlas')
+        ?? 'origin';
+      const remoteUrl = (await runCommand('git', ['config', '--get', `remote.${remoteName}.url`], { cwd: repoRoot })).stdout.trim();
+      const repoSlug = parseGitHubRepoSlug(remoteUrl);
+      if (!repoSlug) {
+        appendPublishLog(publishState, `Skipping deploy status check: could not parse GitHub remote URL "${remoteUrl}".`);
+        publishState.status = 'succeeded';
+        publishState.step = 'idle';
+        publishState.finishedAt = nowIso();
+        appendPublishLog(publishState, 'Publish completed successfully (without deploy status polling).');
+        return;
+      }
+      for (let attempt = 0; attempt < 40; attempt += 1) {
+        const statusResult = await runCommand(
+          'gh',
+          ['api', `repos/${repoSlug}/commits/${publishState.commitSha}/status`],
+          { cwd: repoRoot, allowFailure: true },
+        );
+        if (statusResult.code === 0) {
+          try {
+            const parsed = JSON.parse(statusResult.stdout || '{}');
+            const statuses = Array.isArray(parsed.statuses) ? parsed.statuses : [];
+            const vercel = statuses.find((s: Record<string, unknown>) => s.context === 'Vercel') as
+              | { state?: string; target_url?: string }
+              | undefined;
+            if (vercel?.state) {
+              publishState.vercelStatus = vercel.state;
+              appendPublishLog(
+                publishState,
+                `Vercel status: ${vercel.state}${vercel.target_url ? ` (${vercel.target_url})` : ''}`,
+              );
+              if (vercel.state === 'success') break;
+              if (vercel.state === 'failure' || vercel.state === 'error') {
+                markPublishFailed(`Vercel deployment reported ${vercel.state}.`);
+                return;
+              }
+            } else {
+              appendPublishLog(publishState, 'Waiting for Vercel status to appear...');
+            }
+          } catch {
+            appendPublishLog(publishState, 'Waiting for status endpoint JSON...');
+          }
+        }
+        await sleep(3000);
+      }
+
+      publishState.status = 'succeeded';
+      publishState.step = 'idle';
+      publishState.finishedAt = nowIso();
+      appendPublishLog(publishState, 'Publish completed successfully.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      markPublishFailed(message);
+    } finally {
+      if (fs.existsSync(tempDiffFile)) {
+        try {
+          fs.unlinkSync(tempDiffFile);
+        } catch {
+          // ignore cleanup failure
+        }
+      }
+    }
+  };
 
   function rotatePassportBackups() {
     try { if (fs.existsSync(passportModuleBackups.b1)) fs.copyFileSync(passportModuleBackups.b1, passportModuleBackups.b2); } catch { /* ignore */ }
@@ -379,6 +728,35 @@ function adminPlugin(): Plugin {
           written: true,
           path: path.relative(path.resolve(__dirname, '..'), fiberOrderRepoFile),
         });
+      }));
+      use('/__admin/publish-status', (_req, res) => {
+        jsonRes(res, publishState);
+      });
+      use('/__admin/publish', postRoute(async (body, res) => {
+        if (publishState.status === 'running') {
+          jsonRes(res, {
+            ok: false,
+            error: 'Publish already in progress',
+            publish: publishState,
+          }, 409);
+          return;
+        }
+        const diffJson = typeof body.diffJson === 'string' ? body.diffJson : '';
+        if (!diffJson.trim()) {
+          jsonRes(res, { ok: false, error: 'diffJson is required' }, 400);
+          return;
+        }
+        const note = typeof body.note === 'string' ? body.note : '';
+        const fiberOrder =
+          body.fiberOrder && typeof body.fiberOrder === 'object' && !Array.isArray(body.fiberOrder)
+            ? body.fiberOrder as { global?: string[]; groups?: Record<string, string[]> }
+            : undefined;
+        const navThumbOverrides =
+          body.navThumbOverrides && typeof body.navThumbOverrides === 'object' && !Array.isArray(body.navThumbOverrides)
+            ? body.navThumbOverrides as Record<string, unknown>
+            : undefined;
+        void runPublishWorkflow({ diffJson, note, fiberOrder, navThumbOverrides });
+        jsonRes(res, { ok: true, publish: publishState });
       }));
 
       // ── Simple file writes ──
