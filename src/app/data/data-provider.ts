@@ -19,6 +19,7 @@ import type { FiberProfile, ProcessStep, AnatomyData, CareData, QuoteEntry } fro
 import { isAdminEnabled } from "../config/admin-access";
 import { fibers as rawBundledFibers } from "./fibers";
 import fiberOrderFileRaw from "./fiber-order.json";
+import deletedFiberIdsFileRaw from "./deleted-fiber-ids.json";
 import promotedOverridesRaw from "./promoted-overrides.json";
 import {
   worldNames as bundledWorldNames,
@@ -280,6 +281,11 @@ type BundledFiberOrderFile = {
 };
 
 const fiberOrderBundled: BundledFiberOrderFile = fiberOrderFileRaw as BundledFiberOrderFile;
+const deletedFiberIdsBundled = new Set(
+  (Array.isArray(deletedFiberIdsFileRaw) ? deletedFiberIdsFileRaw : [])
+    .filter((id): id is string => typeof id === "string" && id.trim().length > 0)
+    .map((id) => id.trim()),
+);
 
 /** Bundled fiber lookup */
 const bundledFibers: FiberProfile[] = rawBundledFibers.map((fiber) =>
@@ -405,7 +411,13 @@ export class LocalStorageSource implements AtlasDataSource {
 
   getFibers(): FiberProfile[] {
     if (this._fibers) return this._fibers;
-    const deletedFiberIds = new Set(this.readJSON<string[]>(DELETED_FIBERS_KEY) ?? []);
+    const deletedFiberIds = new Set<string>(deletedFiberIdsBundled);
+    if (isAdminEnabled()) {
+      const localDeleted = this.readJSON<string[]>(DELETED_FIBERS_KEY) ?? [];
+      for (const id of localDeleted) {
+        if (typeof id === "string" && id.trim().length > 0) deletedFiberIds.add(id.trim());
+      }
+    }
     const overrides = this.readJSON<Record<string, Partial<FiberProfile>>>(KEYS.fibers);
     const activeBundledFibers = bundledFibers.filter((fiber) => !deletedFiberIds.has(fiber.id));
     this._fibers = activeBundledFibers.map((f) => {
@@ -500,7 +512,13 @@ export class LocalStorageSource implements AtlasDataSource {
   }
 
   isFiberDeleted(id: string): boolean {
-    const deletedIds = new Set(this.readJSON<string[]>(DELETED_FIBERS_KEY) ?? []);
+    const deletedIds = new Set<string>(deletedFiberIdsBundled);
+    if (isAdminEnabled()) {
+      const localDeleted = this.readJSON<string[]>(DELETED_FIBERS_KEY) ?? [];
+      for (const deletedId of localDeleted) {
+        if (typeof deletedId === "string" && deletedId.trim().length > 0) deletedIds.add(deletedId.trim());
+      }
+    }
     return deletedIds.has(id);
   }
 

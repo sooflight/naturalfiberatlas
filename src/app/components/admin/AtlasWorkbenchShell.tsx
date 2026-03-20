@@ -21,6 +21,7 @@ import {
 import { dataSource } from "../../data/data-provider";
 import { useAtlasData } from "../../context/atlas-data-context";
 import { fibers as bundledProfiles } from "../../data/fibers";
+import deletedFiberIdsBundledRaw from "../../data/deleted-fiber-ids.json";
 import {
   readPassportStatusOverrides,
   subscribePassportStatusOverrides,
@@ -380,19 +381,72 @@ function AtlasWorkbenchShellContent() {
     const localGlobalOrder = parseJSON<string[]>(localStorage.getItem("atlas:fiber-order"));
     const localGroupOrders = parseJSON<Record<string, string[]>>(localStorage.getItem("atlas:fiber-order-groups"));
     const localNavThumbOverrides = parseJSON<Record<string, unknown>>(localStorage.getItem("atlas:nav-parent-images"));
+    const localDeletedFiberIds = parseJSON<string[]>(localStorage.getItem("atlas:deletedFiberIds")) ?? [];
+
+    // Preflight: force payload parity with local effective status/deletion state.
+    const bundledDeleted = new Set(
+      (Array.isArray(deletedFiberIdsBundledRaw) ? deletedFiberIdsBundledRaw : [])
+        .filter((id): id is string => typeof id === "string" && id.trim().length > 0)
+        .map((id) => id.trim()),
+    );
+    const localDeletedSet = new Set(
+      localDeletedFiberIds
+        .filter((id): id is string => typeof id === "string" && id.trim().length > 0)
+        .map((id) => id.trim()),
+    );
+    const localById = new Map(source.getFibers().map((f) => [f.id, f]));
+    const bundledStatusById = new Map<string, AtlasProfileStatus>();
+    for (const profile of bundledProfiles) {
+      if (bundledDeleted.has(profile.id)) continue;
+      bundledStatusById.set(profile.id, normalizeAtlasStatus(source.getBundledFiber(profile.id)?.status));
+    }
+    for (const [id, bundledStatus] of bundledStatusById.entries()) {
+      if (localDeletedSet.has(id)) continue;
+      const localStatus = normalizeAtlasStatus(localById.get(id)?.status);
+      if (localStatus === bundledStatus) continue;
+      const prev = fibersPatch[id];
+      fibersPatch[id] = { ...(prev && typeof prev === "object" ? prev : {}), status: localStatus };
+    }
+
+    const payloadLive = new Set<string>();
+    for (const [id, bundledStatus] of bundledStatusById.entries()) {
+      if (localDeletedSet.has(id)) continue;
+      const patch = fibersPatch[id];
+      const patchStatus = patch && "status" in patch ? normalizeAtlasStatus(patch.status) : null;
+      const passportStatus = passportStatusOverrides[id];
+      const effective = normalizeAtlasStatus(passportStatus ?? patchStatus ?? bundledStatus);
+      if (effective === "published") payloadLive.add(id);
+    }
+    const localLive = new Set(
+      source.getFibers()
+        .filter((profile) => normalizeAtlasStatus(profile.status) === "published")
+        .map((profile) => profile.id),
+    );
+    const localOnly = [...localLive].filter((id) => !payloadLive.has(id));
+    const payloadOnly = [...payloadLive].filter((id) => !localLive.has(id));
+    if (localOnly.length > 0 || payloadOnly.length > 0) {
+      const preview = [
+        localOnly.length > 0 ? `Local-only live (${localOnly.length}): ${localOnly.slice(0, 12).join(", ")}` : "",
+        payloadOnly.length > 0 ? `Payload-only live (${payloadOnly.length}): ${payloadOnly.slice(0, 12).join(", ")}` : "",
+      ].filter(Boolean).join("\n");
+      window.alert(`Publish blocked: Local vs Payload delta must be 0 before publish.\n\n${preview}`);
+      return;
+    }
+    const finalDiffJson = JSON.stringify(diffPayload, null, 2);
     try {
       setIsPublishing(true);
       const response = await fetch("/__admin/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          diffJson,
+          diffJson: finalDiffJson,
           note,
           fiberOrder: {
             global: localGlobalOrder,
             groups: localGroupOrders,
           },
           navThumbOverrides: localNavThumbOverrides,
+          deletedFiberIds: localDeletedFiberIds,
         }),
       });
       const payload = await response.json() as { ok?: boolean; error?: string; publish?: PublishState };
@@ -422,14 +476,20 @@ function AtlasWorkbenchShellContent() {
   }, [isPublishing, publishState]);
 
   const parityDiagnostics = useMemo(() => {
+    const bundledDeleted = new Set(
+      (Array.isArray(deletedFiberIdsBundledRaw) ? deletedFiberIdsBundledRaw : [])
+        .filter((id): id is string => typeof id === "string" && id.trim().length > 0)
+        .map((id) => id.trim()),
+    );
     const bundledRows = bundledProfiles.map((profile) => {
+      if (bundledDeleted.has(profile.id)) return null;
       const bundled = source.getBundledFiber(profile.id);
       return {
         id: profile.id,
         category: profile.category,
         status: normalizeAtlasStatus(bundled?.status),
       };
-    });
+    }).filter((row): row is { id: string; category: string; status: AtlasProfileStatus } => !!row);
     const localRows = source.getFibers().map((profile) => ({
       id: profile.id,
       category: profile.category,
@@ -453,8 +513,22 @@ function AtlasWorkbenchShellContent() {
         ? (payloadDiff.fibers as Record<string, Record<string, unknown>>)
         : {};
     const passportOverrides = readPassportStatusOverrides();
+    const localDeletedFromStorage = new Set(
+      ((() => {
+        try {
+          const raw = localStorage.getItem("atlas:deletedFiberIds");
+          const parsed = raw ? JSON.parse(raw) : [];
+          return Array.isArray(parsed) ? parsed : [];
+        } catch {
+          return [];
+        }
+      })() as unknown[])
+        .filter((id): id is string => typeof id === "string" && id.trim().length > 0)
+        .map((id) => id.trim()),
+    );
 
     const payloadRows = bundledRows.map((bundled) => {
+      if (localDeletedFromStorage.has(bundled.id)) return null;
       const patch = payloadFiberPatches[bundled.id];
       const patchStatus = patch && "status" in patch ? normalizeAtlasStatus(patch.status) : null;
       const passportStatus = passportOverrides[bundled.id];
@@ -464,7 +538,7 @@ function AtlasWorkbenchShellContent() {
         category: bundled.category,
         status,
       };
-    });
+    }).filter((row): row is { id: string; category: string; status: AtlasProfileStatus } => !!row);
     const payloadById = new Map(payloadRows.map((row) => [row.id, row]));
 
     const localVsBundled: string[] = [];

@@ -77,6 +77,7 @@ const PUBLISH_FILES = [
   'new-images.json',
   'src/app/data/fiber-order.json',
   'src/app/data/nav-thumb-overrides.json',
+  'src/app/data/deleted-fiber-ids.json',
   'src/app/utils/admin/data-freshness-ci.test.ts',
 ] as const;
 
@@ -524,6 +525,7 @@ function adminPlugin(): Plugin {
       note?: string;
       fiberOrder?: { global?: string[]; groups?: Record<string, string[]> };
       navThumbOverrides?: Record<string, unknown>;
+      deletedFiberIds?: string[];
     },
   ) => {
     const runId = `${Date.now()}`;
@@ -595,6 +597,21 @@ function adminPlugin(): Plugin {
         rotateJsonBackups(navThumbPath);
         fs.writeFileSync(navThumbPath, `${JSON.stringify(filtered, null, 2)}\n`, 'utf-8');
         appendPublishLog(publishState, 'Synced src/app/data/nav-thumb-overrides.json from admin local state.');
+      }
+
+      if (Array.isArray(payload.deletedFiberIds)) {
+        const fibersPath = path.join(repoRoot, 'src/app/data/fibers.ts');
+        const fiberIds = fs.existsSync(fibersPath)
+          ? extractFiberIdsFromFibersTs(fs.readFileSync(fibersPath, 'utf-8'))
+          : new Set<string>();
+        const deletedFiberPath = path.join(repoRoot, 'src/app/data/deleted-fiber-ids.json');
+        const sanitized = sanitizeOrderIds(payload.deletedFiberIds, fiberIds) ?? [];
+        rotateJsonBackups(deletedFiberPath);
+        fs.writeFileSync(deletedFiberPath, `${JSON.stringify(sanitized, null, 2)}\n`, 'utf-8');
+        appendPublishLog(
+          publishState,
+          `Synced src/app/data/deleted-fiber-ids.json from admin local state (${sanitized.length} ids).`,
+        );
       }
 
       if (typeof payload.diffJson === 'string' && payload.diffJson.trim().length > 0) {
@@ -922,7 +939,9 @@ function adminPlugin(): Plugin {
           body.navThumbOverrides && typeof body.navThumbOverrides === 'object' && !Array.isArray(body.navThumbOverrides)
             ? body.navThumbOverrides as Record<string, unknown>
             : undefined;
-        void runPublishWorkflow({ diffJson, note, fiberOrder, navThumbOverrides });
+        const deletedFiberIds =
+          Array.isArray(body.deletedFiberIds) ? body.deletedFiberIds as string[] : undefined;
+        void runPublishWorkflow({ diffJson, note, fiberOrder, navThumbOverrides, deletedFiberIds });
         jsonRes(res, { ok: true, publish: publishState });
       }));
 
