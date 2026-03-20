@@ -61,7 +61,6 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
-    overscroll-behavior: none;
   }
 
   html {
@@ -696,19 +695,4 @@ q,
   height: 1px;
   background: rgba(255, 255, 255, 0.06);
   margin: 4px 0;
-}
-
-/* ═══════════════════════════════════════════════════════════════════
-   Global scrollbar suppression — frontend-wide
-   Forces all scrollbars to remain hidden across major browsers.
-   ═══════════════════════════════════════════════════════════════════ */
-* {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-}
-
-*::-webkit-scrollbar {
-  width: 0 !important;
-  height: 0 !important;
-  display: none !important;
 }

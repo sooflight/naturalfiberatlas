@@ -20,6 +20,7 @@ import {
   RegionsPlate,
   WorldNamesPlate,
   SeeAlsoPlate,
+  SilkVariantPlate,
   AnatomyPlate,
   CarePlate,
   ContactSheetPlate,
@@ -80,6 +81,12 @@ const PLATE_ICON_MAP: Partial<Record<PlateType, ComponentType<{ size?: number; c
   insight1: Sparkles,
   insight2: Sparkles,
   insight3: Sparkles,
+  silkCharmeuse: Sparkles,
+  silkHabotai: Sparkles,
+  silkDupioni: Sparkles,
+  silkTaffeta: Sparkles,
+  silkChiffon: Sparkles,
+  silkOrganza: Sparkles,
   quote: Quote,
   trade: DollarSign,
   worldNames: Globe2,
@@ -282,6 +289,13 @@ export function ScreenPlate({
       case "insight1": return <InsightScreenPlate fiber={fiber} half={1} />;
       case "insight2": return <InsightScreenPlate fiber={fiber} half={2} />;
       case "insight3": return <InsightScreenPlate fiber={fiber} half={3} />;
+      case "silkCharmeuse":
+      case "silkHabotai":
+      case "silkDupioni":
+      case "silkTaffeta":
+      case "silkChiffon":
+      case "silkOrganza":
+        return <SilkVariantPlate plateType={pt} />;
       case "quote": return <QuoteScreenPlate fiber={fiber} />;
       case "trade": return <TradeScreenPlate fiber={fiber} />;
       case "worldNames": return <WorldNamesPlate fiber={fiber} />;

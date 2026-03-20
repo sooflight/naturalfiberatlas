@@ -2075,7 +2075,7 @@ function ScoutLightbox({
               </svg>
             </div>
           )}
-          <img src={r.imageUrl} alt={r.title} className="max-w-full max-h-[calc(100vh-8rem)] object-contain rounded-lg"
+          <img src={r.imageUrl} alt={r.title} className="max-w-full max-h-[calc(100dvh-8rem)] object-contain rounded-lg"
             style={{ opacity: imgLoaded ? 1 : 0, transition: 'opacity 0.2s' }}
             onLoad={() => setImgLoaded(true)}
             onError={(e) => { (e.target as HTMLImageElement).src = r.thumbnailUrl; setImgLoaded(true); }}

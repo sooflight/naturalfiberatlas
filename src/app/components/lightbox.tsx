@@ -133,7 +133,7 @@ function LightboxSlide({ targetSrc, lqipSrc, alt, isInMorph, heroStyle, heroRef 
         className="pointer-events-none"
         style={{
           maxWidth: isInMorph ? "100%" : "calc(100vw - 4rem)",
-          maxHeight: isInMorph ? "100%" : "calc(100vh - 12rem)",
+          maxHeight: isInMorph ? "100%" : "calc(100dvh - 12rem)",
           width: isInMorph ? "100%" : (naturalSize ? `${naturalSize.width}px` : undefined),
           height: isInMorph ? "100%" : (naturalSize ? `${naturalSize.height}px` : undefined),
           objectFit: "contain",

@@ -84,6 +84,12 @@ const PLATE_ZONE_PREFS: [PlateType, Zone[]][] = [
   ["insight1",       ["left", "above-left", "above", "above-right", "right", "below-left", "below", "below-right"]],
   ["insight2",       ["below", "below-right", "below-left", "right", "left", "above", "above-right", "above-left"]],
   ["insight3",       ["above", "above-right", "above-left", "right", "left", "below", "below-right", "below-left"]],
+  ["silkCharmeuse",  ["right", "below-right", "left", "below-left", "below", "above-right", "above-left", "above"]],
+  ["silkHabotai",    ["left", "above-left", "below-left", "above", "below", "right", "above-right", "below-right"]],
+  ["silkDupioni",    ["below", "below-left", "left", "below-right", "right", "above-left", "above", "above-right"]],
+  ["silkTaffeta",    ["above", "above-right", "right", "above-left", "left", "below-right", "below", "below-left"]],
+  ["silkChiffon",    ["below-right", "right", "below", "above-right", "left", "below-left", "above", "above-left"]],
+  ["silkOrganza",    ["above-left", "left", "above", "below-left", "right", "above-right", "below", "below-right"]],
   ["quote",          ["left", "right", "above-left", "above-right", "above", "below-left", "below-right", "below"]],
 
   /* Ring 2 — Data & geography */
@@ -127,6 +133,13 @@ function filterAvailablePlates(fiberId: string): [PlateType, Zone[]][] {
         if (pt === "insight3") return sentences.length >= 3;
         return sentences.length >= 2;
       }
+      case "silkCharmeuse":
+      case "silkHabotai":
+      case "silkDupioni":
+      case "silkTaffeta":
+      case "silkChiffon":
+      case "silkOrganza":
+        return fiberId === "silk";
       case "seeAlso":
         return fiber ? fiber.seeAlso.length > 0 : false;
       default:

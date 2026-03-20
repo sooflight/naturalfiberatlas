@@ -167,6 +167,66 @@ export function InsightPlate({ fiber, half }: { fiber: FiberProfile; half: 1 | 2
   );
 }
 
+const SILK_VARIANT_BY_PLATE = {
+  silkCharmeuse: "charmeuse",
+  silkHabotai: "habotai",
+  silkDupioni: "dupioni",
+  silkTaffeta: "taffeta",
+  silkChiffon: "chiffon",
+  silkOrganza: "organza",
+} as const;
+
+export function SilkVariantPlate({
+  plateType,
+}: {
+  plateType:
+    | "silkCharmeuse"
+    | "silkHabotai"
+    | "silkDupioni"
+    | "silkTaffeta"
+    | "silkChiffon"
+    | "silkOrganza";
+}) {
+  const variantId = SILK_VARIANT_BY_PLATE[plateType];
+  const variant = dataSource.getFiberById(variantId);
+  if (!variant) return null;
+  const applications = (variant.applications ?? []).slice(0, 3).join(" · ");
+
+  return (
+    <div className={`h-full flex flex-col ${pad}`}>
+      <SectionLabel icon={Layers}>Silk Type</SectionLabel>
+      <div className={`w-[${sp.xl}] h-px bg-[${neutA}]/40 mb-[${sp.sm}]`} />
+      <h3 className={`${T.primary} uppercase tracking-[0.08em] mb-[1px]`} style={heroFs}>
+        {variant.name}
+      </h3>
+      <p className={`${T.tertiary} mb-[${sp.sm}]`} style={{ fontSize: "clamp(10px, 3cqi, 12px)" }}>
+        {variant.subtitle}
+      </p>
+      <p
+        className={`${T.secondary} detail-prose flex-1`}
+        style={{
+          ...bodyFs,
+          letterSpacing: "0.01em",
+          display: "-webkit-box",
+          WebkitLineClamp: 5,
+          WebkitBoxOrient: "vertical" as const,
+          overflow: "hidden",
+        }}
+      >
+        {variant.about}
+      </p>
+      <div className={`mt-[${sp.sm}]`}>
+        <span className={T.muted} style={{ fontSize: "clamp(8px, 2.6cqi, 10px)", letterSpacing: "0.14em", textTransform: "uppercase" }}>
+          Common Use
+        </span>
+        <p className={T.tertiary} style={{ fontSize: "clamp(9px, 2.8cqi, 11px)", lineHeight: 1.35 }}>
+          {applications}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 /* ═══ 2 ─ QUOTE (Editorial — warm accent) ═══ */
 export function QuotePlate({ fiber }: { fiber: FiberProfile }) {
   const quotes = dataSource.getQuoteData()[fiber.id] ?? [];

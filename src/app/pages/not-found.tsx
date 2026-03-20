@@ -7,7 +7,7 @@ import { ArrowLeft } from "lucide-react";
 
 export function NotFoundPage() {
   return (
-    <div className="min-h-screen bg-[#111111] text-white flex items-center justify-center">
+    <div className="min-h-dvh bg-[#111111] text-white flex items-center justify-center">
       <div className="text-center space-y-6">
         <p
           className="text-white/10 tracking-[0.2em] uppercase"

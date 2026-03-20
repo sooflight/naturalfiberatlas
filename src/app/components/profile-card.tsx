@@ -171,7 +171,9 @@ export function ProfileCard({
               loading={priority ? "eager" : "lazy"}
               decoding="async"
               draggable={false}
-              {...(priority && layerIndex === 0 ? { fetchPriority: "high" as const } : {})}
+              {...(priority && layerIndex === 0
+                ? ({ fetchpriority: "high" } as Record<string, string>)
+                : {})}
             />
           );
         })}

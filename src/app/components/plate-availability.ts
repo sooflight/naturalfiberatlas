@@ -6,6 +6,12 @@ const MOBILE_PLATE_ORDER: PlateType[] = [
   "insight1",
   "insight2",
   "insight3",
+  "silkCharmeuse",
+  "silkHabotai",
+  "silkDupioni",
+  "silkTaffeta",
+  "silkChiffon",
+  "silkOrganza",
   "quote",
   "trade",
   "regions",
@@ -43,6 +49,13 @@ export function getAvailablePlates(fiber: FiberProfile): PlateType[] {
         if (pt === "insight3") return sentences.length >= 3;
         return sentences.length >= 2;
       }
+      case "silkCharmeuse":
+      case "silkHabotai":
+      case "silkDupioni":
+      case "silkTaffeta":
+      case "silkChiffon":
+      case "silkOrganza":
+        return fiber.id === "silk";
       case "seeAlso":
         return fiber.seeAlso.length > 0;
       case "about":

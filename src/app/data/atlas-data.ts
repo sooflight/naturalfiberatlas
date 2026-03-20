@@ -43,6 +43,12 @@ export type PlateType =
   | "insight1"
   | "insight2"
   | "insight3"
+  | "silkCharmeuse"
+  | "silkHabotai"
+  | "silkDupioni"
+  | "silkTaffeta"
+  | "silkChiffon"
+  | "silkOrganza"
   | "regions"
   | "trade"
   | "worldNames"
@@ -82,6 +88,12 @@ export const worldNames: Record<string, string[]> = {
   "flax-linen": ["Flax / Linen", "亚麻 (Yàmá)", "अटसी (Aṭasī)", "کتان (Kattān)", "Lin", "Leinen", "Lino", "Лён (Lyon)", "リネン (Rinen)", "亞麻 (Amá)", "كتان (Kattān)", "Vlas", "Pellava", "Hør", "Lino", "Flax", "Q'aytu", "Fibra de Lino"],
   "organic-cotton": ["Organic Cotton", "棉花 (Miánhua)", "कार्पास (Kārpāsa)", "پنبه (Panbe)", "Coton Bio", "Bio-Baumwolle", "Algodón Orgánico", "Хлопок (Khlopok)", "綿 (Men)", "면 (Myeon)", "قطن (Quṭn)", "Algodão Orgânico", "Pamuk", "メン (Men)", "Utku", "Fibra de Algodón"],
   silk: ["Silk", "丝绸 (Sīchóu)", "रेशम (Resham)", "ابریشم (Abrisham)", "Seda", "Soie", "Seide", "Шёлк (Shyolk)", "絹 (Kinu)", "حرير (Ḥarīr)", "비단 (Bidan)", "İpek", "Lụa", "ไหม (Mai)", "پارچه ابریشم (Parcha Abrisham)", "Silk", "キヌ (Kinu)", "Q'aytu"],
+  charmeuse: ["Charmeuse", "Satin Silk", "Charmeuse Silk", "シルクシャルムーズ (Shiruku Sharumuzu)", "Шармез (Sharmez)", "Charmeuse de Soie", "Seda Charmeuse"],
+  habotai: ["Habotai", "Habutae", "Pongee Silk", "羽二重 (Habutae)", "Хаботай (Khabotay)", "Soie Habotai", "Seda Habotai"],
+  dupioni: ["Dupioni", "Dupion", "Raw Silk Dupioni", "デュピオン (Dyupion)", "Дюпиони (Dyupioni)", "Soie Dupioni", "Seda Dupioni"],
+  taffeta: ["Taffeta", "Tafetta", "Silk Taffeta", "タフタ (Tafuta)", "Тафта (Tafta)", "Taffetas", "Tafetán"],
+  chiffon: ["Chiffon", "Silk Chiffon", "Chiffon de Soie", "シフォン (Shifon)", "Шифон (Shifon)", "Gasa de Seda", "شيفون (Shifūn)"],
+  organza: ["Organza", "Silk Organza", "Organdi", "オーガンザ (Oganza)", "Органза (Organza)", "Organza de Soie", "Organza de Seda"],
   bamboo: ["Bamboo", "竹 (Zhú)", "वेणु (Veṇu)", "بامبو (Bāmbū)", "Bambu", "Bambou", "Бамбук (Bambuk)", "竹 (Take)", "대나무 (Daenamu)", "बाँस (Baans)", "Bambus", "چوب بامبو (Chub-e Bambu)", "Fibra de Bambú", "タケ (Take)", "Q'aytu"],
   wool: ["Wool", "羊毛 (Yángmáo)", "ऊर्णा (Ūrṇā)", "پشم (Pashm)", "Lana", "Laine", "Wolle", "Шерсть (Sherst)", "ウール (Ūru)", "صوف (Ṣūf)", "양모 (Yangmo)", "Ull", "Yün", "Lana", "Wool", "Millma", "Fibra de Lana"],
   coir: ["Coir", "椰壳纤维 (Yēké Xiānwéi)", "Fibre de Coco", "Kokosfaser", "Fibra de Coco", "Кокосовое волокно", "コイア (Koia)", "నారికేళం (Nārikēḷaṁ)", "नारियल रेशा (Nāriyal Reshā)", "پوست نارگیل (Pust-e Nargil)", "Coir", "ليف جوز الهند (Līf Jawz al-Hind)", "Q'aytu"],
@@ -1712,6 +1724,12 @@ export const namedPlates: PlateType[] = [
   "insight1",
   "insight2",
   "insight3",
+  "silkCharmeuse",
+  "silkHabotai",
+  "silkDupioni",
+  "silkTaffeta",
+  "silkChiffon",
+  "silkOrganza",
   "quote",
   "trade",
   "worldNames",

@@ -628,7 +628,7 @@ function AtlasWorkbenchShellContent() {
   );
 
   return (
-    <div className="h-screen bg-[#060606] text-white overflow-hidden font-sans selection:bg-blue-500/30">
+    <div className="min-h-dvh bg-[#060606] text-white overflow-hidden font-sans selection:bg-blue-500/30">
       {/* Main Viewport */}
       <main className="h-full flex flex-col min-w-0 bg-[#060606] relative">
         {/* Global Action Bar */}

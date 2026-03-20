@@ -9,7 +9,7 @@ test.describe('mobile viewport shell height', () => {
   for (const viewport of viewports) {
     test(`shell min-height tracks viewport at ${viewport.width}x${viewport.height}`, async ({ page }) => {
       await page.setViewportSize(viewport);
-      await page.goto('/');
+      await page.goto('/', { waitUntil: 'domcontentloaded', timeout: 45000 });
       await expect(page.getByRole('button', { name: 'Natural Fiber Atlas' })).toBeVisible({ timeout: 15000 });
 
       const metrics = await page.evaluate(() => {

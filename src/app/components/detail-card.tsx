@@ -2,6 +2,7 @@ import type { FiberProfile, PlateType, GalleryImageEntry } from "../data/atlas-d
 import {
   AboutPlate,
   InsightPlate,
+  SilkVariantPlate,
   RegionsPlate,
   TradePlate,
   WorldNamesPlate,
@@ -77,6 +78,13 @@ export function DetailCard({
         return <InsightPlate fiber={fiber} half={2} />;
       case "insight3":
         return <InsightPlate fiber={fiber} half={3} />;
+      case "silkCharmeuse":
+      case "silkHabotai":
+      case "silkDupioni":
+      case "silkTaffeta":
+      case "silkChiffon":
+      case "silkOrganza":
+        return <SilkVariantPlate plateType={plateType} />;
       case "regions":
         return <RegionsPlate fiber={fiber} />;
       case "trade":

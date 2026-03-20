@@ -13,6 +13,7 @@ import { dataSource } from "../../data/data-provider";
 import {
   AboutPlate,
   InsightPlate,
+  SilkVariantPlate,
   RegionsPlate,
   TradePlate,
   WorldNamesPlate,
@@ -54,6 +55,12 @@ const PLATE_META: Record<PlateType, {
   insight1: { label: "Insight — Origins", icon: Lightbulb, color: "text-blue-300/60", editorSection: "About" },
   insight2: { label: "Insight — Depth", icon: BookOpen, color: "text-blue-300/60", editorSection: "About" },
   insight3: { label: "Insight — Context", icon: BookOpen, color: "text-blue-300/60", editorSection: "About" },
+  silkCharmeuse: { label: "Silk Type — Charmeuse", icon: Layers, color: "text-blue-300/60", editorSection: "About" },
+  silkHabotai: { label: "Silk Type — Habotai", icon: Layers, color: "text-blue-300/60", editorSection: "About" },
+  silkDupioni: { label: "Silk Type — Dupioni", icon: Layers, color: "text-blue-300/60", editorSection: "About" },
+  silkTaffeta: { label: "Silk Type — Taffeta", icon: Layers, color: "text-blue-300/60", editorSection: "About" },
+  silkChiffon: { label: "Silk Type — Chiffon", icon: Layers, color: "text-blue-300/60", editorSection: "About" },
+  silkOrganza: { label: "Silk Type — Organza", icon: Layers, color: "text-blue-300/60", editorSection: "About" },
   quote: { label: "Quote", icon: Quote, color: "text-blue-300/60", editorSection: "Quotes" },
   trade: { label: "Source & Trade", icon: DollarSign, color: "text-blue-400/60", editorSection: "Trade Details" },
   regions: { label: "Regions", icon: MapPin, color: "text-blue-400/65", editorSection: "Trade Details" },
@@ -71,6 +78,12 @@ const ALL_PLATES: PlateType[] = [
   "insight1",
   "insight2",
   "insight3",
+  "silkCharmeuse",
+  "silkHabotai",
+  "silkDupioni",
+  "silkTaffeta",
+  "silkChiffon",
+  "silkOrganza",
   "quote",
   "trade",
   "regions",
@@ -111,6 +124,13 @@ function getAvailablePlates(fiber: FiberProfile): PlateType[] {
         if (pt === "insight3") return sentences.length >= 3;
         return sentences.length >= 2;
       }
+      case "silkCharmeuse":
+      case "silkHabotai":
+      case "silkDupioni":
+      case "silkTaffeta":
+      case "silkChiffon":
+      case "silkOrganza":
+        return fiber.id === "silk";
       case "seeAlso":
         return fiber.seeAlso.length > 0;
       case "contactSheet":
@@ -138,6 +158,13 @@ function PlateRenderer({ fiber, plateType }: { fiber: FiberProfile; plateType: P
       return <InsightPlate fiber={fiber} half={2} />;
     case "insight3":
       return <InsightPlate fiber={fiber} half={3} />;
+    case "silkCharmeuse":
+    case "silkHabotai":
+    case "silkDupioni":
+    case "silkTaffeta":
+    case "silkChiffon":
+    case "silkOrganza":
+      return <SilkVariantPlate plateType={plateType} />;
     case "quote":
       return <QuotePlate fiber={fiber} />;
     case "regions":

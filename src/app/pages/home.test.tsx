@@ -126,4 +126,19 @@ describe("HomePage search integration", () => {
       expect(screen.getByTestId("grid-fiber-subcategory-prop")).toHaveTextContent("wool-fiber");
     });
   });
+
+  it("debounces hover preview filter updates", async () => {
+    render(<HomePage />);
+
+    expect(screen.getByTestId("grid-category-prop")).toHaveTextContent("all");
+
+    fireEvent.mouseEnter(screen.getByRole("button", { name: /Plant Plant/i }));
+
+    expect(screen.getByTestId("grid-category-prop")).toHaveTextContent("all");
+
+    await waitFor(() => {
+      expect(screen.getByTestId("grid-category-prop")).toHaveTextContent("fiber");
+      expect(screen.getByTestId("grid-fiber-subcategory-prop")).toHaveTextContent("plant");
+    });
+  });
 });

@@ -29,6 +29,7 @@ import { getAvailablePlates } from "./plate-availability";
 import {
   AboutPlate,
   InsightPlate,
+  SilkVariantPlate,
   RegionsPlate,
   TradePlate,
   WorldNamesPlate,
@@ -286,6 +287,13 @@ export function MobileDetailView({
         return <InsightPlate fiber={fiber} half={2} />;
       case "insight3":
         return <InsightPlate fiber={fiber} half={3} />;
+      case "silkCharmeuse":
+      case "silkHabotai":
+      case "silkDupioni":
+      case "silkTaffeta":
+      case "silkChiffon":
+      case "silkOrganza":
+        return <SilkVariantPlate plateType={plateType} />;
       case "quote":
         return <QuotePlate fiber={fiber} />;
       case "trade":

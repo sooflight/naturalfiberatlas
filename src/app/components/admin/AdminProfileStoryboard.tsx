@@ -1353,7 +1353,7 @@ export function AdminProfileStoryboard({
             top: 60,
             right: 20,
             width: 320,
-            maxHeight: "calc(100vh - 100px)",
+            maxHeight: "calc(100dvh - 100px)",
             background: "rgba(20,20,20,0.95)",
             backdropFilter: "blur(12px)",
             borderRadius: 12,

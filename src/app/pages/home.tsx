@@ -7,6 +7,7 @@
 import { useState, useMemo } from "react";
 import { GridView } from "../components/grid-view";
 import { TopNav } from "../components/top-nav";
+import { useEffect } from "react";
 
 export type GridFiberSubcategory =
   | "plant"
@@ -67,11 +68,25 @@ export function mapNavToGridFilters(nodeId: string | null): {
 export function HomePage() {
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [previewNodeId, setPreviewNodeId] = useState<string | null>(null);
+  const [debouncedPreviewNodeId, setDebouncedPreviewNodeId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [visibleProfileCount, setVisibleProfileCount] = useState(0);
 
+  useEffect(() => {
+    if (previewNodeId === null) {
+      setDebouncedPreviewNodeId(null);
+      return;
+    }
+
+    const timer = window.setTimeout(() => {
+      setDebouncedPreviewNodeId(previewNodeId);
+    }, 120);
+
+    return () => window.clearTimeout(timer);
+  }, [previewNodeId]);
+
   // Map TopNav selection to GridView category
-  const effectiveNodeId = previewNodeId ?? activeNodeId;
+  const effectiveNodeId = debouncedPreviewNodeId ?? activeNodeId;
   const { category: gridCategory, fiberSubcategory: gridFiberSubcategory } = useMemo(
     () => mapNavToGridFilters(effectiveNodeId),
     [effectiveNodeId],
@@ -82,6 +97,7 @@ export function HomePage() {
       activeNodeId={activeNodeId}
       onNavigate={(id) => {
         setPreviewNodeId(null);
+        setDebouncedPreviewNodeId(null);
         setActiveNodeId(id);
       }}
       onPreviewNavigate={setPreviewNodeId}

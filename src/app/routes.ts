@@ -25,7 +25,7 @@ const LazyAtlasWorkbenchShell = lazy(() =>
 function AdminShellFallback() {
   return createElement(
     "div",
-    { className: "flex min-h-screen items-center justify-center bg-[#060606] text-white" },
+    { className: "flex min-h-dvh items-center justify-center bg-[#060606] text-white" },
     createElement(
       "div",
       { className: "flex flex-col items-center gap-4" },

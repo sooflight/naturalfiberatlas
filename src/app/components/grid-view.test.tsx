@@ -286,6 +286,46 @@ describe("GridView image sync", () => {
     });
   });
 
+  it("clears expanded profile when external nav filters change", async () => {
+    const sampleFiber = bundledFibers[0];
+    const { rerender } = render(
+      <MemoryRouter>
+        <AtlasDataProvider>
+          <GridView hideHeader externalSearch={sampleFiber.name} externalCategory={sampleFiber.category} />
+        </AtlasDataProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(await screen.findByTestId(`profile-card-${sampleFiber.id}`));
+
+    await waitFor(() => {
+      const hasSelectedCall = vi
+        .mocked(plateLayout.computePlateLayout)
+        .mock.calls
+        .some((call) => call[0] === sampleFiber.id);
+      expect(hasSelectedCall).toBe(true);
+    });
+
+    rerender(
+      <MemoryRouter>
+        <AtlasDataProvider>
+          <GridView
+            hideHeader
+            externalSearch={sampleFiber.name}
+            externalCategory="fiber"
+            externalFiberSubcategory="animal"
+          />
+        </AtlasDataProvider>
+      </MemoryRouter>,
+    );
+
+    await waitFor(() => {
+      const calls = vi.mocked(plateLayout.computePlateLayout).mock.calls;
+      const lastCall = calls.at(-1);
+      expect(lastCall?.[0]).toBeNull();
+    });
+  });
+
   it("hides draft profiles in non-admin mode", async () => {
     const sampleFiber = bundledFibers[0];
 

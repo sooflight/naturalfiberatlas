@@ -413,6 +413,12 @@ export function GridView({
   );
 
   useEffect(() => {
+    if (!selectedId) return;
+    if (externalCategory === undefined && externalFiberSubcategory === undefined) return;
+    setSelectedId(null);
+  }, [externalCategory, externalFiberSubcategory, selectedId]);
+
+  useEffect(() => {
     if (!selectedId) {
       setMobileDetailOpen(false);
     }
@@ -836,7 +842,7 @@ export function GridView({
 
   return (
     <div
-      className="min-h-screen bg-[#111111] text-white"
+      className="min-h-dvh bg-[#111111] text-white"
       style={{
         backgroundColor: ambientBg,
         transition: "background-color 2s, margin-right 0.4s cubic-bezier(0.25, 1, 0.5, 1)",
