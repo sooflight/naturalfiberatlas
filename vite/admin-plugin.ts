@@ -208,6 +208,7 @@ function adminPlugin(): Plugin {
   const orderFile = path.join(dataDir, 'atlas-order.json');
   const supplierFile = path.join(dataDir, 'supplier-directory.json');
   const evidenceFile = path.join(dataDir, 'evidence-records.json');
+  const promotedOverridesFile = path.resolve(__dirname, '../src/app/data/promoted-overrides.json');
   const passportModuleFile = path.join(dataDir, 'material-passports.ts');
   const adminSettingsFile = path.join(dataDir, 'admin-settings.json');
   const passportModuleBackups = {
@@ -301,6 +302,18 @@ function adminPlugin(): Plugin {
       // ── Atlas data CRUD ──
       use('/__admin/read-atlas-data', fileReadRoute(atlasFile));
       use('/__admin/save-atlas-data', rawWriteRoute(atlasFile, { backup: true }));
+      use('/__admin/auto-sync-promoted-overrides', postRoute(async (body, res) => {
+        const payload = (body && typeof body === 'object' && !Array.isArray(body))
+          ? body
+          : {};
+        const out = `${JSON.stringify(payload, null, 2)}\n`;
+        fs.writeFileSync(promotedOverridesFile, out, 'utf-8');
+        jsonRes(res, {
+          ok: true,
+          bytes: out.length,
+          path: path.relative(path.resolve(__dirname, '..'), promotedOverridesFile),
+        });
+      }));
       use('/__admin/read-index-tree', (_req, res) => {
         try {
           let source: unknown = null;

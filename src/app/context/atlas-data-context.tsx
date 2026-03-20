@@ -14,7 +14,9 @@
 import React from "react";
 import {
   createContext,
+  useEffect,
   useContext,
+  useRef,
   useState,
   useSyncExternalStore,
   useMemo,
@@ -175,6 +177,29 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
     [overrideSummary],
   );
   const hasOverrides = useMemo(() => dataSource.hasOverrides(), [version]);
+  const lastAutoSyncedDiffRef = useRef<string>("");
+
+  useEffect(() => {
+    if (!adminEnabled || !isBrowser || !adminMode) return;
+    if (!import.meta.env.DEV || import.meta.env.MODE === "test") return;
+    const timer = window.setTimeout(() => {
+      const diff = dataSource.exportDiffJSON();
+      if (diff === lastAutoSyncedDiffRef.current) return;
+      void fetch("/__admin/auto-sync-promoted-overrides", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: diff,
+      })
+        .then((res) => {
+          if (!res.ok) throw new Error(`autosync failed (${res.status})`);
+          lastAutoSyncedDiffRef.current = diff;
+        })
+        .catch((err) => {
+          console.warn("[atlas:autosync] Failed to sync promoted overrides:", err);
+        });
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [adminEnabled, adminMode, isBrowser, version]);
 
   const value = useMemo<AtlasDataContextValue>(
     () => ({

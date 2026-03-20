@@ -1,0 +1,13 @@
+{
+  "fibers": {
+    "looms": {
+      "status": "draft"
+    },
+    "industrial-looms": {
+      "status": "draft"
+    },
+    "plying": {
+      "status": "draft"
+    }
+  }
+}

@@ -18,6 +18,7 @@
 import type { FiberProfile, ProcessStep, AnatomyData, CareData, QuoteEntry } from "./atlas-data";
 import { isAdminEnabled } from "../config/admin-access";
 import { fibers as rawBundledFibers } from "./fibers";
+import promotedOverridesRaw from "./promoted-overrides.json";
 import {
   worldNames as bundledWorldNames,
   processData as bundledProcessData,
@@ -261,12 +262,45 @@ function uid(): string {
   return `${Date.now()}-${++_idCounter}`;
 }
 
+type PromotedOverridesShape = Partial<{
+  fibers: Record<string, Partial<FiberProfile>>;
+  worldNames: Record<string, string[]>;
+  processData: Record<string, ProcessStep[]>;
+  anatomyData: Record<string, AnatomyData>;
+  careData: Record<string, CareData>;
+  quoteData: Record<string, QuoteEntry[]>;
+}>;
+
+const promotedOverrides = (promotedOverridesRaw ?? {}) as PromotedOverridesShape;
+
 /** Bundled fiber lookup */
 const bundledFibers: FiberProfile[] = rawBundledFibers.map((fiber) =>
-  JSON.parse(JSON.stringify(fiber)) as FiberProfile,
+  JSON.parse(
+    JSON.stringify(
+      promotedOverrides.fibers?.[fiber.id]
+        ? { ...fiber, ...promotedOverrides.fibers[fiber.id], id: fiber.id }
+        : fiber,
+    ),
+  ) as FiberProfile,
 );
 const bundledFiberMap = new Map<string, FiberProfile>();
 for (const f of bundledFibers) bundledFiberMap.set(f.id, f);
+
+const bundledWorldNamesWithPromoted = promotedOverrides.worldNames
+  ? { ...bundledWorldNames, ...promotedOverrides.worldNames }
+  : bundledWorldNames;
+const bundledProcessDataWithPromoted = promotedOverrides.processData
+  ? { ...bundledProcessData, ...promotedOverrides.processData }
+  : bundledProcessData;
+const bundledAnatomyDataWithPromoted = promotedOverrides.anatomyData
+  ? { ...bundledAnatomyData, ...promotedOverrides.anatomyData }
+  : bundledAnatomyData;
+const bundledCareDataWithPromoted = promotedOverrides.careData
+  ? { ...bundledCareData, ...promotedOverrides.careData }
+  : bundledCareData;
+const bundledQuoteDataWithPromoted = promotedOverrides.quoteData
+  ? { ...bundledQuoteData, ...promotedOverrides.quoteData }
+  : bundledQuoteData;
 
 function stripSustainability<T extends Record<string, unknown>>(fiber: T): T {
   // Compatibility shim: admin/editor surfaces still expect sustainability fields.
@@ -590,21 +624,21 @@ export class LocalStorageSource implements AtlasDataSource {
   getWorldNames(): Record<string, string[]> {
     if (this._worldNames) return this._worldNames;
     const overrides = this.readJSON<Record<string, string[]>>(KEYS.worldNames);
-    this._worldNames = overrides ? { ...bundledWorldNames, ...overrides } : bundledWorldNames;
+    this._worldNames = overrides ? { ...bundledWorldNamesWithPromoted, ...overrides } : bundledWorldNamesWithPromoted;
     return this._worldNames;
   }
 
   getProcessData(): Record<string, ProcessStep[]> {
     if (this._processData) return this._processData;
     const overrides = this.readJSON<Record<string, ProcessStep[]>>(KEYS.processData);
-    this._processData = overrides ? { ...bundledProcessData, ...overrides } : bundledProcessData;
+    this._processData = overrides ? { ...bundledProcessDataWithPromoted, ...overrides } : bundledProcessDataWithPromoted;
     return this._processData;
   }
 
   getAnatomyData(): Record<string, AnatomyData> {
     if (this._anatomyData) return this._anatomyData;
     const overrides = this.readJSON<Record<string, AnatomyData>>(KEYS.anatomyData);
-    this._anatomyData = overrides ? { ...bundledAnatomyData, ...overrides } : bundledAnatomyData;
+    this._anatomyData = overrides ? { ...bundledAnatomyDataWithPromoted, ...overrides } : bundledAnatomyDataWithPromoted;
     return this._anatomyData;
   }
 
@@ -612,10 +646,10 @@ export class LocalStorageSource implements AtlasDataSource {
     if (this._careData) return this._careData;
     const overrides = this.readJSON<Record<string, unknown>>(KEYS.careData);
     if (!overrides) {
-      this._careData = bundledCareData;
+      this._careData = bundledCareDataWithPromoted;
       return this._careData;
     }
-    const merged: Record<string, CareData> = { ...bundledCareData };
+    const merged: Record<string, CareData> = { ...bundledCareDataWithPromoted };
     for (const [fiberId, value] of Object.entries(overrides)) {
       merged[fiberId] = this.normalizeCareData(fiberId, value);
     }
@@ -626,7 +660,7 @@ export class LocalStorageSource implements AtlasDataSource {
   getQuoteData(): Record<string, QuoteEntry[]> {
     if (this._quoteData) return this._quoteData;
     const overrides = this.readJSON<Record<string, QuoteEntry[]>>(KEYS.quoteData);
-    this._quoteData = overrides ? { ...bundledQuoteData, ...overrides } : bundledQuoteData;
+    this._quoteData = overrides ? { ...bundledQuoteDataWithPromoted, ...overrides } : bundledQuoteDataWithPromoted;
     return this._quoteData;
   }
 
@@ -891,11 +925,11 @@ export class LocalStorageSource implements AtlasDataSource {
 
     // Supplementary tables — include if they differ from bundled
     const suppTables: Array<{ name: string; key: string; bundled: Record<string, unknown> }> = [
-      { name: "worldNames", key: KEYS.worldNames, bundled: bundledWorldNames },
-      { name: "processData", key: KEYS.processData, bundled: bundledProcessData },
-      { name: "anatomyData", key: KEYS.anatomyData, bundled: bundledAnatomyData },
-      { name: "careData", key: KEYS.careData, bundled: bundledCareData },
-      { name: "quoteData", key: KEYS.quoteData, bundled: bundledQuoteData },
+      { name: "worldNames", key: KEYS.worldNames, bundled: bundledWorldNamesWithPromoted },
+      { name: "processData", key: KEYS.processData, bundled: bundledProcessDataWithPromoted },
+      { name: "anatomyData", key: KEYS.anatomyData, bundled: bundledAnatomyDataWithPromoted },
+      { name: "careData", key: KEYS.careData, bundled: bundledCareDataWithPromoted },
+      { name: "quoteData", key: KEYS.quoteData, bundled: bundledQuoteDataWithPromoted },
     ];
 
     for (const { name, key, bundled } of suppTables) {
@@ -1617,7 +1651,7 @@ export class LocalStorageSource implements AtlasDataSource {
   }
 
   private getFallbackCareData(id: string): CareData {
-    return bundledCareData[id] ?? {
+    return bundledCareDataWithPromoted[id] ?? {
       washTemp: "",
       dryMethod: "",
       ironTemp: "",
