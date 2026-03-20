@@ -169,7 +169,8 @@
           "European Flax",
           "OEKO-TEX"
         ]
-      }
+      },
+      "status": "published"
     },
     "ramie": {
       "galleryImages": [
@@ -269,7 +270,8 @@
           "url": "https://i.pinimg.com/736x/34/e1/59/34e1594924d5773c4125e7186e04a678.jpg"
         }
       ],
-      "image": "https://i.pinimg.com/1200x/e6/5e/60/e65e60dc4ce9535edbbf19a99fc51517.jpg"
+      "image": "https://i.pinimg.com/1200x/e6/5e/60/e65e60dc4ce9535edbbf19a99fc51517.jpg",
+      "status": "published"
     },
     "flax-linen": {
       "galleryImages": [
@@ -823,7 +825,8 @@
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/c_crop,x_0,y_83,w_640,h_477/v1771619170/atlas/mhglvnzoxzs1ufuueol1.jpg"
         }
       ],
-      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619158/atlas/zg1mqfgqqlyxm5syt2fj.jpg"
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619158/atlas/zg1mqfgqqlyxm5syt2fj.jpg",
+      "status": "published"
     },
     "kenaf": {
       "galleryImages": [
@@ -969,7 +972,8 @@
           "url": "https://static.vecteezy.com/system/resources/thumbnails/074/111/962/small/close-up-of-a-silkworm-pupa-inside-its-cocoon-natures-wonder-photo.jpeg"
         }
       ],
-      "image": "https://i.pinimg.com/1200x/72/8d/72/728d72f3357a696894fbc7ea93066a0c.jpg"
+      "image": "https://i.pinimg.com/1200x/72/8d/72/728d72f3357a696894fbc7ea93066a0c.jpg",
+      "status": "published"
     },
     "bamboo": {
       "galleryImages": [
@@ -994,7 +998,8 @@
         {
           "url": "https://i.pinimg.com/736x/49/9e/dd/499edd98dc763fea79ea858ad338238f.jpg"
         }
-      ]
+      ],
+      "status": "published"
     },
     "alpaca": {
       "galleryImages": [
@@ -1165,6 +1170,15 @@
         },
         {
           "url": "https://vicunia.ch/wp-content/uploads/2024/03/Kamel_02-1024x640.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1774000420/atlas/yglly5bnl8dc9n3xtveo.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1774000421/atlas/cddwa9tctzzdk3eydpkt.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1774000422/atlas/evdmm9js5pzzny2ka8j0.jpg"
         }
       ],
       "image": "https://www.gafencushop.com/wp-content/uploads/2021/11/Cosying-up-to-vicuna-a-rare-winter-warmer-and-the-world’s-most-expensive-fabric-gafencu-14.jpg"
@@ -1703,6 +1717,9 @@
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1774000317/atlas/n6ttynbgynwjf0sutou9.jpg"
         }
       ]
+    },
+    "fique": {
+      "status": "published"
     }
   },
   "quoteData": {

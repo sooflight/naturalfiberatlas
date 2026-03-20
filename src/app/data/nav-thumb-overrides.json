@@ -1,90 +1,21 @@
 {
-  "plant-cellulose": [
-    "https://cdn.create.vista.com/api/media/small/655648600/stock-photo-green-raw-jute-plant-top-view-pattern-texture-can-used"
-  ],
-  "bast-fibers": [
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1773617425/atlas/npyr2lsidpuffk7rnizi.jpg"
-  ],
-  "bark-fibers": [
-    "https://i.pinimg.com/1200x/d0/36/0e/d0360e4ac8af842e74f599c3f179fecd.jpg"
-  ],
-  "seed-fibers": [
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1773730727/atlas/vayitrnv74dqrjt4cyho.jpg"
-  ],
-  "cotton": [
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771660007/atlas/pmkztjyyr8keuydhjssm.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771722544/atlas/oft4lmrqtez1m59vm4ec.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771659941/atlas/hrgf79vpomknr6inlwdq.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/c_crop,x_23,y_17,w_1036,h_777/v1771537794/tui0czwsd4oxaijakgjc.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771660006/atlas/mvbslovsxxugwegpoicw.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619114/atlas/va8nncvnzc65qfgwco6n.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619112/atlas/axkjtbopklxq0zm9fvxv.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771660008/atlas/yanuymnwnlebqqfyvicd.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771660004/atlas/beoh4kfn3bvfwnihfknb.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771722542/atlas/hafsv5yualbb3ll565kh.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771722544/atlas/oaqqgzisdiexk6ubzbgh.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771660005/atlas/ih3flp0yphetbxnlxu2n.png"
-  ],
-  "leaf-fibers": [
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1773761358/atlas/ynh2frqypmpkh5dzcr5i.png"
-  ],
-  "pineapple-pina": [
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619124/atlas/w1yt5po5mcws4zgrtjfs.png",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619126/atlas/z6dp7jzl5zqiy3ggsluu.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619132/atlas/dauat7oh467mzocnxz9n.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619133/atlas/qh0axevmwsjjnmj4ntpj.png",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619142/atlas/z8mlybczh2qstlrcxmoz.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619129/atlas/blrg9dqpridqzw3umb2r.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619138/atlas/t2tpq3tenfdhswlttzos.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619136/atlas/opt6kvnhf0uhalwdjqwb.png"
-  ],
-  "fruit-fibers": [
-    "https://i.pinimg.com/1200x/87/ed/36/87ed369aa638634ee776388d19633ba7.jpg"
-  ],
-  "coir-coconut": [
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771538775/lmgulrcokuc0ixdd40if.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619179/atlas/gqmq3eb0thehhoxu7mkm.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771538716/qumlyrendrghvi76m1xr.jpg"
-  ],
-  "animal-protein": [
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1773730788/atlas/tczdjtdxj6zayjlch5gj.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1773730684/atlas/jdx4zfprjfvnbdwlx5ll.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1773730373/atlas/nt7x8dadyucvqupl2krx.jpg",
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1773730352/atlas/s1f3ql6s1sberkpmawwv.jpg"
-  ],
-  "wool-fiber": [
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1773764076/atlas/uyrezhpkh4zctzowpkeo.jpg"
-  ],
-  "suri": [
-    "https://i.pinimg.com/736x/9c/44/75/9c4475f450a7a21a634063c3968166d1.jpg",
-    "https://i.pinimg.com/736x/00/fa/b4/00fab4f034c079a3e0e5da55a184c8d1.jpg"
-  ],
-  "hair-fiber": [
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619255/atlas/mplwe2qsjn0qjt2v1lqw.avif"
-  ],
-  "horsehair": [
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619278/atlas/lnnkjf82gd2q6ipf42v3.jpg"
-  ],
-  "mulberry-silk": [
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619269/atlas/e45iykbpuypcenlnxhfq.jpg"
-  ],
-  "eri": [
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619275/atlas/vhtctqa2blfnurmnuj6m.jpg"
-  ],
-  "muga": [
-    "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619277/atlas/bum6jmracrdlcg1ur8kw.jpg"
-  ],
-  "mineral-regenerated": [
-    "https://framerusercontent.com/images/DK0aX09WJg7TVt90uMxv07Slk.png"
-  ],
-  "lyocell-tencel": [
-    "https://www.pslbg.org/wp-content/uploads/2024/05/Rainbow-Eucalyptus-1-773x1030.jpg",
-    "https://www.woolfacts.com/wp-content/uploads/2025/10/plant-wool-tencel-800x563.jpg",
-    "https://wenorwegians.us/cdn/shop/articles/image_1.jpg?v=1618664273&width=2048",
-    "https://cdn.shoplightspeed.com/shops/626737/files/13271068/adobestock-207727905.jpg",
-    "https://rockdaisyapparel.com/cdn/shop/files/tencel-header.jpg?v=1700120166&width=1200",
-    "https://a.storyblok.com/f/311928/1920x1230/3b76fb78a3/fiber-transform-process.jpg/m/",
-    "https://a.storyblok.com/f/311928/1920x1230/5257019073/nature-tree-fiber.jpg/m/",
-    "https://eucalypsohome.com/cdn/shop/files/sustainably-managed-eucalyptus-forest-tencel.jpg?v=1767646179&width=4608"
-  ]
+  "plant-cellulose": "https://cdn.create.vista.com/api/media/small/655648600/stock-photo-green-raw-jute-plant-top-view-pattern-texture-can-used",
+  "bast-fibers": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773617425/atlas/npyr2lsidpuffk7rnizi.jpg",
+  "bark-fibers": "https://i.pinimg.com/1200x/d0/36/0e/d0360e4ac8af842e74f599c3f179fecd.jpg",
+  "seed-fibers": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773730727/atlas/vayitrnv74dqrjt4cyho.jpg",
+  "cotton": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771660007/atlas/pmkztjyyr8keuydhjssm.jpg",
+  "leaf-fibers": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773761358/atlas/ynh2frqypmpkh5dzcr5i.png",
+  "pineapple-pina": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619124/atlas/w1yt5po5mcws4zgrtjfs.png",
+  "fruit-fibers": "https://i.pinimg.com/1200x/87/ed/36/87ed369aa638634ee776388d19633ba7.jpg",
+  "coir-coconut": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771538775/lmgulrcokuc0ixdd40if.jpg",
+  "animal-protein": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773730788/atlas/tczdjtdxj6zayjlch5gj.jpg",
+  "wool-fiber": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773764076/atlas/uyrezhpkh4zctzowpkeo.jpg",
+  "suri": "https://i.pinimg.com/736x/9c/44/75/9c4475f450a7a21a634063c3968166d1.jpg",
+  "hair-fiber": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619255/atlas/mplwe2qsjn0qjt2v1lqw.avif",
+  "horsehair": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619278/atlas/lnnkjf82gd2q6ipf42v3.jpg",
+  "mulberry-silk": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619269/atlas/e45iykbpuypcenlnxhfq.jpg",
+  "eri": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619275/atlas/vhtctqa2blfnurmnuj6m.jpg",
+  "muga": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619277/atlas/bum6jmracrdlcg1ur8kw.jpg",
+  "mineral-regenerated": "https://framerusercontent.com/images/DK0aX09WJg7TVt90uMxv07Slk.png",
+  "lyocell-tencel": "https://www.pslbg.org/wp-content/uploads/2024/05/Rainbow-Eucalyptus-1-773x1030.jpg"
 }
