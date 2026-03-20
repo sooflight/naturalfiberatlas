@@ -32,12 +32,23 @@ import { GridSkeleton } from "./grid-skeleton";
 import { Link } from "react-router";
 import { preloadAboutRoute } from "../route-preload";
 import {
+  ATLAS_GRID_CATEGORY_PILL_STYLE,
+  ATLAS_GRID_CLOSE_STYLE,
+  ATLAS_GRID_EMPTY_BODY_STYLE,
+  ATLAS_GRID_EMPTY_CTA_STYLE,
+  ATLAS_GRID_EMPTY_TITLE_STYLE,
+  ATLAS_GRID_HINT_STYLE,
+  ATLAS_GRID_LINK_STYLE,
+  ATLAS_GRID_LOADING_STYLE,
+  ATLAS_GRID_SEARCH_STYLE,
+  ATLAS_GRID_SUBHEAD_MUTED_STYLE,
+  ATLAS_GRID_SUBHEAD_STYLE,
+  ATLAS_GRID_TITLE_STYLE,
   ATLAS_PILL_ACTIVE_CLASS,
   ATLAS_PILL_BASE_CLASS,
   ATLAS_PILL_IDLE_CLASS,
   ATLAS_SEARCH_CLEAR_BUTTON_CLASS,
   ATLAS_SEARCH_INPUT_CLASS,
-  NAV_FONT_STYLE,
 } from "./atlas-shared";
 
 const LazyLightbox = lazy(async () => {
@@ -868,7 +879,7 @@ export function GridView({
               {/* Title — tap to scroll to top */}
               <h1
                 className="text-white tracking-[0.08em] uppercase whitespace-nowrap cursor-pointer"
-                style={{ fontSize: "clamp(12px, 2vw, 15px)", fontWeight: 400 }}
+                style={ATLAS_GRID_TITLE_STYLE}
                 onClick={() => { if (selectedId) { handleClose(); } else { window.scrollTo({ top: 0, behavior: "smooth" }); } }}
                 role="button"
                 tabIndex={0}
@@ -893,7 +904,7 @@ export function GridView({
                     setSelectedId(null);
                   }}
                   className={ATLAS_SEARCH_INPUT_CLASS}
-                  style={{ ...NAV_FONT_STYLE, fontSize: "11px" }}
+                  style={ATLAS_GRID_SEARCH_STYLE}
                 />
                 {search && (
                   <button
@@ -922,7 +933,7 @@ export function GridView({
                         ? ATLAS_PILL_ACTIVE_CLASS
                         : ATLAS_PILL_IDLE_CLASS
                     }`}
-                    style={{ ...NAV_FONT_STYLE, fontSize: "10px", fontWeight: 500 }}
+                    style={ATLAS_GRID_CATEGORY_PILL_STYLE}
                   >
                     {cat.label}
                   </button>
@@ -935,7 +946,7 @@ export function GridView({
                 onClick={handleClose}
                 className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-white/50 hover:text-white/80 hover:border-white/20 transition-[color,border-color,opacity] duration-200 cursor-pointer ml-auto"
                 style={{
-                  fontSize: "11px",
+                  ...ATLAS_GRID_CLOSE_STYLE,
                   opacity: selectedId ? 1 : 0,
                   pointerEvents: selectedId ? "auto" : "none",
                 }}
@@ -961,7 +972,7 @@ export function GridView({
           >
             <span
               className="text-white/25 tracking-[0.18em] uppercase"
-              style={{ fontSize: "10px", fontWeight: 600 }}
+              style={ATLAS_GRID_SUBHEAD_STYLE}
             >
               {selectedFiber
                 ? `${selectedFiber.name} — Detail View`
@@ -970,7 +981,7 @@ export function GridView({
             {!selectedFiber && (
               <span
                 className="hidden md:inline text-white/20 tracking-[0.12em] uppercase"
-                style={{ fontSize: "9px", fontWeight: 500 }}
+                style={ATLAS_GRID_SUBHEAD_MUTED_STYLE}
               >
                 {search
                   ? `Showing ${filtered.length} result${filtered.length === 1 ? "" : "s"} for "${search}"`
@@ -980,7 +991,7 @@ export function GridView({
             {selectedFiber && (
               <span
                 className="text-[#4ADE80]/40 tracking-[0.15em] uppercase hidden sm:inline"
-                style={{ fontSize: "10px", fontWeight: 600 }}
+                style={ATLAS_GRID_HINT_STYLE}
               >
                 ESC or click card to close
               </span>
@@ -998,7 +1009,7 @@ export function GridView({
                   void preloadAboutRoute();
                 }}
                 className="text-white/20 hover:text-white/40 tracking-[0.12em] uppercase transition-colors"
-                style={{ fontSize: "10px", fontWeight: 500 }}
+                style={ATLAS_GRID_LINK_STYLE}
               >
                 About
               </Link>
@@ -1217,10 +1228,10 @@ export function GridView({
         {filtered.length === 0 && (
           <div className="flex h-64 items-center justify-center">
             <div className="text-center space-y-3">
-              <p className="text-white/40 uppercase tracking-[0.14em]" style={{ fontSize: "10px", fontWeight: 500 }}>
+              <p className="text-white/40 uppercase tracking-[0.14em]" style={ATLAS_GRID_EMPTY_TITLE_STYLE}>
                 No fibers match this view
               </p>
-              <p className="text-white/25" style={{ fontSize: "12px" }}>
+              <p className="text-white/25" style={ATLAS_GRID_EMPTY_BODY_STYLE}>
                 Try a broader keyword or clear active filters.
               </p>
               {(search || activeCategory !== "all") && (
@@ -1229,7 +1240,8 @@ export function GridView({
                     setSearch("");
                     setActiveCategory("all");
                   }}
-                  className={`mx-auto px-3 py-1 text-[10px] uppercase tracking-[0.12em] ${ATLAS_PILL_BASE_CLASS} ${ATLAS_PILL_ACTIVE_CLASS}`}
+                  className={`mx-auto px-3 py-1 uppercase tracking-[0.12em] ${ATLAS_PILL_BASE_CLASS} ${ATLAS_PILL_ACTIVE_CLASS}`}
+                  style={ATLAS_GRID_EMPTY_CTA_STYLE}
                 >
                   Clear filters
                 </button>
@@ -1250,7 +1262,7 @@ export function GridView({
             : getGalleryImages(lightboxFiberId);
           if (!lbFiber || gallery.length === 0) return null;
           return (
-            <Suspense fallback={<div className="fixed inset-0 z-[95] grid place-items-center bg-black/70 text-white/60 text-xs tracking-[0.14em] uppercase">Loading gallery</div>}>
+            <Suspense fallback={<div className="fixed inset-0 z-[95] grid place-items-center bg-black/70 text-white/60 tracking-[0.14em] uppercase" style={ATLAS_GRID_LOADING_STYLE}>Loading gallery</div>}>
               <LazyLightbox
                 key="lightbox"
                 images={gallery}
@@ -1275,7 +1287,7 @@ export function GridView({
             ? (_cellIndex: number) => screenPlateInfo.sourceRect
             : getCellRect;
           return plates.length > 0 ? (
-          <Suspense fallback={<div className="fixed inset-0 z-[89] grid place-items-center bg-black/70 text-white/60 text-xs tracking-[0.14em] uppercase">Loading detail view</div>}>
+          <Suspense fallback={<div className="fixed inset-0 z-[89] grid place-items-center bg-black/70 text-white/60 tracking-[0.14em] uppercase" style={ATLAS_GRID_LOADING_STYLE}>Loading detail view</div>}>
             {(() => {
               const screenFiber = dataSource.getFiberById(selectedFiberDetail.id);
               const screenGallery = screenFiber?.galleryImages?.length
@@ -1308,7 +1320,7 @@ export function GridView({
 
       <AnimatePresence>
         {isMobile && mobileDetailOpen && selectedFiberDetail && (
-          <Suspense fallback={<div className="fixed inset-0 z-[62] grid place-items-center bg-black/70 text-white/60 text-xs tracking-[0.14em] uppercase">Loading mobile detail</div>}>
+          <Suspense fallback={<div className="fixed inset-0 z-[62] grid place-items-center bg-black/70 text-white/60 tracking-[0.14em] uppercase" style={ATLAS_GRID_LOADING_STYLE}>Loading mobile detail</div>}>
             <LazyMobileDetailView
               fiber={selectedFiberDetail}
               onClose={() => setMobileDetailOpen(false)}

@@ -2,7 +2,11 @@ import { ChevronDown, ChevronRight, ChevronUp, FileText, Search, X } from "lucid
 import { useCallback, useEffect, useMemo, useRef, useState, type ImgHTMLAttributes, type ReactNode } from "react";
 import { atlasNavigation, findNode, findNodePath, type NavNode } from "../data/atlas-navigation";
 import {
+  ATLAS_GRID_SEARCH_STYLE,
+  ATLAS_GRID_SUBHEAD_MUTED_STYLE,
+  ATLAS_GRID_TITLE_STYLE,
   ATLAS_INACTIVE_LABEL_COLOR,
+  ATLAS_NAV_THUMB_LABEL_FONT_SIZE,
   ATLAS_SEARCH_CLEAR_BUTTON_CLASS,
   ATLAS_SEARCH_ICON_CLASS,
   ATLAS_SEARCH_INPUT_CLASS,
@@ -84,10 +88,10 @@ const STRIP_THUMB_GAP = 8;
 const CHILDREN_STRIP_HEIGHT = 88;
 const TRANSITION_EASE = "cubic-bezier(0.4, 0, 0.2, 1)";
 const TRANSITION_MS = 350;
-const PORTAL_FULL = { width: 72, borderRadius: 8, labelSize: 9, imgRadius: 7 };
-const PORTAL_PATH = { width: 52, borderRadius: 6, labelSize: 8, imgRadius: 5 };
-const PATH_SEG = { width: 52, borderRadius: 6, labelSize: 8, imgRadius: 5 };
-const STRIP_THUMB = { width: 72, borderRadius: 8, labelSize: 9, imgRadius: 7 };
+const PORTAL_FULL = { width: 72, borderRadius: 8, imgRadius: 7 };
+const PORTAL_PATH = { width: 52, borderRadius: 6, imgRadius: 5 };
+const PATH_SEG = { width: 52, borderRadius: 6, imgRadius: 5 };
+const STRIP_THUMB = { width: 72, borderRadius: 8, imgRadius: 7 };
 const ATLAS_AMBIENT_BG = "var(--atlas-ambient-bg, #111111)";
 const ATLAS_AMBIENT_TRANSITION = "background-color 2s ease";
 
@@ -173,7 +177,7 @@ function PortalThumb({
           </div>
         </div>
       </div>
-      <span className="atlas-frame-label w-full text-center truncate leading-tight mt-1" style={{ color: isActiveSegment || isHovered ? "#f5f5f5" : ATLAS_INACTIVE_LABEL_COLOR, ...fontStyle, fontSize: cfg.labelSize }}>
+      <span className="atlas-frame-label w-full text-center truncate leading-tight mt-1" style={{ color: isActiveSegment || isHovered ? "#f5f5f5" : ATLAS_INACTIVE_LABEL_COLOR, ...fontStyle, fontSize: ATLAS_NAV_THUMB_LABEL_FONT_SIZE }}>
         {node?.shortLabel || node?.label || nodeId}
       </span>
     </button>
@@ -210,7 +214,7 @@ function PathSegment({
           </div>
         </div>
       </div>
-      <span className="atlas-frame-label w-full text-center truncate leading-tight mt-1" style={{ color: isActive ? "#f5f5f5" : ATLAS_INACTIVE_LABEL_COLOR, ...fontStyle, fontSize: PATH_SEG.labelSize }}>
+      <span className="atlas-frame-label w-full text-center truncate leading-tight mt-1" style={{ color: isActive ? "#f5f5f5" : ATLAS_INACTIVE_LABEL_COLOR, ...fontStyle, fontSize: ATLAS_NAV_THUMB_LABEL_FONT_SIZE }}>
         {node?.shortLabel || node?.label || nodeId}
       </span>
     </button>
@@ -236,7 +240,7 @@ function AllSegment({
           />
         </div>
       </div>
-      <span className="atlas-frame-label w-full text-center truncate leading-tight mt-1" style={{ color: ATLAS_INACTIVE_LABEL_COLOR, ...fontStyle, fontSize: PATH_SEG.labelSize }}>
+      <span className="atlas-frame-label w-full text-center truncate leading-tight mt-1" style={{ color: ATLAS_INACTIVE_LABEL_COLOR, ...fontStyle, fontSize: ATLAS_NAV_THUMB_LABEL_FONT_SIZE }}>
         All
       </span>
     </button>
@@ -301,7 +305,7 @@ function ChildrenStrip({
                     </div>
                   </div>
                 </div>
-                <span className="atlas-frame-label w-full text-center truncate leading-tight mt-1" style={{ color: isActive ? "#f5f5f5" : ATLAS_INACTIVE_LABEL_COLOR, ...fontStyle, fontSize: STRIP_THUMB.labelSize }}>
+                <span className="atlas-frame-label w-full text-center truncate leading-tight mt-1" style={{ color: isActive ? "#f5f5f5" : ATLAS_INACTIVE_LABEL_COLOR, ...fontStyle, fontSize: ATLAS_NAV_THUMB_LABEL_FONT_SIZE }}>
                   {node.shortLabel || node.label}
                 </span>
               </button>
@@ -438,11 +442,11 @@ function TopNavInner({
       >
         <div className={`flex min-h-14 items-center justify-between gap-3 px-4 sm:px-[3%] ${isMobile ? "py-2" : ""}`}>
           <div className="flex min-w-0 shrink-0 items-center gap-3">
-            <button onClick={resetToAll} className="cursor-pointer text-[#e8e0d0]" style={{ ...NAV_FONT_STYLE, fontSize: "14px" }}>
+            <button onClick={resetToAll} className="cursor-pointer text-[#e8e0d0]" style={{ ...NAV_FONT_STYLE, ...ATLAS_GRID_TITLE_STYLE }}>
               Natural Fiber Atlas
             </button>
             {!isMobile && (
-              <span className="whitespace-nowrap text-[#8e8678]" style={{ ...NAV_FONT_STYLE, fontSize: "10px" }}>
+              <span className="whitespace-nowrap text-[#8e8678]" style={{ ...NAV_FONT_STYLE, ...ATLAS_GRID_SUBHEAD_MUTED_STYLE }}>
                 {visibleProfileCount} Profiles
               </span>
             )}
@@ -459,7 +463,7 @@ function TopNavInner({
                 setSearch(next);
               }}
               className={ATLAS_SEARCH_INPUT_CLASS}
-              style={NAV_FONT_STYLE}
+              style={ATLAS_GRID_SEARCH_STYLE}
             />
             {visibleSearch && (
               <button

@@ -16,6 +16,27 @@
   --border: rgba(255, 255, 255, 0.08);
   --ring: rgba(255, 255, 255, 0.2);
   --radius: 0.625rem;
+
+  /* ── Public Atlas grid — shell typography (viewport-fluid via svw)
+       Roles: title = wordmark; search = header input; pill = category + empty CTA;
+       subhead = sticky subheader; subhead-muted = md-only meta; hint = detail hint;
+       link = about; empty-* = zero-results block; loading = overlay fallbacks ── */
+  --atlas-grid-title: clamp(12px, 2.2svw, 15px);
+  --atlas-grid-search: clamp(11px, 2.5svw, 13px);
+  --atlas-grid-pill: clamp(10px, 2.2svw, 11px);
+  --atlas-grid-close: clamp(11px, 2.5svw, 13px);
+  --atlas-grid-subhead: clamp(10px, 2svw, 11px);
+  --atlas-grid-subhead-muted: clamp(9px, 1.8svw, 10px);
+  --atlas-grid-hint: clamp(10px, 2svw, 11px);
+  --atlas-grid-link: clamp(10px, 2svw, 11px);
+  --atlas-grid-empty-title: clamp(10px, 2.5svw, 11px);
+  --atlas-grid-empty-body: clamp(12px, 3svw, 14px);
+  --atlas-grid-empty-cta: clamp(10px, 2.2svw, 11px);
+  --atlas-grid-loading: clamp(10px, 2.4svw, 12px);
+
+  /* TopNav — wordmark uses --atlas-grid-title; profile count uses --atlas-grid-subhead-muted;
+     portal/path/strip labels under thumbnails */
+  --atlas-nav-thumb-label: clamp(8px, 1.15svw, 9px);
 }
 
 @theme inline {
@@ -326,6 +347,20 @@ q,
      visual artefacts from subpixel anti-aliasing on iOS. */
   :root {
     --radius: 0.375rem;
+
+    --atlas-grid-title: clamp(13px, 3.2svw, 15px);
+    --atlas-grid-search: clamp(12px, 3.4svw, 14px);
+    --atlas-grid-pill: clamp(11px, 2.9svw, 12px);
+    --atlas-grid-close: clamp(12px, 3.2svw, 14px);
+    --atlas-grid-subhead: clamp(11px, 2.8svw, 12px);
+    --atlas-grid-subhead-muted: clamp(10px, 2.5svw, 11px);
+    --atlas-grid-hint: clamp(11px, 2.8svw, 12px);
+    --atlas-grid-link: clamp(11px, 2.8svw, 12px);
+    --atlas-grid-empty-title: clamp(11px, 2.9svw, 12px);
+    --atlas-grid-empty-body: clamp(13px, 3.6svw, 15px);
+    --atlas-grid-empty-cta: clamp(11px, 2.9svw, 12px);
+    --atlas-grid-loading: clamp(11px, 3svw, 12px);
+    --atlas-nav-thumb-label: clamp(9px, 1.35svw, 10px);
   }
 
   /* Border ring mask-composite can cause rendering artefacts on

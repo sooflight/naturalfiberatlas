@@ -4,6 +4,10 @@ import { useCrossfade } from "../hooks/use-crossfade";
 import { useImageBrightness } from "../hooks/use-image-brightness";
 import { buildProfileCardCrossfadeImages } from "../utils/profile-card-images";
 import { GlassCard } from "./glass-card";
+import {
+  ATLAS_GRID_CARD_NAME_FONT_SIZE,
+  ATLAS_GRID_PROFILE_PILL_FS,
+} from "./atlas-shared";
 
 interface ProfilePills {
   scientificName: string;
@@ -43,8 +47,6 @@ const pillColors = {
 
 type PillKey = keyof typeof pillColors;
 
-const pillFs = { fontSize: "clamp(7px, 2.5cqi, 10px)", fontWeight: 600 as const };
-
 function Pill({
   colorKey,
   children,
@@ -59,7 +61,7 @@ function Pill({
     <span
       className="inline-block rounded-[5px] tracking-[0.13em] uppercase whitespace-nowrap transition-[opacity,transform] duration-500 ease-out leading-none"
       style={{
-        ...pillFs,
+        ...ATLAS_GRID_PROFILE_PILL_FS,
         padding: "clamp(3.5px, 1.2cqi, 6.5px) clamp(6px, 2.5cqi, 12px)",
         backgroundColor: c.bg,
         border: `1px solid ${c.border}`,
@@ -253,7 +255,7 @@ export function ProfileCard({
         <h3
           className="text-white tracking-[0.3em] uppercase text-left"
           style={{
-            fontSize: "14px",
+            fontSize: ATLAS_GRID_CARD_NAME_FONT_SIZE,
             fontWeight: 500,
             lineHeight: 1.3,
             WebkitTextStroke: "0.33px rgba(255,255,255,1)",

@@ -1,10 +1,10 @@
-import { atlasNavigation, type NavNode } from "../data/atlas-navigation";
-import { ATLAS_IMAGES } from "../data/atlas-images";
-import { MATERIAL_PASSPORTS } from "../data/material-passports";
-import { SUPPLIERS, MATERIAL_SUPPLIER_LINKS } from "../data/supplier-directory";
-import { EVIDENCE_RECORDS } from "../data/evidence-records";
+import { atlasNavigation, type NavNode } from "../../data/admin/atlas-navigation";
+import { ATLAS_IMAGES } from "../../data/admin/atlas-images";
+import { MATERIAL_PASSPORTS } from "../../data/admin/material-passports";
+import { SUPPLIERS, MATERIAL_SUPPLIER_LINKS } from "../../data/admin/supplier-directory";
+import { EVIDENCE_RECORDS } from "../../data/admin/evidence-records";
 import { runQualityGates, checkImageCompleteness, type QualityReport } from "./qualityGates";
-import type { ContentStatus } from "../types/material";
+import type { ContentStatus } from "../../types/material";
 
 // ── Types ──
 

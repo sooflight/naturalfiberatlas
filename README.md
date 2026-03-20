@@ -102,6 +102,7 @@ This keeps host integration stable while allowing a future swap to npm-installed
 
 - This project currently has no bundled backend service.
 - Persistence is handled client-side through local storage abstractions in `src/app/data/data-provider.ts`.
+- **Publishing catalog data to GitHub / Vercel:** see [docs/architecture/data-publishing.md](docs/architecture/data-publishing.md). In Admin → Knowledge, download the **diff** export (`atlas-diff-*.json`), optionally save under `catalog/diffs/`, then run `npm run ops:promote-diff -- <path>` to merge `galleryImages` into `new-images.json` (see script `--help`).
 
 ## Bundle Strategy
 
@@ -196,6 +197,12 @@ Run in this order:
 3. `npm run test:coverage`
 4. `npm run build`
 5. `npm run ci:verify`
+
+### Data freshness (stale content after deploy)
+
+- Runbook: [docs/runbooks/data-freshness.md](docs/runbooks/data-freshness.md)
+- Operator flow: `npm run ops:data-recovery` (bundled census test, optional Upstash + API parity)
+- CI locks bundled counts in `src/app/utils/admin/data-freshness-ci.test.ts` (update when data changes on purpose)
 
 ## Verification Matrix
 

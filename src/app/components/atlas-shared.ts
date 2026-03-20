@@ -29,6 +29,79 @@ export const NAV_FONT_STYLE_MOBILE = {
   letterSpacing: "0.12em",
 };
 
+/** Sizes are `--atlas-grid-*` in `theme.css` (fluid on the grid shell; mobile bumps in max-width media). */
+export const ATLAS_GRID_TITLE_STYLE = {
+  fontSize: "var(--atlas-grid-title)",
+  fontWeight: 400 as const,
+};
+
+export const ATLAS_GRID_SEARCH_STYLE = {
+  ...NAV_FONT_STYLE,
+  fontSize: "var(--atlas-grid-search)",
+};
+
+export const ATLAS_GRID_CATEGORY_PILL_STYLE = {
+  ...NAV_FONT_STYLE,
+  fontSize: "var(--atlas-grid-pill)",
+  fontWeight: 500 as const,
+};
+
+export const ATLAS_GRID_CLOSE_STYLE = {
+  fontSize: "var(--atlas-grid-close)",
+};
+
+export const ATLAS_GRID_SUBHEAD_STYLE = {
+  fontSize: "var(--atlas-grid-subhead)",
+  fontWeight: 600 as const,
+};
+
+export const ATLAS_GRID_SUBHEAD_MUTED_STYLE = {
+  fontSize: "var(--atlas-grid-subhead-muted)",
+  fontWeight: 500 as const,
+};
+
+export const ATLAS_GRID_HINT_STYLE = {
+  fontSize: "var(--atlas-grid-hint)",
+  fontWeight: 600 as const,
+};
+
+export const ATLAS_GRID_LINK_STYLE = {
+  fontSize: "var(--atlas-grid-link)",
+  fontWeight: 500 as const,
+};
+
+export const ATLAS_GRID_EMPTY_TITLE_STYLE = {
+  fontSize: "var(--atlas-grid-empty-title)",
+  fontWeight: 500 as const,
+};
+
+export const ATLAS_GRID_EMPTY_BODY_STYLE = {
+  fontSize: "var(--atlas-grid-empty-body)",
+  fontWeight: 400 as const,
+};
+
+export const ATLAS_GRID_EMPTY_CTA_STYLE = {
+  ...NAV_FONT_STYLE,
+  fontSize: "var(--atlas-grid-empty-cta)",
+  fontWeight: 500 as const,
+};
+
+export const ATLAS_GRID_LOADING_STYLE = {
+  fontSize: "var(--atlas-grid-loading)",
+  fontWeight: 500 as const,
+};
+
+/** Profile tiles on the grid: container is the cell (`container-type: inline-size`). */
+export const ATLAS_GRID_PROFILE_PILL_FS = {
+  fontSize: "clamp(8px, 2.5cqi, 10px)",
+  fontWeight: 600 as const,
+};
+
+export const ATLAS_GRID_CARD_NAME_FONT_SIZE = "clamp(12px, 4.2cqi, 16px)";
+
+/** TopNav labels under portal thumbs, path segments, children strip (`--atlas-nav-thumb-label` in theme.css). */
+export const ATLAS_NAV_THUMB_LABEL_FONT_SIZE = "var(--atlas-nav-thumb-label)";
+
 export const ATLAS_INACTIVE_LABEL_COLOR = "#737373";
 
 export const ATLAS_SEARCH_WRAPPER_CLASS =
@@ -38,7 +111,7 @@ export const ATLAS_SEARCH_ICON_CLASS =
   "pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-white/20";
 
 export const ATLAS_SEARCH_INPUT_CLASS =
-  "w-full rounded-full border border-white/[0.08] bg-white/[0.04] py-1.5 pl-8 pr-8 text-[11px] text-[#e4dcd4] placeholder:text-white/45 focus:border-white/[0.18] focus:bg-white/[0.06] focus:outline-none focus-visible:ring-1 focus-visible:ring-white/[0.08] transition-[border-color,background-color,box-shadow] duration-200";
+  "w-full rounded-full border border-white/[0.08] bg-white/[0.04] py-1.5 pl-8 pr-8 text-[#e4dcd4] placeholder:text-white/45 focus:border-white/[0.18] focus:bg-white/[0.06] focus:outline-none focus-visible:ring-1 focus-visible:ring-white/[0.08] transition-[border-color,background-color,box-shadow] duration-200";
 
 export const ATLAS_SEARCH_CLEAR_BUTTON_CLASS =
   "absolute right-2.5 top-1/2 -translate-y-1/2 text-white/25 hover:text-white/50 transition-colors";

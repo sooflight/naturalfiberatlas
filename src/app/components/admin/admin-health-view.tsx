@@ -10,10 +10,13 @@
  *   - Category breakdown & overall data completeness score
  */
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useAtlasData, useAdminMode } from "../../context/atlas-data-context";
 import { dataSource } from "../../data/data-provider";
 import type { FiberProfile } from "../../data/fibers";
+import { runCensus } from "../../utils/admin/dataCensus";
+import { apiBearerToken, getApiBaseUrl, getApiUrl } from "../../utils/admin/api/info";
+import { isRedisConfigured } from "../../lib/cache/upstash";
 import {
   AlertTriangle,
   CheckCircle2,
@@ -347,6 +350,95 @@ function DiagnosticGroup({
 
 type FilterSeverity = "all" | Severity;
 
+function DataFreshnessPanel({ dataVersion }: { dataVersion: number }) {
+  const census = useMemo(() => runCensus(), [dataVersion]);
+  const apiBase = typeof window !== "undefined" ? getApiBaseUrl() : "";
+  const redisOn = typeof window !== "undefined" && isRedisConfigured();
+  const [remoteMaterials, setRemoteMaterials] = useState<number | null>(null);
+  const [remoteErr, setRemoteErr] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    if (!apiBase) {
+      setRemoteMaterials(null);
+      setRemoteErr(null);
+      return () => {
+        cancelled = true;
+      };
+    }
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (apiBearerToken) headers.Authorization = `Bearer ${apiBearerToken}`;
+    fetch(getApiUrl("materials"), { headers })
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((body: { materials?: unknown[] }) => {
+        if (cancelled) return;
+        setRemoteErr(null);
+        setRemoteMaterials(Array.isArray(body?.materials) ? body.materials.length : null);
+      })
+      .catch((e: unknown) => {
+        if (cancelled) return;
+        setRemoteMaterials(null);
+        setRemoteErr(e instanceof Error ? e.message : String(e));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [apiBase]);
+
+  const handleResetLocal = () => {
+    if (
+      !window.confirm(
+        "Remove all local atlas:* overrides and journal? Bundled defaults will show after reload.",
+      )
+    ) {
+      return;
+    }
+    dataSource.resetToDefaults();
+    dataSource.clearJournal();
+    window.location.reload();
+  };
+
+  const remoteLine =
+    !apiBase
+      ? "API base not set — unified routes use same-origin or JSON fallback."
+      : remoteErr
+        ? `Materials API: error (${remoteErr})`
+        : remoteMaterials == null
+          ? "Materials API: loading…"
+          : `Materials API: ${remoteMaterials} entries (nav leaves in bundle: ${census.profiles.total})`;
+
+  return (
+    <div className="rounded-lg border border-white/[0.08] bg-white/[0.02] px-3 py-2 space-y-1.5">
+      <div className="flex items-center justify-between gap-2">
+        <span className="text-white/50" style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.06em" }}>
+          DATA FRESHNESS
+        </span>
+        <button
+          type="button"
+          onClick={handleResetLocal}
+          className="px-2 py-0.5 rounded border border-amber-400/25 text-amber-400/70 hover:bg-amber-400/10 transition-colors cursor-pointer"
+          style={{ fontSize: "9px", fontWeight: 600 }}
+        >
+          Reset local overrides
+        </button>
+      </div>
+      <p className="text-white/35" style={{ fontSize: "9px", lineHeight: 1.45 }}>
+        API: {apiBase || "(not set)"} · Client Redis cache: {redisOn ? "on" : "off"}
+      </p>
+      <p className="text-white/40" style={{ fontSize: "9px", lineHeight: 1.45 }}>
+        {remoteLine}
+      </p>
+      <p className="text-white/30" style={{ fontSize: "9px", lineHeight: 1.45 }}>
+        Bundle census — passports: {census.passports.total}, suppliers: {census.suppliers.total}, evidence:{" "}
+        {census.evidence.total}, supplier links: {census.relationships.totalLinks}
+      </p>
+    </div>
+  );
+}
+
 export function AdminHealthView() {
   const { fibers, version } = useAtlasData();
   const { setEditingFiberId, setAdminView } = useAdminMode();
@@ -398,6 +490,7 @@ export function AdminHealthView() {
     <div className="flex-1 flex flex-col overflow-hidden">
       {/* ── Stats overview ── */}
       <div className="px-4 py-3 border-b border-white/[0.06] space-y-3">
+        <DataFreshnessPanel dataVersion={version} />
         {/* Completeness ring + headline */}
         <div className="flex items-center gap-4">
           <div className="relative flex items-center justify-center" style={{ width: 52, height: 52 }}>

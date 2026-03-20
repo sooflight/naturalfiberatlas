@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { LocalStorageSource } from "./data-provider";
+import { LocalStorageSource, type EffectiveAtlasSnapshot } from "./data-provider";
 import { fibers as bundledFibers } from "./fibers";
 import { careData as bundledCareData } from "./atlas-data";
 
@@ -251,5 +251,40 @@ describe("LocalStorageSource critical flows", () => {
     }).not.toThrow();
 
     setItemSpy.mockRestore();
+  });
+
+  it("exportEffectiveJSON reflects merged catalog with clean storage", () => {
+    const source = new LocalStorageSource();
+    const fibers = source.getFibers();
+    const parsed = JSON.parse(source.exportEffectiveJSON()) as EffectiveAtlasSnapshot;
+
+    expect(parsed.meta.kind).toBe("atlas-effective-snapshot");
+    expect(parsed.meta.version).toBe(1);
+    expect(parsed.meta.fiberCount).toBe(fibers.length);
+    expect(parsed.meta.deletedFiberIds).toEqual([]);
+    expect(parsed.meta.importNote.length).toBeGreaterThan(0);
+
+    const fromGetter = source.getFiberById(sampleFiber.id);
+    expect(parsed.fibers[sampleFiber.id]).toEqual(fromGetter);
+    expect(parsed.worldNames).toEqual(source.getWorldNames());
+    expect(parsed.processData).toEqual(source.getProcessData());
+    expect(parsed.anatomyData).toEqual(source.getAnatomyData());
+    expect(parsed.careData).toEqual(source.getCareData());
+    expect(parsed.quoteData).toEqual(source.getQuoteData());
+    expect(parsed.fiberOrder).toBeUndefined();
+    expect(parsed.fiberOrderByGroup).toBeUndefined();
+  });
+
+  it("exportEffectiveJSON includes overrides and optional order fields", () => {
+    const source = new LocalStorageSource();
+    source.updateFiber(sampleFiber.id, { name: "Effective Export Name" });
+    source.setFiberOrder([sampleFiber.id]);
+    source.setFiberOrderForGroup("category:fiber", [sampleFiber.id]);
+
+    const parsed = JSON.parse(source.exportEffectiveJSON()) as EffectiveAtlasSnapshot;
+
+    expect(parsed.fibers[sampleFiber.id]?.name).toBe("Effective Export Name");
+    expect(parsed.fiberOrder).toEqual([sampleFiber.id]);
+    expect(parsed.fiberOrderByGroup?.["category:fiber"]).toEqual([sampleFiber.id]);
   });
 });

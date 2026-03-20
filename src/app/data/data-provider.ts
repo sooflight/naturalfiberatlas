@@ -96,6 +96,29 @@ export interface ChangesetEnvelope {
   stats: { fields: number; tables: number; fibers: number };
 }
 
+/** Full merged runtime catalog for tooling / repo promotion (not importJSON-shaped). */
+export interface EffectiveAtlasSnapshotMeta {
+  kind: "atlas-effective-snapshot";
+  version: 1;
+  exportedAt: string;
+  fiberCount: number;
+  deletedFiberIds: string[];
+  /** Admin Import JSON expects override patches; use exportJSON or exportDiffJSON for re-import. */
+  importNote: string;
+}
+
+export interface EffectiveAtlasSnapshot {
+  meta: EffectiveAtlasSnapshotMeta;
+  fibers: Record<string, FiberProfile>;
+  worldNames: Record<string, string[]>;
+  processData: Record<string, ProcessStep[]>;
+  anatomyData: Record<string, AnatomyData>;
+  careData: Record<string, CareData>;
+  quoteData: Record<string, QuoteEntry[]>;
+  fiberOrder?: string[];
+  fiberOrderByGroup?: Record<string, string[]>;
+}
+
 /* ── C9: Staging types ── */
 
 export interface StagedChange {
@@ -164,6 +187,8 @@ export interface AtlasDataSource {
   /* ── Import / Export ── */
   exportJSON(): string;
   exportDiffJSON(): string;
+  /** Merged bundle + overrides; not compatible with importJSON (full profiles). */
+  exportEffectiveJSON(): string;
   importJSON(json: string): void;
   merge(json: string, strategy: MergeStrategy): MergeConflict[];
   resetToDefaults(): void;
@@ -887,6 +912,52 @@ export class LocalStorageSource implements AtlasDataSource {
     }
 
     return JSON.stringify(diff, null, 2);
+  }
+
+  exportEffectiveJSON(): string {
+    const fiberList = this.getFibers();
+    const fibers: Record<string, FiberProfile> = {};
+    for (const f of fiberList) {
+      fibers[f.id] = f;
+    }
+
+    const deletedFiberIds = this.readJSON<string[]>(DELETED_FIBERS_KEY) ?? [];
+    const order = this.getFiberOrder();
+    const rawGroupOrders = this.readJSON<Record<string, string[]>>(this.FIBER_GROUP_ORDERS_KEY) ?? {};
+    const fiberOrderByGroup: Record<string, string[]> = {};
+    for (const [groupId, ids] of Object.entries(rawGroupOrders)) {
+      const sanitized = this.sanitizeOrder(ids);
+      if (sanitized.length > 0) {
+        fiberOrderByGroup[groupId] = sanitized;
+      }
+    }
+
+    const snapshot: EffectiveAtlasSnapshot = {
+      meta: {
+        kind: "atlas-effective-snapshot",
+        version: 1,
+        exportedAt: new Date().toISOString(),
+        fiberCount: fiberList.length,
+        deletedFiberIds,
+        importNote:
+          "Full merged catalog — not for Admin Import JSON. importJSON expects override-shaped patches per fiber; use the storage export or exportDiffJSON() to round-trip overrides.",
+      },
+      fibers,
+      worldNames: this.getWorldNames(),
+      processData: this.getProcessData(),
+      anatomyData: this.getAnatomyData(),
+      careData: this.getCareData(),
+      quoteData: this.getQuoteData(),
+    };
+
+    if (order && order.length > 0) {
+      snapshot.fiberOrder = order;
+    }
+    if (Object.keys(fiberOrderByGroup).length > 0) {
+      snapshot.fiberOrderByGroup = fiberOrderByGroup;
+    }
+
+    return JSON.stringify(snapshot, null, 2);
   }
 
   importJSON(json: string): void {

@@ -29,3 +29,4 @@ jobs:
 
       - name: Run quality gates
         run: npm run ci:verify
+        # Includes bundled data census baseline (data-freshness-ci.test.ts via vitest).
