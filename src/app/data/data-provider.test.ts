@@ -131,6 +131,20 @@ describe("LocalStorageSource critical flows", () => {
     expect(fiber?.galleryImages[0]?.url).toBe(sampleFiber.image);
   });
 
+  it("ignores localStorage catalog overrides when admin is disabled (public site)", () => {
+    vi.stubEnv("VITE_ENABLE_ADMIN", "false");
+    localStorage.setItem(
+      FIBERS_KEY,
+      JSON.stringify({
+        [sampleFiber.id]: { image: "https://example.com/stale-override.jpg" },
+      }),
+    );
+    const source = new LocalStorageSource();
+    expect(source.getFiberById(sampleFiber.id)?.image).toBe(sampleFiber.image);
+    expect(source.hasOverrides()).toBe(false);
+    vi.unstubAllEnvs();
+  });
+
   it("returns care data with all required fields", () => {
     localStorage.setItem(
       CARE_DATA_KEY,

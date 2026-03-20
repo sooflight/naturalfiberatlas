@@ -17,7 +17,7 @@ This document defines how **publishable atlas data** flows from editing to **Git
 | Bulk gallery URLs | [`new-images.json`](../../new-images.json) | Per-profile `imageLinks` merged at runtime with curated maps |
 | Merge + overrides | [`src/app/data/data-provider.ts`](../../src/app/data/data-provider.ts) | `LocalStorageSource`: bundle + `localStorage` patches |
 
-**Production** serves **bundle only** (no `localStorage`). **Local dev** shows bundle + overrides.
+**Production** serves **bundle only** (no `localStorage`). The app enforces this when `VITE_ENABLE_ADMIN=false`: `atlas:*` draft keys in the browser are ignored so returning visitors are not stuck on old hero images from past sessions. **Local dev** shows bundle + overrides.
 
 ## Tier B — Admin / machine config (optional for a reproducible public build)
 

@@ -1,3 +1,4 @@
+import { isAdminEnabled } from "../config/admin-access";
 import { fibers } from "../data/fibers";
 
 export const SECTION_COLORS = {
@@ -200,7 +201,7 @@ function getThumbCandidateIds(nodeId: string): string[] {
 }
 
 export function getThumbUrl(nodeId: string): string | null {
-  if (typeof window !== "undefined") {
+  if (typeof window !== "undefined" && isAdminEnabled()) {
     try {
       const raw = localStorage.getItem(NAV_PARENT_IMAGES_KEY);
       if (raw) {

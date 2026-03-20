@@ -16,6 +16,7 @@
  */
 
 import type { FiberProfile, ProcessStep, AnatomyData, CareData, QuoteEntry } from "./atlas-data";
+import { isAdminEnabled } from "../config/admin-access";
 import { fibers as rawBundledFibers } from "./fibers";
 import {
   worldNames as bundledWorldNames,
@@ -1096,6 +1097,7 @@ export class LocalStorageSource implements AtlasDataSource {
   }
 
   hasOverrides(): boolean {
+    if (!isAdminEnabled()) return false;
     return (
       Object.values(KEYS).some((key) => localStorage.getItem(key) !== null) ||
       localStorage.getItem(DELETED_FIBERS_KEY) !== null
@@ -1562,6 +1564,10 @@ export class LocalStorageSource implements AtlasDataSource {
      ══════════════════════════════════════════════════════ */
 
   private readJSON<T>(key: string): T | null {
+    /* Public builds (VITE_ENABLE_ADMIN=false): catalog must match Git — ignore draft localStorage. */
+    if (!isAdminEnabled() && key.startsWith(STORAGE_PREFIX)) {
+      return null;
+    }
     try {
       const raw = localStorage.getItem(key);
       return raw ? (JSON.parse(raw) as T) : null;
