@@ -79,6 +79,7 @@ const PLATE_ICON_MAP: Partial<Record<PlateType, ComponentType<{ size?: number; c
   about: Layers,
   insight1: Sparkles,
   insight2: Sparkles,
+  insight3: Sparkles,
   quote: Quote,
   trade: DollarSign,
   worldNames: Globe2,
@@ -280,6 +281,7 @@ export function ScreenPlate({
       case "about": return <AboutScreenPlate fiber={fiber} />;
       case "insight1": return <InsightScreenPlate fiber={fiber} half={1} />;
       case "insight2": return <InsightScreenPlate fiber={fiber} half={2} />;
+      case "insight3": return <InsightScreenPlate fiber={fiber} half={3} />;
       case "quote": return <QuoteScreenPlate fiber={fiber} />;
       case "trade": return <TradeScreenPlate fiber={fiber} />;
       case "worldNames": return <WorldNamesPlate fiber={fiber} />;
@@ -494,9 +496,9 @@ function AboutScreenPlate({ fiber }: { fiber: FiberProfile }) {
 }
 
 /* ── INSIGHT (Editorial — warm accent, expanded) ── */
-function InsightScreenPlate({ fiber, half }: { fiber: FiberProfile; half: 1 | 2 }) {
-  const [part1, part2] = splitAboutText(fiber.about);
-  const text = half === 1 ? part1 : part2;
+function InsightScreenPlate({ fiber, half }: { fiber: FiberProfile; half: 1 | 2 | 3 }) {
+  const parts = splitAboutText(fiber.about, 3);
+  const text = parts[half - 1];
 
   return (
     <div className={`h-full flex flex-col ${pad}`}>
@@ -513,7 +515,7 @@ function InsightScreenPlate({ fiber, half }: { fiber: FiberProfile; half: 1 | 2 
         <div className={`flex items-center gap-[${sp.xs}]`}>
           <div className={`w-[${sp.lg}] h-px bg-[${warmA}]/30 shrink-0`} />
           <span className={`text-[${warmA}]/60 uppercase tracking-[0.15em]`} style={{ fontSize: "clamp(8px, 2.8cqi, 12px)" }}>
-            {fiber.name} &mdash; {half === 1 ? "Origins" : "Insight"}
+            {fiber.name} &mdash; {half === 1 ? "Origins" : half === 2 ? "Depth" : "Context"}
           </span>
         </div>
       </div>

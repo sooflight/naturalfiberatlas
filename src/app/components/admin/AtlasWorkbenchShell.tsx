@@ -20,6 +20,11 @@ import {
 } from "./atlas-workbench-shortcuts";
 import { dataSource } from "../../data/data-provider";
 import { useAtlasData } from "../../context/atlas-data-context";
+import { fibers as bundledProfiles } from "../../data/fibers";
+import {
+  readPassportStatusOverrides,
+  subscribePassportStatusOverrides,
+} from "../../utils/admin/passportStatusOverrides";
 
 // Lazy load domains
 const Library = lazy(() => import("./Library"));
@@ -54,6 +59,26 @@ type PublishState = {
   commitSha?: string | null;
   vercelStatus?: string | null;
 };
+
+type AtlasProfileStatus = "draft" | "published" | "archived";
+
+function normalizeAtlasStatus(value: unknown): AtlasProfileStatus {
+  if (value === "draft" || value === "archived") return value;
+  return "published";
+}
+
+function countLiveProfiles(
+  entries: Array<{ id: string; category: string; status: AtlasProfileStatus }>,
+): { all: number; fiber: number } {
+  let all = 0;
+  let fiber = 0;
+  for (const entry of entries) {
+    if (entry.status !== "published") continue;
+    all += 1;
+    if (entry.category === "fiber") fiber += 1;
+  }
+  return { all, fiber };
+}
 
 function readPersistedShellState(): {
   topLevel?: TopLevelView;
@@ -128,6 +153,7 @@ function AtlasWorkbenchShellContent() {
   const [shouldAnimateStatusDot, setShouldAnimateStatusDot] = useState(false);
   const [publishState, setPublishState] = useState<PublishState | null>(null);
   const [isPublishing, setIsPublishing] = useState(false);
+  const [passportOverrideVersion, setPassportOverrideVersion] = useState(0);
   const [knowledgeAction, setKnowledgeAction] = useState<{
     action: "next-section" | "next-weak" | "toggle-reference" | "save-draft";
     at: number;
@@ -318,6 +344,8 @@ function AtlasWorkbenchShellContent() {
     return () => window.clearInterval(timer);
   }, [isPublishing, pollPublishStatus]);
 
+  useEffect(() => subscribePassportStatusOverrides(() => setPassportOverrideVersion((v) => v + 1)), []);
+
   const handleRunPromote = useCallback(async () => {
     if (isPublishing) return;
     const confirmed = window.confirm(
@@ -325,11 +353,6 @@ function AtlasWorkbenchShellContent() {
     );
     if (!confirmed) return;
     const note = window.prompt("Optional publish note (included in commit message):", "") ?? "";
-    const diffJson = source.exportDiffJSON();
-    if (!diffJson || diffJson.trim().length === 0) {
-      window.alert("No diff payload available to publish.");
-      return;
-    }
     const parseJSON = <T,>(raw: string | null): T | undefined => {
       if (!raw) return undefined;
       try {
@@ -338,6 +361,22 @@ function AtlasWorkbenchShellContent() {
         return undefined;
       }
     };
+    const rawDiff = source.exportDiffJSON();
+    const diffPayload = parseJSON<Record<string, unknown>>(rawDiff) ?? {};
+    const passportStatusOverrides = parseJSON<Record<string, string>>(
+      localStorage.getItem("atlas-passport-status-overrides"),
+    ) ?? {};
+    if (!diffPayload.fibers || typeof diffPayload.fibers !== "object" || Array.isArray(diffPayload.fibers)) {
+      diffPayload.fibers = {};
+    }
+    const fibersPatch = diffPayload.fibers as Record<string, Record<string, unknown>>;
+    for (const [profileId, status] of Object.entries(passportStatusOverrides)) {
+      if (!profileId || !status) continue;
+      if (!["draft", "published", "archived"].includes(status)) continue;
+      const prev = fibersPatch[profileId];
+      fibersPatch[profileId] = { ...(prev && typeof prev === "object" ? prev : {}), status };
+    }
+    const diffJson = JSON.stringify(diffPayload, null, 2);
     const localGlobalOrder = parseJSON<string[]>(localStorage.getItem("atlas:fiber-order"));
     const localGroupOrders = parseJSON<Record<string, string[]>>(localStorage.getItem("atlas:fiber-order-groups"));
     const localNavThumbOverrides = parseJSON<Record<string, unknown>>(localStorage.getItem("atlas:nav-parent-images"));
@@ -381,6 +420,73 @@ function AtlasWorkbenchShellContent() {
     if (publishState?.status === "failed") return "Publish Failed";
     return "Run Promote";
   }, [isPublishing, publishState]);
+
+  const parityDiagnostics = useMemo(() => {
+    const bundledRows = bundledProfiles.map((profile) => {
+      const bundled = source.getBundledFiber(profile.id);
+      return {
+        id: profile.id,
+        category: profile.category,
+        status: normalizeAtlasStatus(bundled?.status),
+      };
+    });
+    const localRows = source.getFibers().map((profile) => ({
+      id: profile.id,
+      category: profile.category,
+      status: normalizeAtlasStatus(profile.status),
+    }));
+
+    const bundledById = new Map(bundledRows.map((row) => [row.id, row]));
+    const localById = new Map(localRows.map((row) => [row.id, row]));
+    const deletedLocally = bundledRows
+      .map((row) => row.id)
+      .filter((id) => !localById.has(id));
+
+    let payloadDiff: Record<string, unknown> = {};
+    try {
+      payloadDiff = JSON.parse(source.exportDiffJSON()) as Record<string, unknown>;
+    } catch {
+      payloadDiff = {};
+    }
+    const payloadFiberPatches =
+      payloadDiff.fibers && typeof payloadDiff.fibers === "object" && !Array.isArray(payloadDiff.fibers)
+        ? (payloadDiff.fibers as Record<string, Record<string, unknown>>)
+        : {};
+    const passportOverrides = readPassportStatusOverrides();
+
+    const payloadRows = bundledRows.map((bundled) => {
+      const patch = payloadFiberPatches[bundled.id];
+      const patchStatus = patch && "status" in patch ? normalizeAtlasStatus(patch.status) : null;
+      const passportStatus = passportOverrides[bundled.id];
+      const status = normalizeAtlasStatus(passportStatus ?? patchStatus ?? bundled.status);
+      return {
+        id: bundled.id,
+        category: bundled.category,
+        status,
+      };
+    });
+    const payloadById = new Map(payloadRows.map((row) => [row.id, row]));
+
+    const localVsBundled: string[] = [];
+    const localVsPayload: string[] = [];
+    for (const bundled of bundledRows) {
+      const localStatus = localById.get(bundled.id)?.status ?? "archived";
+      const localLive = localStatus === "published";
+      const bundledLive = bundled.status === "published";
+      const payloadLive = payloadById.get(bundled.id)?.status === "published";
+      if (localLive !== bundledLive) localVsBundled.push(bundled.id);
+      if (localLive !== payloadLive) localVsPayload.push(bundled.id);
+    }
+
+    return {
+      bundledCounts: countLiveProfiles(bundledRows),
+      localCounts: countLiveProfiles(localRows),
+      payloadCounts: countLiveProfiles(payloadRows),
+      deletedLocally,
+      localVsBundled,
+      localVsPayload,
+    };
+  }, [passportOverrideVersion, source]);
 
   const activeLabel = topLevel === "settings" 
     ? "Settings" 
@@ -530,6 +636,33 @@ function AtlasWorkbenchShellContent() {
             )}
           </div>
         </header>
+        <div className="h-9 flex-shrink-0 border-b border-white/[0.05] bg-[#0b0b0b] px-4 text-[10px] uppercase tracking-widest text-neutral-300 flex items-center gap-4 overflow-x-auto">
+          <span>
+            Local Live: <span className="text-white">{parityDiagnostics.localCounts.all}</span>
+            <span className="text-neutral-500"> (fiber {parityDiagnostics.localCounts.fiber})</span>
+          </span>
+          <span>
+            Bundled Live: <span className="text-white">{parityDiagnostics.bundledCounts.all}</span>
+            <span className="text-neutral-500"> (fiber {parityDiagnostics.bundledCounts.fiber})</span>
+          </span>
+          <span>
+            Publish Payload Live: <span className="text-white">{parityDiagnostics.payloadCounts.all}</span>
+            <span className="text-neutral-500"> (fiber {parityDiagnostics.payloadCounts.fiber})</span>
+          </span>
+          <span className={cn(parityDiagnostics.deletedLocally.length > 0 ? "text-amber-300" : "text-neutral-400")}>
+            Local Deleted (not in publish diff): {parityDiagnostics.deletedLocally.length}
+          </span>
+          <span
+            className={cn(parityDiagnostics.localVsPayload.length > 0 ? "text-rose-300" : "text-emerald-300")}
+            title={
+              parityDiagnostics.localVsPayload.length > 0
+                ? `Won't match local after publish: ${parityDiagnostics.localVsPayload.slice(0, 20).join(", ")}`
+                : "Publish payload matches local live statuses"
+            }
+          >
+            Local vs Payload Delta: {parityDiagnostics.localVsPayload.length}
+          </span>
+        </div>
 
         {/* Tab Content */}
         <WorkbenchStateProvider

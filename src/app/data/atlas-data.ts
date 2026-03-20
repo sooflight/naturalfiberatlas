@@ -42,6 +42,7 @@ export type PlateType =
   | "about"
   | "insight1"
   | "insight2"
+  | "insight3"
   | "regions"
   | "trade"
   | "worldNames"
@@ -1710,6 +1711,7 @@ export const namedPlates: PlateType[] = [
   "about",
   "insight1",
   "insight2",
+  "insight3",
   "quote",
   "trade",
   "worldNames",

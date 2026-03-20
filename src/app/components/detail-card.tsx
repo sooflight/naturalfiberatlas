@@ -75,6 +75,8 @@ export function DetailCard({
         return <InsightPlate fiber={fiber} half={1} />;
       case "insight2":
         return <InsightPlate fiber={fiber} half={2} />;
+      case "insight3":
+        return <InsightPlate fiber={fiber} half={3} />;
       case "regions":
         return <RegionsPlate fiber={fiber} />;
       case "trade":

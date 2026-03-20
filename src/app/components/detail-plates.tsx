@@ -114,9 +114,9 @@ export function AboutPlate({ fiber }: { fiber: FiberProfile }) {
 }
 
 /* ═══ 1b ─ INSIGHT (Editorial — warm accent) ═══ */
-export function InsightPlate({ fiber, half }: { fiber: FiberProfile; half: 1 | 2 }) {
-  const [part1, part2] = splitAboutText(fiber.about);
-  const text = half === 1 ? part1 : part2;
+export function InsightPlate({ fiber, half }: { fiber: FiberProfile; half: 1 | 2 | 3 }) {
+  const parts = splitAboutText(fiber.about, 3);
+  const text = parts[half - 1];
   if (!text) return null;
 
   return (
@@ -154,7 +154,7 @@ export function InsightPlate({ fiber, half }: { fiber: FiberProfile; half: 1 | 2
             className={`text-[${warmA}]/60 uppercase tracking-[0.15em]`}
             style={{ fontSize: "clamp(8px, 2.5cqi, 10px)" }}
           >
-            {fiber.name} — {half === 1 ? "Origins" : "Insight"}
+            {fiber.name} — {half === 1 ? "Origins" : half === 2 ? "Depth" : "Context"}
           </span>
         </div>
       </div>

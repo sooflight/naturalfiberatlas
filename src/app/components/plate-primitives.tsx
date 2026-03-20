@@ -140,6 +140,7 @@ export const densityByPlate: Record<string, number> = {
   about: 0.8,
   insight1: 0.75,
   insight2: 0.75,
+  insight3: 0.75,
   quote: 0.7,
   trade: 0.85,
   worldNames: 0.4,
@@ -160,6 +161,7 @@ export const plateLabelMap: Partial<Record<PlateType, string>> = {
   about: "About",
   insight1: "Insight",
   insight2: "Insight",
+  insight3: "Insight",
   quote: "Quote",
   trade: "Source & Trade",
   worldNames: "World Names",
@@ -294,12 +296,14 @@ export function StackedDataRowsExpanded({
    §9 — Text helpers
    ══════════════════════════════════════════════════════════ */
 
-/** Split a fiber's about text into two roughly-equal sentence halves. */
-export function splitAboutText(about: string): [string, string] {
+/** Split a fiber's about text into N roughly equal sentence groups. */
+export function splitAboutText(about: string, parts = 2): string[] {
   const sentences = about.match(/[^.!?]+[.!?]+/g) ?? [about];
-  const mid = Math.ceil(sentences.length / 2);
-  return [
-    sentences.slice(0, mid).join(" ").trim(),
-    sentences.slice(mid).join(" ").trim(),
-  ];
+  const safeParts = Math.max(1, Math.floor(parts));
+  if (safeParts === 1) return [sentences.join(" ").trim()];
+
+  const chunkSize = Math.ceil(sentences.length / safeParts);
+  return Array.from({ length: safeParts }, (_, i) =>
+    sentences.slice(i * chunkSize, (i + 1) * chunkSize).join(" ").trim(),
+  );
 }

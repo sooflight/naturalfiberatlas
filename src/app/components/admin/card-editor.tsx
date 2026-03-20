@@ -416,10 +416,10 @@ export function InsightCard({
   half,
 }: {
   fiber: FiberProfile;
-  half: 1 | 2;
+  half: 1 | 2 | 3;
 }) {
-  const [part1, part2] = splitAboutText(fiber.about);
-  const text = half === 1 ? part1 : part2;
+  const parts = splitAboutText(fiber.about, 3);
+  const text = parts[half - 1];
   if (!text) return null;
 
   return (
@@ -435,7 +435,7 @@ export function InsightCard({
             className="text-white/40 uppercase tracking-[0.14em] flex-1"
             style={{ fontSize: "11px", fontWeight: 600 }}
           >
-            Insight {half} — {half === 1 ? "Origins" : "Depth"}
+            Insight {half} — {half === 1 ? "Origins" : half === 2 ? "Depth" : "Context"}
           </span>
           <span
             className="px-1.5 py-0.5 rounded bg-blue-400/[0.06] border border-blue-400/10 text-blue-400/40"
@@ -468,7 +468,7 @@ export function InsightCard({
               fontSize: "9px",
             }}
           >
-            {fiber.name} — {half === 1 ? "Origins" : "Insight"}
+            {fiber.name} — {half === 1 ? "Origins" : half === 2 ? "Insight" : "Context"}
           </span>
         </div>
 

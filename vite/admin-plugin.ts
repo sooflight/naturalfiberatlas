@@ -8,6 +8,9 @@ import JSZip from 'jszip';
 import type { IncomingMessage, RequestOptions, ServerResponse } from 'http';
 import { atlasNavigation as defaultIndexTree } from '../src/app/data/admin/atlas-navigation';
 import { MATERIAL_PASSPORTS, TAXONOMY_ALIASES } from '../src/app/data/admin/material-passports';
+import { fibers as bundledFiberCatalog } from '../src/app/data/fibers';
+import { SUPPLIERS, MATERIAL_SUPPLIER_LINKS } from '../src/app/data/admin/supplier-directory';
+import { EVIDENCE_RECORDS } from '../src/app/data/admin/evidence-records';
 import {
   buildRestoreGuide,
   collectCloudinaryPublicIds,
@@ -74,6 +77,7 @@ const PUBLISH_FILES = [
   'new-images.json',
   'src/app/data/fiber-order.json',
   'src/app/data/nav-thumb-overrides.json',
+  'src/app/utils/admin/data-freshness-ci.test.ts',
 ] as const;
 
 function nowIso(): string {
@@ -173,6 +177,142 @@ function parseGitHubRepoSlug(remoteUrl: string): string | null {
   const repo = httpsMatch[2].replace(/\.git$/, '');
   if (!owner || !repo) return null;
   return `${owner}/${repo}`;
+}
+
+function extractFiberIdsFromFibersTs(source: string): Set<string> {
+  const ids = new Set<string>();
+  const re = /^\s{4}id:\s*"([^"]+)"/gm;
+  let m: RegExpExecArray | null;
+  while ((m = re.exec(source)) !== null) {
+    ids.add(m[1]);
+  }
+  return ids;
+}
+
+function sanitizeOrderIds(ids: string[] | undefined, validIds: Set<string>): string[] | undefined {
+  if (!Array.isArray(ids)) return undefined;
+  const out: string[] = [];
+  const seen = new Set<string>();
+  for (const id of ids) {
+    if (typeof id !== 'string') continue;
+    const trimmed = id.trim();
+    if (!trimmed || !validIds.has(trimmed) || seen.has(trimmed)) continue;
+    out.push(trimmed);
+    seen.add(trimmed);
+  }
+  return out;
+}
+
+function extractFiberHeroMapFromBundledCatalog(): Map<string, string> {
+  const map = new Map<string, string>();
+  for (const entry of bundledFiberCatalog) {
+    const id = typeof entry.id === 'string' ? entry.id.trim() : '';
+    const image = typeof entry.image === 'string' ? entry.image.trim() : '';
+    if (!id || !image) continue;
+    if (!map.has(id)) map.set(id, image);
+  }
+  return map;
+}
+
+const NEW_IMAGE_ALIASES: Record<string, string> = {
+  'coir-coconut': 'coir',
+  'lyocell-tencel': 'lyocell',
+  'pineapple-pina': 'pineapple',
+  cotton: 'organic-cotton',
+};
+
+function reconcileNewImagesWithFiberHeroes(repoRoot: string): { changed: boolean; fixedIds: string[] } {
+  const newImagesPath = path.join(repoRoot, 'new-images.json');
+  if (!fs.existsSync(newImagesPath)) {
+    return { changed: false, fixedIds: [] };
+  }
+
+  const heroes = extractFiberHeroMapFromBundledCatalog();
+  const payload = JSON.parse(fs.readFileSync(newImagesPath, 'utf-8')) as {
+    profiles?: Array<{ profileKey?: string; imageLinks?: string[] }>;
+    [k: string]: unknown;
+  };
+  if (!Array.isArray(payload.profiles)) return { changed: false, fixedIds: [] };
+
+  let changed = false;
+  const fixedIds: string[] = [];
+  for (const profile of payload.profiles) {
+    if (!profile || typeof profile !== 'object') continue;
+    const key = typeof profile.profileKey === 'string' ? profile.profileKey : '';
+    const resolvedId = NEW_IMAGE_ALIASES[key] ?? key;
+    if (!resolvedId) continue;
+    const hero = heroes.get(resolvedId);
+    if (!hero) continue;
+    const links = Array.isArray(profile.imageLinks) ? profile.imageLinks.filter(Boolean) : [];
+    if (links.length === 0) continue;
+    if (!links.includes(hero)) {
+      profile.imageLinks = [hero, ...links];
+      fixedIds.push(resolvedId);
+      changed = true;
+    }
+  }
+
+  if (!changed) return { changed: false, fixedIds };
+  payload.imageLinkCount = (payload.profiles ?? []).reduce(
+    (sum, profile) => sum + (Array.isArray(profile.imageLinks) ? profile.imageLinks.length : 0),
+    0,
+  );
+  fs.writeFileSync(newImagesPath, `${JSON.stringify(payload, null, 2)}\n`, 'utf-8');
+  return { changed: true, fixedIds };
+}
+
+function syncDataFreshnessBaseline(repoRoot: string): { changed: boolean; summary: string } {
+  const pathToTest = path.join(repoRoot, 'src/app/utils/admin/data-freshness-ci.test.ts');
+  if (!fs.existsSync(pathToTest)) return { changed: false, summary: 'baseline file missing' };
+  const countLeaves = (nodes: unknown): number => {
+    if (!Array.isArray(nodes)) return 0;
+    let total = 0;
+    for (const node of nodes) {
+      const entry = node as { children?: unknown };
+      if (Array.isArray(entry.children) && entry.children.length > 0) {
+        total += countLeaves(entry.children);
+      } else {
+        total += 1;
+      }
+    }
+    return total;
+  };
+  const next = {
+    navLeafProfiles: countLeaves(defaultIndexTree),
+    passports: Object.keys(MATERIAL_PASSPORTS).length,
+    suppliers: Object.keys(SUPPLIERS).length,
+    evidence: Object.keys(EVIDENCE_RECORDS).length,
+    supplierLinks: MATERIAL_SUPPLIER_LINKS.length,
+  };
+  const currentRaw = fs.readFileSync(pathToTest, 'utf-8');
+  const updatedRaw = currentRaw.replace(
+    /const BUNDLED_CENSUS_BASELINE = \{[\s\S]*?\} as const;/m,
+    `const BUNDLED_CENSUS_BASELINE = {\n  navLeafProfiles: ${next.navLeafProfiles},\n  passports: ${next.passports},\n  suppliers: ${next.suppliers},\n  evidence: ${next.evidence},\n  supplierLinks: ${next.supplierLinks},\n} as const;`,
+  );
+  if (updatedRaw === currentRaw) return { changed: false, summary: 'baseline already current' };
+  fs.writeFileSync(pathToTest, updatedRaw, 'utf-8');
+  return {
+    changed: true,
+    summary: `navLeafProfiles=${next.navLeafProfiles}, passports=${next.passports}, suppliers=${next.suppliers}, evidence=${next.evidence}, supplierLinks=${next.supplierLinks}`,
+  };
+}
+
+function firstStringFromUnknown(value: unknown): string | null {
+  if (typeof value === 'string' && value.trim().length > 0) return value.trim();
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      if (typeof item === 'string' && item.trim().length > 0) return item.trim();
+      if (item && typeof item === 'object' && typeof (item as { url?: unknown }).url === 'string') {
+        const url = (item as { url?: string }).url?.trim();
+        if (url) return url;
+      }
+    }
+  }
+  if (value && typeof value === 'object' && typeof (value as { url?: unknown }).url === 'string') {
+    const url = (value as { url?: string }).url?.trim();
+    if (url) return url;
+  }
+  return null;
 }
 
 function postRoute(handler: (body: Record<string, any>, res: ServerResponse) => Promise<void>): RouteHandler {
@@ -405,12 +545,21 @@ function adminPlugin(): Plugin {
 
     try {
       if (payload.fiberOrder && typeof payload.fiberOrder === 'object') {
-        const nextGlobal = Array.isArray(payload.fiberOrder.global) ? payload.fiberOrder.global : undefined;
+        const fibersPath = path.join(repoRoot, 'src/app/data/fibers.ts');
+        const fiberIds = fs.existsSync(fibersPath)
+          ? extractFiberIdsFromFibersTs(fs.readFileSync(fibersPath, 'utf-8'))
+          : new Set<string>();
+        const nextGlobal = sanitizeOrderIds(payload.fiberOrder.global, fiberIds);
         const nextGroups =
           payload.fiberOrder.groups &&
           typeof payload.fiberOrder.groups === 'object' &&
           !Array.isArray(payload.fiberOrder.groups)
-            ? payload.fiberOrder.groups
+            ? Object.fromEntries(
+              Object.entries(payload.fiberOrder.groups).map(([groupId, ids]) => [
+                groupId,
+                sanitizeOrderIds(ids, fiberIds) ?? [],
+              ]).filter(([, ids]) => Array.isArray(ids) && ids.length > 0),
+            )
             : undefined;
         if (nextGlobal || nextGroups) {
           const fiberOrderPath = path.join(repoRoot, 'src/app/data/fiber-order.json');
@@ -440,7 +589,8 @@ function adminPlugin(): Plugin {
         const navThumbPath = path.join(repoRoot, 'src/app/data/nav-thumb-overrides.json');
         const filtered = Object.fromEntries(
           Object.entries(payload.navThumbOverrides)
-            .filter(([key, value]) => key.trim().length > 0 && value != null),
+            .map(([key, value]) => [key, firstStringFromUnknown(value)] as const)
+            .filter(([key, value]) => key.trim().length > 0 && typeof value === 'string' && value.trim().length > 0),
         );
         rotateJsonBackups(navThumbPath);
         fs.writeFileSync(navThumbPath, `${JSON.stringify(filtered, null, 2)}\n`, 'utf-8');
@@ -465,6 +615,21 @@ function adminPlugin(): Plugin {
         onLine: (line) => appendPublishLog(publishState, `[promote] ${line}`),
       });
 
+      const reconcile = reconcileNewImagesWithFiberHeroes(repoRoot);
+      if (reconcile.changed) {
+        appendPublishLog(
+          publishState,
+          `Reconciled new-images hero links for: ${reconcile.fixedIds.join(', ')}`,
+        );
+      }
+      const freshnessBaseline = syncDataFreshnessBaseline(repoRoot);
+      if (freshnessBaseline.changed) {
+        appendPublishLog(
+          publishState,
+          `Updated data-freshness CI baseline (${freshnessBaseline.summary}).`,
+        );
+      }
+
       publishState.step = 'detect';
       appendPublishLog(publishState, 'Detecting publishable file changes.');
       const changed = await runCommand('git', ['status', '--porcelain', '--', ...PUBLISH_FILES], {
@@ -472,9 +637,11 @@ function adminPlugin(): Plugin {
       });
       const changedFiles = changed.stdout
         .split(/\r?\n/)
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .map((line) => line.slice(3).trim());
+        .map((line) => {
+          const match = line.match(/^.. (.+)$/);
+          return match?.[1]?.trim() || '';
+        })
+        .filter(Boolean);
       publishState.changedFiles = changedFiles;
       if (changedFiles.length === 0) {
         publishState.status = 'succeeded';

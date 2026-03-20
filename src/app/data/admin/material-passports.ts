@@ -1543,6 +1543,17 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sourcing": {},
     "endUse": {},
     "status": "draft"
+  },
+  "modal": {
+    "materialId": "modal",
+    "lastUpdated": "2026-03-20",
+    "performance": {},
+    "process": {},
+    "dyeing": {},
+    "sustainability": {},
+    "sourcing": {},
+    "endUse": {},
+    "status": "draft"
   }
 };
 

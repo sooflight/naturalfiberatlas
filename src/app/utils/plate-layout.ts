@@ -83,6 +83,7 @@ const PLATE_ZONE_PREFS: [PlateType, Zone[]][] = [
   ["about",          ["right", "left", "below-right", "below-left", "below", "above-right", "above-left", "above"]],
   ["insight1",       ["left", "above-left", "above", "above-right", "right", "below-left", "below", "below-right"]],
   ["insight2",       ["below", "below-right", "below-left", "right", "left", "above", "above-right", "above-left"]],
+  ["insight3",       ["above", "above-right", "above-left", "right", "left", "below", "below-right", "below-left"]],
   ["quote",          ["left", "right", "above-left", "above-right", "above", "below-left", "below-right", "below"]],
 
   /* Ring 2 — Data & geography */
@@ -120,9 +121,10 @@ function filterAvailablePlates(fiberId: string): [PlateType, Zone[]][] {
       case "quote":
         return (quoteData[fiberId] ?? []).length > 0;
       case "insight1":
-      case "insight2": {
-        /* Need at least 2 sentences to split into two halves */
+      case "insight2":
+      case "insight3": {
         const sentences = fiber?.about?.match(/[^.!?]+[.!?]+/g) ?? [];
+        if (pt === "insight3") return sentences.length >= 3;
         return sentences.length >= 2;
       }
       case "seeAlso":

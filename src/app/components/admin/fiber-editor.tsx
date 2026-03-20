@@ -497,7 +497,8 @@ function CompletenessRing({ fiber }: { fiber: FiberProfile }) {
 
 function InsightsPreview({ about, fiberName }: { about: string; fiberName: string }) {
   const sentences = useMemo(() => about?.match(/[^.!?]+[.!?]+/g) ?? [], [about]);
-  const [part1, part2] = useMemo(() => splitAboutText(about), [about]);
+  const partsCount = sentences.length >= 3 ? 3 : 2;
+  const parts = useMemo(() => splitAboutText(about, partsCount), [about, partsCount]);
   const hasInsights = sentences.length >= 2;
 
   return (
@@ -510,7 +511,7 @@ function InsightsPreview({ about, fiberName }: { about: string; fiberName: strin
         <span className="flex-1">Insights</span>
         {hasInsights ? (
           <span className="px-1.5 py-0.5 rounded-full bg-emerald-400/10 text-emerald-400/50 border border-emerald-400/15" style={{ fontSize: "9px", fontWeight: 700 }}>
-            2 cards
+            {partsCount} cards
           </span>
         ) : (
           <span className="px-1.5 py-0.5 rounded-full bg-white/[0.04] text-white/25 border border-white/[0.06]" style={{ fontSize: "9px", fontWeight: 700 }}>
@@ -531,52 +532,32 @@ function InsightsPreview({ about, fiberName }: { about: string; fiberName: strin
           <>
             <div className="rounded-lg px-3 py-2.5 bg-blue-400/[0.02] border border-blue-400/[0.08]">
               <span className="text-blue-400/30 block mb-1" style={{ fontSize: "9px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                Auto-generated from About text · {sentences.length} sentences → 2 halves
+                Auto-generated from About text · {sentences.length} sentences → {partsCount} segments
               </span>
             </div>
 
-            {/* Insight 1 — Origins */}
-            <div className="rounded-lg overflow-hidden border border-white/[0.06]">
-              <div className="px-3 py-1.5 bg-white/[0.02] flex items-center gap-1.5">
-                <span className="text-blue-400/30" style={{ fontSize: "14px", lineHeight: 1 }}>◈</span>
-                <span className="text-white/40 uppercase tracking-wider" style={{ fontSize: "9px", fontWeight: 600 }}>
-                  Insight 1 — Origins
-                </span>
-              </div>
-              <div className="px-3 py-2.5 border-l-2 border-blue-400/20 ml-3">
-                <p className="text-white/60" style={{ fontSize: "11px", lineHeight: 1.6, fontFamily: "'PICA', 'Pica', serif", letterSpacing: "0.03em" }}>
-                  {part1}
-                </p>
-              </div>
-              <div className="px-3 py-1.5 flex items-center gap-1.5">
-                <div className="w-4 h-px bg-blue-400/20" />
-                <span className="text-blue-400/30 uppercase tracking-wider" style={{ fontSize: "8px" }}>
-                  {fiberName} — Origins
-                </span>
-              </div>
-            </div>
-
-            {/* Insight 2 — Depth */}
-            {part2 && (
-              <div className="rounded-lg overflow-hidden border border-white/[0.06]">
+            {parts.map((part, idx) =>
+              part ? (
+              <div key={`insight-${idx}`} className="rounded-lg overflow-hidden border border-white/[0.06]">
                 <div className="px-3 py-1.5 bg-white/[0.02] flex items-center gap-1.5">
                   <span className="text-blue-400/30" style={{ fontSize: "14px", lineHeight: 1 }}>◈</span>
                   <span className="text-white/40 uppercase tracking-wider" style={{ fontSize: "9px", fontWeight: 600 }}>
-                    Insight 2 — Depth
+                    Insight {idx + 1} — {idx === 0 ? "Origins" : idx === 1 ? "Depth" : "Context"}
                   </span>
                 </div>
                 <div className="px-3 py-2.5 border-l-2 border-blue-400/20 ml-3">
                   <p className="text-white/60" style={{ fontSize: "11px", lineHeight: 1.6, fontFamily: "'PICA', 'Pica', serif", letterSpacing: "0.03em" }}>
-                    {part2}
+                    {part}
                   </p>
                 </div>
                 <div className="px-3 py-1.5 flex items-center gap-1.5">
                   <div className="w-4 h-px bg-blue-400/20" />
                   <span className="text-blue-400/30 uppercase tracking-wider" style={{ fontSize: "8px" }}>
-                    {fiberName} — Insight
+                    {fiberName} — {idx === 0 ? "Origins" : idx === 1 ? "Insight" : "Context"}
                   </span>
                 </div>
               </div>
+              ) : null,
             )}
 
             {/* Sentence breakdown */}
@@ -587,19 +568,15 @@ function InsightsPreview({ about, fiberName }: { about: string; fiberName: strin
               </summary>
               <div className="mt-2 space-y-1 pl-3 border-l border-white/[0.04]">
                 {sentences.map((s, i) => {
-                  const mid = Math.ceil(sentences.length / 2);
-                  const isFirstHalf = i < mid;
+                  const chunkSize = Math.ceil(sentences.length / partsCount);
+                  const insightIdx = Math.floor(i / chunkSize) + 1;
                   return (
                     <div key={i} className="flex items-start gap-2">
                       <span
-                        className={`shrink-0 px-1 py-0 rounded ${
-                          isFirstHalf
-                            ? "bg-blue-400/10 text-blue-400/40"
-                            : "bg-blue-400/10 text-blue-400/40"
-                        }`}
+                        className="shrink-0 px-1 py-0 rounded bg-blue-400/10 text-blue-400/40"
                         style={{ fontSize: "8px", fontWeight: 600 }}
                       >
-                        {isFirstHalf ? "I1" : "I2"}
+                        I{Math.min(insightIdx, partsCount)}
                       </span>
                       <span className="text-white/35 flex-1" style={{ fontSize: "9px", lineHeight: 1.5 }}>
                         {s.trim()}

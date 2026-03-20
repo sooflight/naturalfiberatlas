@@ -10,7 +10,6 @@
 import { useMemo, useCallback, useState } from "react";
 import type { FiberProfile, PlateType } from "../../data/atlas-data";
 import { dataSource } from "../../data/data-provider";
-import { splitAboutText } from "../plate-primitives";
 import {
   AboutPlate,
   InsightPlate,
@@ -54,6 +53,7 @@ const PLATE_META: Record<PlateType, {
   about: { label: "About", icon: Layers, color: "text-blue-300/65", editorSection: "About" },
   insight1: { label: "Insight — Origins", icon: Lightbulb, color: "text-blue-300/60", editorSection: "About" },
   insight2: { label: "Insight — Depth", icon: BookOpen, color: "text-blue-300/60", editorSection: "About" },
+  insight3: { label: "Insight — Context", icon: BookOpen, color: "text-blue-300/60", editorSection: "About" },
   quote: { label: "Quote", icon: Quote, color: "text-blue-300/60", editorSection: "Quotes" },
   trade: { label: "Source & Trade", icon: DollarSign, color: "text-blue-400/60", editorSection: "Trade Details" },
   regions: { label: "Regions", icon: MapPin, color: "text-blue-400/65", editorSection: "Trade Details" },
@@ -70,6 +70,7 @@ const ALL_PLATES: PlateType[] = [
   "about",
   "insight1",
   "insight2",
+  "insight3",
   "quote",
   "trade",
   "regions",
@@ -104,8 +105,10 @@ function getAvailablePlates(fiber: FiberProfile): PlateType[] {
       case "quote":
         return (quoteData[fiber.id] ?? []).length > 0;
       case "insight1":
-      case "insight2": {
+      case "insight2":
+      case "insight3": {
         const sentences = fiber.about?.match(/[^.!?]+[.!?]+/g) ?? [];
+        if (pt === "insight3") return sentences.length >= 3;
         return sentences.length >= 2;
       }
       case "seeAlso":
@@ -133,6 +136,8 @@ function PlateRenderer({ fiber, plateType }: { fiber: FiberProfile; plateType: P
       return <InsightPlate fiber={fiber} half={1} />;
     case "insight2":
       return <InsightPlate fiber={fiber} half={2} />;
+    case "insight3":
+      return <InsightPlate fiber={fiber} half={3} />;
     case "quote":
       return <QuotePlate fiber={fiber} />;
     case "regions":
@@ -203,7 +208,7 @@ function PlatePreviewCard({
         </span>
 
         {/* Insight explanation */}
-        {(plateType === "insight1" || plateType === "insight2") && (
+        {(plateType === "insight1" || plateType === "insight2" || plateType === "insight3") && (
           <span
             className="px-1.5 py-0.5 rounded bg-blue-400/[0.07] border border-blue-400/15 text-blue-300/70"
             style={{ fontSize: "8px" }}
@@ -279,11 +284,6 @@ export function PlatePreviewPanel({ fiber, onScrollToEditorSection }: PlatePrevi
   const missingPlates = useMemo(() => getMissingPlates(fiber), [fiber]);
   const [showMissing, setShowMissing] = useState(false);
 
-  /* Insight text preview */
-  const [insightPart1, insightPart2] = useMemo(
-    () => splitAboutText(fiber.about),
-    [fiber.about],
-  );
   const sentences = useMemo(
     () => fiber.about?.match(/[^.!?]+[.!?]+/g) ?? [],
     [fiber.about],
@@ -382,7 +382,7 @@ export function PlatePreviewPanel({ fiber, onScrollToEditorSection }: PlatePrevi
               </span>
             </div>
             <span className="text-white/30 block" style={{ fontSize: "9px", lineHeight: 1.5 }}>
-              {sentences.length} sentences in About text → split into 2 insight cards.
+              {sentences.length} sentences in About text → split into {sentences.length >= 3 ? 3 : 2} insight cards.
               Edit the About field to change insight content.
             </span>
           </div>
@@ -422,6 +422,9 @@ export function PlatePreviewPanel({ fiber, onScrollToEditorSection }: PlatePrevi
                     case "insight1":
                     case "insight2":
                       reason = `About text needs ≥ 2 sentences (has ${sentences.length})`;
+                      break;
+                    case "insight3":
+                      reason = `About text needs ≥ 3 sentences (has ${sentences.length})`;
                       break;
                     case "worldNames":
                       reason = "No world names defined";

@@ -5,6 +5,7 @@ const MOBILE_PLATE_ORDER: PlateType[] = [
   "about",
   "insight1",
   "insight2",
+  "insight3",
   "quote",
   "trade",
   "regions",
@@ -36,8 +37,10 @@ export function getAvailablePlates(fiber: FiberProfile): PlateType[] {
       case "quote":
         return (quoteData[fiber.id] ?? []).length > 0;
       case "insight1":
-      case "insight2": {
+      case "insight2":
+      case "insight3": {
         const sentences = fiber.about?.match(/[^.!?]+[.!?]+/g) ?? [];
+        if (pt === "insight3") return sentences.length >= 3;
         return sentences.length >= 2;
       }
       case "seeAlso":

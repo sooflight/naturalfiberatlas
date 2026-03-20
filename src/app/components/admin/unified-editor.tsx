@@ -642,6 +642,11 @@ function UnifiedEditorContent({
               <div data-editor-section="Insights">
                 <InsightCard fiber={draft} half={2} />
               </div>
+              {sentences.length >= 3 && (
+                <div data-editor-section="Insights">
+                  <InsightCard fiber={draft} half={3} />
+                </div>
+              )}
             </>
           )}
 
