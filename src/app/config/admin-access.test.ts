@@ -5,7 +5,8 @@ describe("isAdminEnabled", () => {
   it("returns true only when the env value is literal true", () => {
     expect(isAdminEnabled("true")).toBe(true);
     expect(isAdminEnabled("false")).toBe(false);
-    expect(isAdminEnabled(undefined, false)).toBe(false);
+    /* Empty string: unset env without triggering default-param substitution from VITE stub. */
+    expect(isAdminEnabled("", false)).toBe(false);
     expect(isAdminEnabled("1")).toBe(false);
   });
 

@@ -1,5 +1,8 @@
 import { isAdminEnabled } from "../config/admin-access";
+import navThumbOverridesRaw from "../data/nav-thumb-overrides.json";
 import { fibers } from "../data/fibers";
+
+const navThumbBundled = navThumbOverridesRaw as Record<string, string>;
 
 export const SECTION_COLORS = {
   fiber: {
@@ -222,6 +225,13 @@ export function getThumbUrl(nodeId: string): string | null {
       }
     } catch {
       // Ignore malformed local storage payloads and fall back to defaults.
+    }
+  }
+
+  if (!isAdminEnabled()) {
+    for (const candidateId of getThumbCandidateIds(nodeId)) {
+      const u = navThumbBundled[candidateId];
+      if (typeof u === "string" && u.trim().length > 0) return u;
     }
   }
 

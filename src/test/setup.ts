@@ -1,6 +1,9 @@
-import { afterEach } from "vitest";
+import { afterEach, vi } from "vitest";
 import { cleanup } from "@testing-library/react";
 import "@testing-library/jest-dom/vitest";
+
+/* Vitest runs with import.meta.env.DEV false — enable admin so LocalStorageSource reads atlas:* keys. */
+vi.stubEnv("VITE_ENABLE_ADMIN", "true");
 
 function createStorageMock(): Storage {
   let store = new Map<string, string>();
@@ -34,4 +37,5 @@ Object.defineProperty(globalThis, "localStorage", {
 
 afterEach(() => {
   cleanup();
+  vi.stubEnv("VITE_ENABLE_ADMIN", "true");
 });

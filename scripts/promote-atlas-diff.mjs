@@ -2,8 +2,9 @@
 /**
  * Merge exportDiffJSON() output into repo-tracked catalog files.
  *
- * Currently: updates new-images.json from diff.fibers[].galleryImages when present.
- * Warns when supplementary table keys exist (manual edit atlas-data.ts required).
+ * - Merges diff.fibers (deep) into promoted-overrides.json (gallery also in new-images).
+ * - Merges supplementary keys into promoted-overrides.json (worldNames, processData, …).
+ * - Updates new-images.json from diff.fibers[].galleryImages when present.
  *
  * Usage:
  *   node scripts/promote-atlas-diff.mjs <path-to-diff.json> [--dry-run]
@@ -54,6 +55,20 @@ function urlsFromGallery(galleryImages) {
   return galleryImages.map((g) => (g && typeof g === "object" ? g.url : null)).filter(Boolean);
 }
 
+function mergeDeep(a, b) {
+  if (b === undefined) return a;
+  if (Array.isArray(b)) return b;
+  if (b !== null && typeof b === "object") {
+    const base = a !== null && typeof a === "object" && !Array.isArray(a) ? a : {};
+    const out = { ...base };
+    for (const [k, v] of Object.entries(b)) {
+      out[k] = mergeDeep(out[k], v);
+    }
+    return out;
+  }
+  return b;
+}
+
 function parseArgs(argv) {
   const dryRun = argv.includes("--dry-run") || argv.includes("-n");
   const positional = argv.filter((a) => !a.startsWith("-"));
@@ -66,10 +81,11 @@ function main() {
   if (argv.includes("--help") || argv.includes("-h")) {
     console.log(`Usage: node scripts/promote-atlas-diff.mjs <exportDiff.json> [--dry-run]
 
-Reads Admin exportDiffJSON-shaped file and merges galleryImages into new-images.json.
-Warns if supplementary overrides are present — edit src/app/data/atlas-data.ts manually.
+Merges diff into promoted-overrides.json and new-images.json (gallery URLs).
+Warns for unknown fiber ids. Supplementary keys merge into promoted-overrides;
+complex atlas-data.ts edits may still need manual review.
 
-Does not patch fibers.ts (apply fiber field changes manually).`);
+Does not patch fibers.ts (new fibers / structural edits — edit TS manually).`);
     process.exit(0);
   }
 
@@ -100,13 +116,40 @@ Does not patch fibers.ts (apply fiber field changes manually).`);
     }
   }
 
-  for (const k of SUPP_KEYS) {
-    if (diff[k] && typeof diff[k] === "object" && Object.keys(diff[k]).length > 0) {
-      console.warn(
-        `[promote-atlas-diff] Diff contains "${k}" overrides — merge into src/app/data/atlas-data.ts manually (see docs/architecture/data-publishing.md).`,
-      );
+  const promotedPath = path.join(root, "src/app/data/promoted-overrides.json");
+  let po = {};
+  try {
+    po = JSON.parse(readFileSync(promotedPath, "utf8"));
+  } catch {
+    po = {};
+  }
+  const poBefore = JSON.stringify(po);
+
+  if (diff.fibers && typeof diff.fibers === "object") {
+    po.fibers = po.fibers && typeof po.fibers === "object" ? { ...po.fibers } : {};
+    for (const [fiberId, patch] of Object.entries(diff.fibers)) {
+      if (!patch || typeof patch !== "object") continue;
+      po.fibers[fiberId] = mergeDeep(po.fibers[fiberId] ?? {}, patch);
     }
   }
+
+  for (const k of SUPP_KEYS) {
+    if (!diff[k] || typeof diff[k] !== "object" || Object.keys(diff[k]).length === 0) continue;
+    const table = diff[k];
+    po[k] = po[k] && typeof po[k] === "object" ? { ...po[k] } : {};
+    for (const [entityId, patch] of Object.entries(table)) {
+      if (!patch || typeof patch !== "object") {
+        po[k][entityId] = patch;
+        continue;
+      }
+      po[k][entityId] = mergeDeep(po[k][entityId] ?? {}, patch);
+    }
+    console.warn(
+      `[promote-atlas-diff] Merged "${k}" into promoted-overrides.json — verify shapes match atlas-data.ts expectations.`,
+    );
+  }
+
+  const promotedChanged = JSON.stringify(po) !== poBefore;
 
   const newImagesPath = path.join(root, "new-images.json");
   const payload = JSON.parse(readFileSync(newImagesPath, "utf8"));
@@ -144,32 +187,51 @@ Does not patch fibers.ts (apply fiber field changes manually).`);
     }
   }
 
-  payload.exportedAt = new Date().toISOString();
-  payload.profileCount = profiles.length;
-  payload.imageLinkCount = profiles.reduce((sum, p) => sum + (Array.isArray(p.imageLinks) ? p.imageLinks.length : 0), 0);
+  if (galleryUpdates > 0) {
+    payload.exportedAt = new Date().toISOString();
+    payload.profileCount = profiles.length;
+    payload.imageLinkCount = profiles.reduce(
+      (sum, p) => sum + (Array.isArray(p.imageLinks) ? p.imageLinks.length : 0),
+      0,
+    );
+  }
 
-  if (galleryUpdates === 0) {
-    console.log("[promote-atlas-diff] No galleryImages patches in diff — new-images.json unchanged.");
-    if (dryRun) {
-      console.log("  (dry-run: would make no file changes)");
+  const newImagesBefore = readFileSync(newImagesPath, "utf8");
+  const newImagesOut = galleryUpdates > 0 ? `${JSON.stringify(payload, null, 2)}\n` : newImagesBefore;
+  const newImagesChanged = galleryUpdates > 0 && newImagesOut !== newImagesBefore;
+
+  if (!promotedChanged && !newImagesChanged) {
+    console.log("[promote-atlas-diff] No applicable changes in diff — promoted-overrides.json and new-images.json unchanged.");
+    if (dryRun) console.log("  (dry-run)");
+    process.exit(0);
+  }
+
+  if (dryRun) {
+    console.log("[promote-atlas-diff] Dry run — no files written.");
+    if (promotedChanged) console.log("  Would update promoted-overrides.json");
+    if (galleryUpdates > 0) {
+      console.log(`  Gallery profile updates: ${galleryUpdates}`);
+      if (touchedKeys.length) console.log(`  profileKeys: ${touchedKeys.join(", ")}`);
+      console.log(`  New imageLinkCount: ${payload.imageLinkCount}`);
     }
     process.exit(0);
   }
 
-  const outJson = `${JSON.stringify(payload, null, 2)}\n`;
-
-  if (dryRun) {
-    console.log("[promote-atlas-diff] Dry run — no files written.");
-    console.log(`  Gallery profile updates: ${galleryUpdates}`);
-    if (touchedKeys.length) console.log(`  profileKeys: ${touchedKeys.join(", ")}`);
-    console.log(`  New imageLinkCount: ${payload.imageLinkCount}`);
-    process.exit(0);
+  if (promotedChanged) {
+    writeFileSync(promotedPath, `${JSON.stringify(po, null, 2)}\n`, "utf8");
+    console.log(`[promote-atlas-diff] Wrote ${path.relative(root, promotedPath)}`);
   }
 
-  writeFileSync(newImagesPath, outJson, "utf8");
-  console.log(`[promote-atlas-diff] Wrote ${path.relative(root, newImagesPath)}`);
-  console.log(`  Gallery profile updates: ${galleryUpdates}${touchedKeys.length ? ` (${touchedKeys.join(", ")})` : ""}`);
-  console.log(`  imageLinkCount: ${payload.imageLinkCount}`);
+  if (newImagesChanged) {
+    writeFileSync(newImagesPath, newImagesOut, "utf8");
+    console.log(`[promote-atlas-diff] Wrote ${path.relative(root, newImagesPath)}`);
+    console.log(
+      `  Gallery profile updates: ${galleryUpdates}${touchedKeys.length ? ` (${touchedKeys.join(", ")})` : ""}`,
+    );
+    console.log(`  imageLinkCount: ${payload.imageLinkCount}`);
+  } else if (promotedChanged && galleryUpdates === 0) {
+    console.log("[promote-atlas-diff] new-images.json unchanged (no galleryImages in diff).");
+  }
 }
 
 main();

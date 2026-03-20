@@ -179,7 +179,8 @@ describe("GridView image sync", () => {
     );
 
     const card = await screen.findByTestId(`profile-card-${sampleFiber.id}`);
-    expect(card).toHaveAttribute("data-image", sampleFiber.image);
+    const initialHero = dataSource.getFiberById(sampleFiber.id)?.image ?? "";
+    expect(card).toHaveAttribute("data-image", initialHero);
 
     act(() => {
       dataSource.updateFiber(sampleFiber.id, {

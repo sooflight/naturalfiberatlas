@@ -210,6 +210,7 @@ function adminPlugin(): Plugin {
   const atlasFile = path.join(dataDir, 'atlas-data.json');
   const indexTreeFile = path.join(dataDir, 'index-tree.json');
   const orderFile = path.join(dataDir, 'atlas-order.json');
+  const fiberOrderRepoFile = path.resolve(__dirname, '../src/app/data/fiber-order.json');
   const supplierFile = path.join(dataDir, 'supplier-directory.json');
   const evidenceFile = path.join(dataDir, 'evidence-records.json');
   const promotedOverridesFile = path.resolve(__dirname, '../src/app/data/promoted-overrides.json');
@@ -342,6 +343,43 @@ function adminPlugin(): Plugin {
       use('/__admin/save-index-tree', rawWriteRoute(indexTreeFile, { backup: true }));
       use('/__admin/read-atlas-order', fileReadRoute(orderFile));
       use('/__admin/save-atlas-order', rawWriteRoute(orderFile));
+
+      use('/__admin/save-fiber-order-json', postRoute(async (body, res) => {
+        const nextGlobal = Array.isArray(body.global) ? body.global as string[] : undefined;
+        const nextGroups =
+          body.groups && typeof body.groups === 'object' && !Array.isArray(body.groups)
+            ? body.groups as Record<string, string[]>
+            : undefined;
+        let existing: { global?: string[]; groups?: Record<string, string[]> } = {};
+        if (fs.existsSync(fiberOrderRepoFile)) {
+          try {
+            existing = JSON.parse(fs.readFileSync(fiberOrderRepoFile, 'utf-8'));
+          } catch {
+            existing = {};
+          }
+        }
+        const merged = {
+          global: nextGlobal ?? existing.global ?? [],
+          groups: { ...(existing.groups ?? {}), ...(nextGroups ?? {}) },
+        };
+        const out = `${JSON.stringify(merged, null, 2)}\n`;
+        JSON.parse(out);
+        if (fs.existsSync(fiberOrderRepoFile)) {
+          const fp = fiberOrderRepoFile;
+          const b2 = fp.replace(/\.json$/, '.backup.2.json');
+          const b1 = fp.replace(/\.json$/, '.backup.1.json');
+          const b0 = fp.replace(/\.json$/, '.backup.json');
+          try { if (fs.existsSync(b1)) fs.copyFileSync(b1, b2); } catch { /* ignore */ }
+          try { if (fs.existsSync(b0)) fs.copyFileSync(b0, b1); } catch { /* ignore */ }
+          fs.copyFileSync(fp, b0);
+        }
+        fs.writeFileSync(fiberOrderRepoFile, out, 'utf-8');
+        jsonRes(res, {
+          ok: true,
+          written: true,
+          path: path.relative(path.resolve(__dirname, '..'), fiberOrderRepoFile),
+        });
+      }));
 
       // ── Simple file writes ──
       use('/__admin/save-suppliers', rawWriteRoute(supplierFile, { backup: true }));

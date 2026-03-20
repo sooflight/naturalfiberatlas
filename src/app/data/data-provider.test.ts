@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { LocalStorageSource, type EffectiveAtlasSnapshot } from "./data-provider";
 import { fibers as bundledFibers } from "./fibers";
 import { careData as bundledCareData } from "./atlas-data";
+import fiberOrderFile from "./fiber-order.json";
 
 const FIBERS_KEY = "atlas:fibers";
 const WORLD_NAMES_KEY = "atlas:worldNames";
@@ -127,8 +128,9 @@ describe("LocalStorageSource critical flows", () => {
   it("keeps a minimal hero gallery entry available at boot", () => {
     const source = new LocalStorageSource();
     const fiber = source.getFiberById(sampleFiber.id);
+    const bundled = source.getBundledFiber(sampleFiber.id);
     expect(fiber?.galleryImages.length).toBeGreaterThan(0);
-    expect(fiber?.galleryImages[0]?.url).toBe(sampleFiber.image);
+    expect(fiber?.galleryImages[0]?.url).toBe(bundled?.galleryImages?.[0]?.url ?? bundled?.image);
   });
 
   it("ignores localStorage catalog overrides when admin is disabled (public site)", () => {
@@ -140,9 +142,10 @@ describe("LocalStorageSource critical flows", () => {
       }),
     );
     const source = new LocalStorageSource();
-    expect(source.getFiberById(sampleFiber.id)?.image).toBe(sampleFiber.image);
+    expect(source.getFiberById(sampleFiber.id)?.image).toBe(
+      source.getBundledFiber(sampleFiber.id)?.image,
+    );
     expect(source.hasOverrides()).toBe(false);
-    vi.unstubAllEnvs();
   });
 
   it("returns care data with all required fields", () => {
@@ -285,7 +288,7 @@ describe("LocalStorageSource critical flows", () => {
     expect(parsed.anatomyData).toEqual(source.getAnatomyData());
     expect(parsed.careData).toEqual(source.getCareData());
     expect(parsed.quoteData).toEqual(source.getQuoteData());
-    expect(parsed.fiberOrder).toBeUndefined();
+    expect(parsed.fiberOrder).toEqual(fiberOrderFile.global);
     expect(parsed.fiberOrderByGroup).toBeUndefined();
   });
 

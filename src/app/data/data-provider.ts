@@ -18,6 +18,7 @@
 import type { FiberProfile, ProcessStep, AnatomyData, CareData, QuoteEntry } from "./atlas-data";
 import { isAdminEnabled } from "../config/admin-access";
 import { fibers as rawBundledFibers } from "./fibers";
+import fiberOrderFileRaw from "./fiber-order.json";
 import promotedOverridesRaw from "./promoted-overrides.json";
 import {
   worldNames as bundledWorldNames,
@@ -272,6 +273,13 @@ type PromotedOverridesShape = Partial<{
 }>;
 
 const promotedOverrides = (promotedOverridesRaw ?? {}) as PromotedOverridesShape;
+
+type BundledFiberOrderFile = {
+  global: string[];
+  groups?: Record<string, string[]>;
+};
+
+const fiberOrderBundled: BundledFiberOrderFile = fiberOrderFileRaw as BundledFiberOrderFile;
 
 /** Bundled fiber lookup */
 const bundledFibers: FiberProfile[] = rawBundledFibers.map((fiber) =>
@@ -1525,13 +1533,26 @@ export class LocalStorageSource implements AtlasDataSource {
   }
 
   getFiberOrder(): string[] | null {
-    const order = this.readJSON<string[]>(this.FIBER_ORDER_KEY);
-    return order ? this.sanitizeOrder(order) : null;
+    const fromFile =
+      fiberOrderBundled.global?.length > 0 ? this.sanitizeOrder(fiberOrderBundled.global) : null;
+    if (!isAdminEnabled()) {
+      return fromFile;
+    }
+    const fromStorage = this.readJSON<string[]>(this.FIBER_ORDER_KEY);
+    if (fromStorage && fromStorage.length > 0) {
+      return this.sanitizeOrder(fromStorage);
+    }
+    return fromFile;
   }
 
   setFiberOrder(order: string[]): void {
-    this.writeJSON(this.FIBER_ORDER_KEY, this.sanitizeOrder(order));
+    const sanitized = this.sanitizeOrder(order);
+    this.writeJSON(this.FIBER_ORDER_KEY, sanitized);
+    this.invalidateAll();
     this.notify();
+    if (typeof window !== "undefined" && import.meta.env.DEV && isAdminEnabled()) {
+      void import("../utils/admin/persistFiberOrderFile").then((m) => m.persistGlobalFiberOrder(sanitized));
+    }
   }
 
   clearFiberOrder(): void {
@@ -1541,17 +1562,31 @@ export class LocalStorageSource implements AtlasDataSource {
 
   getFiberOrderForGroup(groupId: string): string[] | null {
     if (!groupId) return null;
+    const fromFile = fiberOrderBundled.groups?.[groupId];
+    const fileOrder = fromFile?.length ? this.sanitizeOrder(fromFile) : null;
+    if (!isAdminEnabled()) {
+      return fileOrder;
+    }
     const groups = this.readJSON<Record<string, string[]>>(this.FIBER_GROUP_ORDERS_KEY) ?? {};
-    const order = groups[groupId];
-    return order ? this.sanitizeOrder(order) : null;
+    const fromStorage = groups[groupId];
+    if (fromStorage && fromStorage.length > 0) {
+      return this.sanitizeOrder(fromStorage);
+    }
+    return fileOrder;
   }
 
   setFiberOrderForGroup(groupId: string, order: string[]): void {
     if (!groupId) return;
     const groups = this.readJSON<Record<string, string[]>>(this.FIBER_GROUP_ORDERS_KEY) ?? {};
-    groups[groupId] = this.sanitizeOrder(order);
+    const nextSan = this.sanitizeOrder(order);
+    groups[groupId] = nextSan;
     this.writeJSON(this.FIBER_GROUP_ORDERS_KEY, groups);
     this.notify();
+    if (typeof window !== "undefined" && import.meta.env.DEV && isAdminEnabled()) {
+      void import("../utils/admin/persistFiberOrderFile").then((m) =>
+        m.persistFiberOrderGroupsPatch({ [groupId]: nextSan }),
+      );
+    }
   }
 
   clearFiberOrderForGroup(groupId: string): void {

@@ -15,6 +15,9 @@ This document defines how **publishable atlas data** flows from editing to **Git
 | Fiber profiles | [`src/app/data/fibers.ts`](../../src/app/data/fibers.ts) | Core `FiberProfile` list |
 | Supplementary tables | [`src/app/data/atlas-data.ts`](../../src/app/data/atlas-data.ts) | `worldNames`, `processData`, `anatomyData`, `careData`, `quoteData`, gallery maps |
 | Bulk gallery URLs | [`new-images.json`](../../new-images.json) | Per-profile `imageLinks` merged at runtime with curated maps |
+| Promoted patches | [`src/app/data/promoted-overrides.json`](../../src/app/data/promoted-overrides.json) | Build-time merge into bundled fibers + supplementary tables (from `ops:promote-diff` or dev autosync) |
+| Grid order | [`src/app/data/fiber-order.json`](../../src/app/data/fiber-order.json) | Canonical `global` / `groups` order — **www** uses this; admin can override via `localStorage` locally, then dev reorder POSTs update the JSON |
+| Nav thumb overrides | [`src/app/data/nav-thumb-overrides.json`](../../src/app/data/nav-thumb-overrides.json) | Optional `nodeId → imageUrl` for **public** nav thumbs (empty `{}` = use `THUMB_IDS` + bundled heroes) |
 | Merge + overrides | [`src/app/data/data-provider.ts`](../../src/app/data/data-provider.ts) | `LocalStorageSource`: bundle + `localStorage` patches |
 
 **Production** serves **bundle only** (no `localStorage`). The app enforces this when `VITE_ENABLE_ADMIN=false`: `atlas:*` draft keys in the browser are ignored so returning visitors are not stuck on old hero images from past sessions. **Local dev** shows bundle + overrides.
@@ -60,12 +63,12 @@ flowchart LR
 
 ### What the promote script does today
 
-[`scripts/promote-atlas-diff.mjs`](../../scripts/promote-atlas-diff.mjs) **merges `galleryImages` from the diff into** `new-images.json` (resolved `profileKey` / aliases match [`atlas-data.ts`](../../src/app/data/atlas-data.ts) `jsonKeyAliases`).
+[`scripts/promote-atlas-diff.mjs`](../../scripts/promote-atlas-diff.mjs) **deep-merges** `diff.fibers` into [`promoted-overrides.json`](../../src/app/data/promoted-overrides.json) (same shape as runtime overrides), **merges** supplementary keys (`worldNames`, `processData`, etc.) into that file, and **merges `galleryImages`** into [`new-images.json`](../../new-images.json) (resolved `profileKey` / aliases match [`atlas-data.ts`](../../src/app/data/atlas-data.ts) `jsonKeyAliases`). Use `--dry-run` to preview.
 
 ### What still requires manual edits
 
-- **`fibers.ts`** — field patches (name, about, …) from the diff are **not** auto-written to TS (no safe codegen without an AST pipeline).
-- **`atlas-data.ts`** — supplementary table overrides (`worldNames`, `processData`, …): apply by hand or future tooling; the script **warns** if these keys are present in the diff.
+- **`fibers.ts`** — **new fiber ids** or structural TS edits are **not** generated from the diff; add profiles in TS when needed.
+- **`atlas-data.ts`** — if merged supplementary data in `promoted-overrides.json` must match hand-maintained types, **review** the diff after promote.
 
 Use **merged catalog export** (`exportEffectiveJSON()` on the data source; Layers control in Admin header) when you need a full merged snapshot for auditing or downstream tools — it does **not** replace Git as canonical source.
 
@@ -73,10 +76,19 @@ Use **merged catalog export** (`exportEffectiveJSON()` on the data source; Layer
 
 | Command | Purpose |
 |---------|---------|
-| `npm run ops:promote-diff -- <file.json> [--dry-run]` | Apply mechanical merges from diff JSON |
+| `npm run ops:promote-diff -- <file.json> [--dry-run]` | Merge diff into `promoted-overrides.json` + `new-images.json` |
 | `npm run ops:data-parity` | Bundled census + optional API parity |
 | `npm run ops:invalidate-cache` | Clear Upstash material cache |
 
+## Single release checklist (Admin → Git → www)
+
+1. Export diff: Admin **Knowledge** header → **exportDiffJSON** (`atlas-diff-*.json`).
+2. Run **`npm run ops:promote-diff -- path/to/atlas-diff-*.json`** (use `--dry-run` first if unsure).
+3. If you reordered the **grid** in dev, ensure [`fiber-order.json`](../../src/app/data/fiber-order.json) was updated (dev server POSTs on reorder) and is included in the commit.
+4. **`git diff`** — review `promoted-overrides.json`, `new-images.json`, `fiber-order.json`, `nav-thumb-overrides.json` (if used).
+5. **`npm run verify`** — typecheck, tests, production build, bundle-in-dist checks.
+6. Commit, push **`main`**, confirm Vercel Production matches the same commit SHA.
+
 ## CI
 
-[`ci:verify`](../../package.json) runs typecheck, tests, build, audit, and `check:no-supabase`. Keeping Tier A consistent is enforced by tests such as [`data-freshness-ci.test.ts`](../../src/app/utils/admin/data-freshness-ci.test.ts); update baselines when you intentionally change bundled counts.
+[`ci:verify`](../../package.json) runs typecheck, tests, build, bundle verification, audit, and `check:no-supabase`. [`catalog-integrity.test.ts`](../../src/app/utils/admin/catalog-integrity.test.ts) ensures `fiber-order.json` ids ⊆ `fibers.ts`. [`data-freshness-ci.test.ts`](../../src/app/utils/admin/data-freshness-ci.test.ts) freezes admin census baselines — bump when you intentionally change counts.
