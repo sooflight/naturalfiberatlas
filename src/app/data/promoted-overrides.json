@@ -1687,6 +1687,22 @@
         }
       ],
       "image": "https://inaturalist-open-data.s3.amazonaws.com/photos/204748884/medium.jpg"
+    },
+    "milkweed": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619143/atlas/ombbjli9aanccysehkmu.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1774000256/atlas/ufkusawsjnentpjutobu.png"
+        },
+        {
+          "url": "https://i0.wp.com/forumias.com/blog/wp-content/uploads/2024/12/Milkweed-fiber.png?resize=266,385&ssl=1"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1774000317/atlas/n6ttynbgynwjf0sutou9.jpg"
+        }
+      ]
     }
   },
   "quoteData": {
