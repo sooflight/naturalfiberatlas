@@ -336,6 +336,29 @@ q,
   touch-action: manipulation;
 }
 
+/* TopNav wordmark (mobile): font tracks the wordmark column via CQ units
+   so “Natural Fiber Atlas” stays on one line in the ~50% header slot.
+   Denominator ≈ em-width of the title (uppercase + 0.2em letter-spacing). */
+.atlas-topnav-wordmark-slot {
+  container-type: inline-size;
+}
+
+.atlas-wordmark-fluid {
+  white-space: nowrap;
+  font-size: max(5.5px, min(var(--atlas-grid-title), calc(100cqi / 15.5)));
+  line-height: 1.15;
+}
+
+/* TopNav search field (mobile): placeholder + text track the field width */
+.atlas-topnav-search-slot {
+  container-type: inline-size;
+}
+
+/* Uppercase + tracking; longest mobile copy ≈ “SEARCH 9999 PROFILES…” */
+.atlas-search-input-fluid {
+  font-size: max(5.5px, min(var(--atlas-grid-search), calc(100cqi / 22)));
+}
+
 /* ═══════════════════════════════════════════════════════════════════
    Mobile-specific overrides (< 640px)
    Tighter radius, reduced stagger, touch-friendly pill handling

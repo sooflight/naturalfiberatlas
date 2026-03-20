@@ -440,9 +440,21 @@ function TopNavInner({
         className="shrink-0 border-b border-white/[0.06]"
         style={{ backgroundColor: ATLAS_AMBIENT_BG, transition: ATLAS_AMBIENT_TRANSITION }}
       >
-        <div className={`flex min-h-14 items-center justify-between gap-3 px-4 sm:px-[3%] ${isMobile ? "py-2" : ""}`}>
-          <div className="flex min-w-0 shrink-0 items-center gap-3">
-            <button onClick={resetToAll} className="cursor-pointer text-[#e8e0d0]" style={{ ...NAV_FONT_STYLE, ...ATLAS_GRID_TITLE_STYLE }}>
+        <div
+          className={`flex min-h-14 items-center gap-3 px-4 sm:px-[3%] ${isMobile ? "py-2" : "justify-between"}`}
+        >
+          <div
+            className={`flex min-w-0 items-center gap-3 ${isMobile ? "atlas-topnav-wordmark-slot flex-1" : "shrink-0"}`}
+          >
+            <button
+              onClick={resetToAll}
+              className={`cursor-pointer text-left whitespace-nowrap text-[#e8e0d0] ${isMobile ? "atlas-wordmark-fluid min-w-0 max-w-full" : ""}`}
+              style={
+                isMobile
+                  ? { ...NAV_FONT_STYLE, fontWeight: ATLAS_GRID_TITLE_STYLE.fontWeight }
+                  : { ...NAV_FONT_STYLE, ...ATLAS_GRID_TITLE_STYLE }
+              }
+            >
               Natural Fiber Atlas
             </button>
             {!isMobile && (
@@ -451,7 +463,13 @@ function TopNavInner({
               </span>
             )}
           </div>
-          <div className={isMobile ? "relative w-full max-w-[280px] shrink-0" : ATLAS_SEARCH_WRAPPER_CLASS}>
+          <div
+            className={
+              isMobile
+                ? "atlas-topnav-search-slot relative min-w-0 flex-1"
+                : ATLAS_SEARCH_WRAPPER_CLASS
+            }
+          >
             <Search size={13} className={ATLAS_SEARCH_ICON_CLASS} />
             <input
               type="text"
@@ -462,8 +480,8 @@ function TopNavInner({
                 const next = e.target.value;
                 setSearch(next);
               }}
-              className={ATLAS_SEARCH_INPUT_CLASS}
-              style={ATLAS_GRID_SEARCH_STYLE}
+              className={`${ATLAS_SEARCH_INPUT_CLASS}${isMobile ? " atlas-search-input-fluid" : ""}`}
+              style={isMobile ? { ...NAV_FONT_STYLE } : ATLAS_GRID_SEARCH_STYLE}
             />
             {visibleSearch && (
               <button
