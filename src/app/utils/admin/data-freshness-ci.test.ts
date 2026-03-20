@@ -7,7 +7,7 @@ import { runCensus } from "./dataCensus";
  */
 const BUNDLED_CENSUS_BASELINE = {
   navLeafProfiles: 119,
-  passports: 55,
+  passports: 56,
   suppliers: 5,
   evidence: 9,
   supplierLinks: 11,

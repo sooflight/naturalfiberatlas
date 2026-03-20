@@ -1,7 +1,7 @@
 {
   "fibers": {
     "modal": {
-      "status": "published",
+      "status": "draft",
       "galleryImages": [
         {
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619281/atlas/arlz1b51vhdn3orb1ry3.jpg",
@@ -21,7 +21,7 @@
       "status": "draft"
     },
     "plying": {
-      "status": "draft"
+      "status": "archived"
     },
     "organic-cotton": {
       "galleryImages": [
@@ -1720,6 +1720,90 @@
     },
     "fique": {
       "status": "published"
+    },
+    "fig-barkcloth": {
+      "galleryImages": [
+        {
+          "url": "https://instagram.fyvr2-1.fna.fbcdn.net/v/t39.30808-6/468497064_17939460134940738_2199318872237808885_n.jpg?stp=dst-jpg_e35_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InRocmVhZHMuQ0FST1VTRUxfSVRFTS5pbWFnZV91cmxnZW4uMTQ0MHgxODAwLnNkci5mMzA4MDguZGVmYXVsdF9pbWFnZS5jMiJ9&_nc_ht=instagram.fyvr2-1.fna.fbcdn.net&_nc_cat=106&_nc_oc=Q6cZ2gGDE6tSCetncMU6xXEALuFcs51xQgX7b7HSdOGgAZ2qJezSBkpCxwyVxwotuipyxvwsSqpxFH371-YX-kjljmbS&_nc_ohc=MOo0RtNxRFwQ7kNvwE8t7ru&_nc_gid=XR4bPNfOKHRlx2JhSssvhQ&edm=AKr904kAAAAA&ccb=7-5&ig_cache_key=MzQyMzQxMzA2NTMwMDMyODAyNg%3D%3D.3-ccb7-5&oh=00_AfxMv6J3RpIl22ROlH-C81x2KX1QiWcOQBuwDwWKfQFoYQ&oe=69C2DE63&_nc_sid=23467f"
+        },
+        {
+          "url": "https://smarthistory.org/wp-content/uploads/2023/08/Back_cloth_preparation_from_a_fig_tree_in_Uganda_03.jpg"
+        },
+        {
+          "url": "https://pbs.twimg.com/media/GAhzrRnW4AEXKMY.jpg"
+        },
+        {
+          "url": "https://scontent.fyvr1-1.fna.fbcdn.net/v/t39.30808-6/481272039_1706752316905260_4338829477590228719_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=e06c5d&_nc_ohc=96UNniPVCIUQ7kNvwFOPnoG&_nc_oc=Adpf9V2oLgr8OmRF5b3qpxCzngEf-4RxNBQStCTVTDWKIHkWEjS1eWpeMLJKloTH-q6h-BMGWCYsOcuNf7U8tfg3&_nc_zt=23&_nc_ht=scontent.fyvr1-1.fna&_nc_gid=5ba9OQHbrj45lWNfwIhcVw&_nc_ss=7a30f&oh=00_Afw2HReur4lfIdzApwALmK_MKWbPE446RYGYctKphpMbDQ&oe=69C30400"
+        },
+        {
+          "url": "https://instagram.fyvr2-1.fna.fbcdn.net/v/t39.30808-6/468448941_17939460221940738_7995358322626120548_n.jpg?stp=dst-jpg_e35_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InRocmVhZHMuQ0FST1VTRUxfSVRFTS5pbWFnZV91cmxnZW4uMTQ0MHgxODAwLnNkci5mMzA4MDguZGVmYXVsdF9pbWFnZS5jMiJ9&_nc_ht=instagram.fyvr2-1.fna.fbcdn.net&_nc_cat=106&_nc_oc=Q6cZ2gGDE6tSCetncMU6xXEALuFcs51xQgX7b7HSdOGgAZ2qJezSBkpCxwyVxwotuipyxvwsSqpxFH371-YX-kjljmbS&_nc_ohc=uG1L0wgLBGIQ7kNvwHJZzUl&_nc_gid=XR4bPNfOKHRlx2JhSssvhQ&edm=AKr904kAAAAA&ccb=7-5&ig_cache_key=MzQyMzQxMzA2NDIxODM0MjM3MA%3D%3D.3-ccb7-5&oh=00_AfyK-_i0UexSYGBG9aLhKOkGyaNuKtn6ch_Vv8cv_uI-vw&oe=69C2FA50&_nc_sid=23467f"
+        },
+        {
+          "url": "https://instagram.fyvr2-1.fna.fbcdn.net/v/t39.30808-6/468391874_17939460416940738_2924287540398949773_n.jpg?stp=dst-jpg_e35_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InRocmVhZHMuQ0FST1VTRUxfSVRFTS5pbWFnZV91cmxnZW4uMTQ0MHgxODAwLnNkci5mMzA4MDguZGVmYXVsdF9pbWFnZS5jMiJ9&_nc_ht=instagram.fyvr2-1.fna.fbcdn.net&_nc_cat=106&_nc_oc=Q6cZ2gGDE6tSCetncMU6xXEALuFcs51xQgX7b7HSdOGgAZ2qJezSBkpCxwyVxwotuipyxvwsSqpxFH371-YX-kjljmbS&_nc_ohc=_436dM3BA4YQ7kNvwFB9ehT&_nc_gid=XR4bPNfOKHRlx2JhSssvhQ&edm=AKr904kAAAAA&ccb=7-5&ig_cache_key=MzQyMzQxMzA2Nzg5MjUwMDkzMw%3D%3D.3-ccb7-5&oh=00_AfyjgZomvCHnoMO9Yh_vKtJwK5K55fqiOiaY08pLL9xwrA&oe=69C2FFFA&_nc_sid=23467f"
+        },
+        {
+          "url": "https://encyclocraftsapr.com/wp-content/uploads/2018/08/word-image-10-560x420.jpeg"
+        },
+        {
+          "url": "https://www.gorillatrackings.com/wp-content/uploads/2023/01/barkcloth-1000x454.jpg"
+        },
+        {
+          "url": "https://eucarlwears.com/wp-content/uploads/2022/12/1670696506361-768x768.webp"
+        },
+        {
+          "url": "https://eucarlwears.com/wp-content/uploads/2022/12/1670696521170-768x768.webp"
+        },
+        {
+          "url": "https://pbs.twimg.com/media/GAhzrRnW4AEXKMY?format=jpg&name=large"
+        },
+        {
+          "url": "https://pbs.twimg.com/media/GAhztO2WkAAyPqN?format=jpg&name=large"
+        },
+        {
+          "url": "https://sma-search-api.ku.edu/271eaba00a5896ad7d382f6b3cfa5eeedb2599d8ed4071cc8fc9bad7b36fd308/2017.0084.jpg"
+        },
+        {
+          "url": "https://blogs.uwe.ac.uk/healthy-waters/wp-content/uploads/sites/35/2022/08/Picture2-1.jpg"
+        },
+        {
+          "url": "https://weavearealpeace.org/wp-content/uploads/2023/05/Barkcloth-of-Uganda.jpg"
+        },
+        {
+          "url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ_6zA0f83gjxMKBK5xbOqJStR91aez3f95WQ&s"
+        },
+        {
+          "url": "https://media.roundaboutcommunity.com/i/bark-cloth-thumbnail-image.jpg"
+        }
+      ],
+      "image": "https://instagram.fyvr2-1.fna.fbcdn.net/v/t39.30808-6/468497064_17939460134940738_2199318872237808885_n.jpg?stp=dst-jpg_e35_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InRocmVhZHMuQ0FST1VTRUxfSVRFTS5pbWFnZV91cmxnZW4uMTQ0MHgxODAwLnNkci5mMzA4MDguZGVmYXVsdF9pbWFnZS5jMiJ9&_nc_ht=instagram.fyvr2-1.fna.fbcdn.net&_nc_cat=106&_nc_oc=Q6cZ2gGDE6tSCetncMU6xXEALuFcs51xQgX7b7HSdOGgAZ2qJezSBkpCxwyVxwotuipyxvwsSqpxFH371-YX-kjljmbS&_nc_ohc=MOo0RtNxRFwQ7kNvwE8t7ru&_nc_gid=XR4bPNfOKHRlx2JhSssvhQ&edm=AKr904kAAAAA&ccb=7-5&ig_cache_key=MzQyMzQxMzA2NTMwMDMyODAyNg%3D%3D.3-ccb7-5&oh=00_AfxMv6J3RpIl22ROlH-C81x2KX1QiWcOQBuwDwWKfQFoYQ&oe=69C2DE63&_nc_sid=23467f",
+      "about": "Olubugo is the traditional barkcloth craft of the Baganda people in southern Uganda, made from the inner bark of the mutuba fig tree (Ficus natalensis). The tradition is among the oldest known non-woven textile practices and is historically tied to the Buganda kingdom, especially the Ngonge clan lineage and the hereditary workshop of Kaboggoza. In early periods, chief craftsmen produced barkcloth for royal households as well as community members. Production follows a pre-weaving method: bark is usually harvested in the rainy season, worked in open sheds so it does not dry too quickly, and beaten with wooden mallets until it expands into a soft terracotta cloth. Color also carried social meaning, with terracotta worn by common people and black or white variants associated with kings and chiefs. Olubugo has long been worn toga-style by both men and women, often with a matching waist sash for women, and it has also been made into curtains, mosquito screens, bags, wallets, bedding, storage wares, and slippers. Over time, barkcloth production spread to workshops across much of Buganda, then sharply declined in the nineteenth century as imported cotton cloth entered regional trade through Arab caravan routes. Even after that decline, barkcloth remained central in coronations, funerals, healing and vitality rites, and other cultural gatherings. Current revival efforts treat olubugo as both a living craft and a core marker of Baganda cultural identity. In 2005, UNESCO recognized Ugandan barkcloth making as a Masterpiece of the Oral and Intangible Cultural Heritage of Humanity."
+    },
+    "columbia": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619194/atlas/qxsndjrpiyxv0a0hyeij.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1774003123/atlas/lss7qymbkamj4539vkfx.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1774003125/atlas/fybw50s00neretitap4y.jpg"
+        }
+      ]
+    },
+    "corriedale": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1774003192/atlas/muakwkkwoer8p82yvs3z.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1774003191/atlas/aamvfbtzphvkiwbhcxpk.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619196/atlas/bponjp7hngpb2vnm0jfo.jpg"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1774003192/atlas/muakwkkwoer8p82yvs3z.jpg"
     }
   },
   "quoteData": {
