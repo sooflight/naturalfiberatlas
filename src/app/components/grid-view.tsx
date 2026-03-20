@@ -412,11 +412,15 @@ export function GridView({
     [selectedId, fiberIndex],
   );
 
+  const hasSeenExternalFilterRef = useRef(false);
   useEffect(() => {
-    if (!selectedId) return;
     if (externalCategory === undefined && externalFiberSubcategory === undefined) return;
-    setSelectedId(null);
-  }, [externalCategory, externalFiberSubcategory, selectedId]);
+    if (!hasSeenExternalFilterRef.current) {
+      hasSeenExternalFilterRef.current = true;
+      return;
+    }
+    setSelectedId((current) => (current ? null : current));
+  }, [externalCategory, externalFiberSubcategory]);
 
   useEffect(() => {
     if (!selectedId) {

@@ -326,6 +326,25 @@ describe("GridView image sync", () => {
     });
   });
 
+  it("keeps expanded profile open when external nav filters do not change", async () => {
+    const sampleFiber = bundledFibers[0];
+    render(
+      <MemoryRouter>
+        <AtlasDataProvider>
+          <GridView hideHeader externalSearch={sampleFiber.name} externalCategory={sampleFiber.category} />
+        </AtlasDataProvider>
+      </MemoryRouter>,
+    );
+
+    fireEvent.click(await screen.findByTestId(`profile-card-${sampleFiber.id}`));
+
+    await waitFor(() => {
+      const calls = vi.mocked(plateLayout.computePlateLayout).mock.calls;
+      const lastCall = calls.at(-1);
+      expect(lastCall?.[0]).toBe(sampleFiber.id);
+    });
+  });
+
   it("hides draft profiles in non-admin mode", async () => {
     const sampleFiber = bundledFibers[0];
 
