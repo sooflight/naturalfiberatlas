@@ -14,6 +14,10 @@ import { resolveAdminShellRouteState, isAdminBaseOrImagesRoute } from "./admin-r
 import { WorkbenchStateProvider } from "./WorkbenchStateContext";
 import { SmartContextPane } from "./SmartContextPane";
 import { KnowledgeHeaderControls } from "./header/KnowledgeHeaderControls";
+import {
+  shouldHandleHistoryShortcut,
+  shouldToggleInspectorShortcut,
+} from "./atlas-workbench-shortcuts";
 import { dataSource } from "../../data/data-provider";
 
 // Lazy load domains
@@ -60,32 +64,6 @@ function readPersistedShellState(): {
   } catch {
     return {};
   }
-}
-
-function isTypingTarget(target: EventTarget | null): boolean {
-  const element = target as HTMLElement | null;
-  return (
-    element?.tagName === "INPUT" ||
-    element?.tagName === "TEXTAREA" ||
-    Boolean(element?.isContentEditable)
-  );
-}
-
-export function shouldToggleInspectorShortcut(event: KeyboardEvent): boolean {
-  if (event.repeat) return false;
-  if (isTypingTarget(event.target)) return false;
-  return event.altKey && !event.ctrlKey && !event.metaKey && event.key.toLowerCase() === "i";
-}
-
-export function shouldHandleHistoryShortcut(event: KeyboardEvent): "undo" | "redo" | null {
-  if (isTypingTarget(event.target)) return null;
-  const isMeta = event.metaKey || event.ctrlKey;
-  if (!isMeta) return null;
-
-  const key = event.key.toLowerCase();
-  if (key === "z" && !event.shiftKey) return "undo";
-  if ((key === "z" && event.shiftKey) || key === "y") return "redo";
-  return null;
 }
 
 function WorkbenchContent({ 
@@ -137,14 +115,22 @@ function AtlasWorkbenchShellContent() {
   const [isInspectorOpen, setIsInspectorOpen] = useState(Boolean(persistedShellState.inspectorOpen));
   const [viewMode, setViewMode] = useState<ViewMode>(persistedShellState.viewMode ?? "list");
   const [selectionHistory, setSelectionHistory] = useState<string[]>([]);
+  const [shouldAnimateStatusDot, setShouldAnimateStatusDot] = useState(false);
   const [knowledgeAction, setKnowledgeAction] = useState<{
     action: "next-section" | "next-weak" | "toggle-reference" | "save-draft";
     at: number;
   } | null>(null);
   const adminSave = useAdminSave();
+  const getIntentReason = useCallback((): string => {
+    const withIntent = adminSave as unknown as { lastIntent?: { reason?: string } };
+    return withIntent.lastIntent?.reason ?? "";
+  }, [adminSave]);
   const navigate = useNavigate();
   const location = useLocation();
   const params = useParams<{ nodeId?: string }>();
+  const prevDirtyRef = React.useRef(adminSave.isDirty);
+  const prevSaveStatusRef = React.useRef(adminSave.saveStatus);
+  const prevIntentReasonRef = React.useRef(getIntentReason());
 
   // Sync from URL: deep links to profile-base/:nodeId, and reset to ImageBase on /admin or /admin/images
   useEffect(() => {
@@ -178,6 +164,31 @@ function AtlasWorkbenchShellContent() {
       }),
     );
   }, [activeMode, isInspectorOpen, targetEntityId, topLevel, viewMode]);
+
+  useEffect(() => {
+    const wasDirty = prevDirtyRef.current;
+    const prevStatus = prevSaveStatusRef.current;
+    const prevIntentReason = prevIntentReasonRef.current;
+    const currentIntentReason = getIntentReason();
+    const isNewPushIntent =
+      /push/i.test(currentIntentReason) && currentIntentReason !== prevIntentReason;
+    const changedDetected = adminSave.isDirty && !wasDirty;
+    const saveStarted = adminSave.saveStatus === "saving" && prevStatus !== "saving";
+    const saveCompleted = adminSave.saveStatus === "saved" && prevStatus !== "saved";
+
+    if (changedDetected || saveStarted || saveCompleted || isNewPushIntent) {
+      setShouldAnimateStatusDot(true);
+      const timeout = window.setTimeout(() => setShouldAnimateStatusDot(false), 1300);
+      prevDirtyRef.current = adminSave.isDirty;
+      prevSaveStatusRef.current = adminSave.saveStatus;
+      prevIntentReasonRef.current = currentIntentReason;
+      return () => window.clearTimeout(timeout);
+    }
+
+    prevDirtyRef.current = adminSave.isDirty;
+    prevSaveStatusRef.current = adminSave.saveStatus;
+    prevIntentReasonRef.current = currentIntentReason;
+  }, [adminSave.isDirty, adminSave.saveStatus, getIntentReason]);
 
   const setTargetEntity = useCallback((nextId: string | undefined) => {
     setTargetEntityId((current) => {
@@ -381,10 +392,17 @@ function AtlasWorkbenchShellContent() {
                 ? "bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-[0_0_15px_rgba(59,130,246,0.08)]" 
                 : "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
             )}>
-              <div className={cn(
-                "w-1.5 h-1.5 rounded-full",
-                adminSave.isDirty ? "bg-blue-400 animate-pulse" : "bg-emerald-500"
-              )} />
+              <div className="relative flex h-2 w-2 items-center justify-center">
+                {shouldAnimateStatusDot && (
+                  <span className="absolute inline-flex h-full w-full rounded-full bg-emerald-400/70 animate-ping" />
+                )}
+                <span
+                  className={cn(
+                    "relative inline-flex h-1.5 w-1.5 rounded-full bg-emerald-500 transition-all duration-200",
+                    adminSave.isDirty && "bg-emerald-400",
+                  )}
+                />
+              </div>
               {saveStatusLabel}
             </div>
 

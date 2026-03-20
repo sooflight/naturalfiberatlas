@@ -15,6 +15,10 @@ import {
   writeDataFileWithBackups,
 } from '../scripts/export-utils';
 import { mergePreservingExistingImages } from '../src/app/components/admin/node-editor/image-save-guard';
+import {
+  buildPromotedOverridesWritePayload,
+  shouldWritePromotedOverrides,
+} from '../src/app/utils/admin/promoted-overrides-sync';
 
 
 function readBody(req: IncomingMessage): Promise<string> {
@@ -306,11 +310,19 @@ function adminPlugin(): Plugin {
         const payload = (body && typeof body === 'object' && !Array.isArray(body))
           ? body
           : {};
-        const out = `${JSON.stringify(payload, null, 2)}\n`;
-        fs.writeFileSync(promotedOverridesFile, out, 'utf-8');
+        const nextOut = `${JSON.stringify(payload, null, 2)}\n`;
+        const current = fs.existsSync(promotedOverridesFile)
+          ? fs.readFileSync(promotedOverridesFile, 'utf-8')
+          : null;
+        const out = buildPromotedOverridesWritePayload(nextOut, current);
+        const shouldWrite = out !== null && shouldWritePromotedOverrides(nextOut, current);
+        if (shouldWrite && out !== null) {
+          fs.writeFileSync(promotedOverridesFile, out, 'utf-8');
+        }
         jsonRes(res, {
           ok: true,
-          bytes: out.length,
+          written: shouldWrite,
+          bytes: (out ?? current ?? '').length,
           path: path.relative(path.resolve(__dirname, '..'), promotedOverridesFile),
         });
       }));

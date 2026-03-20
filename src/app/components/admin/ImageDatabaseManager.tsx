@@ -68,13 +68,13 @@ import {
   getPreviewSizes,
 } from "./image-preview-utils";
 import { ProfileStatusCircle } from "./ProfileStatusCircle";
+import { SEEDED_TAG_PATHS } from "./image-tag-paths";
 
 // ── Constants ────────────────────────────────────────────
 
 const SEARCH_DEBOUNCE_MS = 150;
 const ZOOM_DEFAULT = 120;
 const INTERNAL_IMAGE_REORDER_MIME = 'application/x-atlas-image-reorder';
-export const SEEDED_TAG_PATHS = ["fiber/plant/bark", "fiber/plant/fruit", "fiber/plant/grass"] as const;
 const PRIORITY_PREVIEW_COUNT = 4;
 const NAV_PARENT_IMAGES_KEY = "atlas:nav-parent-images";
 

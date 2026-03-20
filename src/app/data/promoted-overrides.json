@@ -1,10 +1,18 @@
 {
   "fibers": {
     "modal": {
-      "status": "published"
+      "status": "published",
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619281/atlas/arlz1b51vhdn3orb1ry3.jpg",
+          "orientation": "landscape"
+        }
+      ],
+      "category": "fiber"
     },
     "bamboo-viscose": {
-      "status": "published"
+      "status": "published",
+      "category": "fiber"
     },
     "looms": {
       "status": "draft"
@@ -14,6 +22,1685 @@
     },
     "plying": {
       "status": "draft"
+    },
+    "organic-cotton": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771660007/atlas/pmkztjyyr8keuydhjssm.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771722544/atlas/oft4lmrqtez1m59vm4ec.jpg"
+        },
+        {
+          "url": "https://cdn.celticandco.com/cdn-cgi/image/w=1000,f=auto/original/133619.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771659941/atlas/hrgf79vpomknr6inlwdq.jpg"
+        },
+        {
+          "url": "https://cdn.celticandco.com/cdn-cgi/image/w=1000,f=auto/original/133622.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/c_crop,x_23,y_17,w_1036,h_777/v1771537794/tui0czwsd4oxaijakgjc.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/ee/27/f3/ee27f373907bb7d47d19b98fac40f00d.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771722542/atlas/hafsv5yualbb3ll565kh.jpg"
+        }
+      ],
+      "name": "Cotton",
+      "about": "Cotton is produced from non-genetically modified cotton plants (Gossypium spp.) cultivated according to strict organic agricultural standards that prohibit synthetic pesticides, herbicides, and fertilizers. Instead, farmers rely on composting, crop rotation, beneficial insects, and trap cropping to maintain soil health and manage pests. Approximately 80% of organic cotton is rain-fed, dramatically reducing its water footprint compared to conventional cotton, which can require 10,000+ liters per kilogram. The staple fibers — classified as short (< 25mm), medium, or long-staple (> 32mm) — are ginned, carded, and spun using mechanical processes. Indian Shankar-6 and Turkish Aegean varieties are prized for their medium-to-long staple lengths and consistent quality. The resulting fabric is soft, breathable, hypoallergenic, and free from chemical residues that can cause skin irritation. Organic cotton now represents roughly 1.4% of global cotton production, with India alone accounting for over 50% of the world's certified supply. GOTS certification ensures the entire supply chain — from harvesting through manufacturing — meets rigorous environmental and social criteria."
+    },
+    "wool": {
+      "galleryImages": [
+        {
+          "url": "https://www.toyoboshi.co.jp/en/wp-content/uploads/2025/05/wool_img_CP-00151-33.jpg"
+        },
+        {
+          "url": "https://www.toyoboshi.co.jp/en/wp-content/uploads/2025/05/wool_img_6165.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/e1/34/72/e1347263b6298d5df1364575c0ba30cf.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619186/atlas/drexoxrl6qgqm3uchmlg.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619189/atlas/vhxmkgun6gmaeg6nzhbs.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619190/atlas/av8tbuy1pd3bkqf7nyd7.jpg"
+        },
+        {
+          "url": "https://www.toyoboshi.co.jp/en/wp-content/uploads/2025/06/PICT0659-scaled.jpg"
+        }
+      ],
+      "image": "https://www.toyoboshi.co.jp/en/wp-content/uploads/2025/05/wool_img_CP-00151-33.jpg"
+    },
+    "lyocell": {
+      "galleryImages": [
+        {
+          "url": "https://www.pslbg.org/wp-content/uploads/2024/05/Rainbow-Eucalyptus-1-773x1030.jpg"
+        },
+        {
+          "url": "https://www.woolfacts.com/wp-content/uploads/2025/10/plant-wool-tencel-800x563.jpg"
+        },
+        {
+          "url": "https://wenorwegians.us/cdn/shop/articles/image_1.jpg?v=1618664273&width=2048"
+        },
+        {
+          "url": "https://cdn.shoplightspeed.com/shops/626737/files/13271068/adobestock-207727905.jpg"
+        },
+        {
+          "url": "https://rockdaisyapparel.com/cdn/shop/files/tencel-header.jpg?v=1700120166&width=1200"
+        },
+        {
+          "url": "https://a.storyblok.com/f/311928/1920x1230/3b76fb78a3/fiber-transform-process.jpg/m/"
+        },
+        {
+          "url": "https://a.storyblok.com/f/311928/1920x1230/5257019073/nature-tree-fiber.jpg/m/"
+        },
+        {
+          "url": "https://eucalypsohome.com/cdn/shop/files/sustainably-managed-eucalyptus-forest-tencel.jpg?v=1767646179&width=4608"
+        }
+      ],
+      "image": "https://www.pslbg.org/wp-content/uploads/2024/05/Rainbow-Eucalyptus-1-773x1030.jpg",
+      "category": "fiber",
+      "status": "published"
+    },
+    "hemp": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773617761/atlas/kopx9umk0kiraorjmqkz.png"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773617425/atlas/npyr2lsidpuffk7rnizi.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773637389/atlas/ly8bxn5vsbpyhmfrqynv.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619070/atlas/dnpcv9iks9nn64cpcbuh.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773621194/atlas/q4tyimhvc7lhuzfoe2ux.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619069/atlas/o5brgx3sqnnwbd7re1ic.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619082/atlas/rki8swhrri03gmtjacrm.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771633173/atlas/mlapck15btekiyb9wwmi.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619073/atlas/yta1tistuaszfx9peetu.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619067/atlas/uktcb2if8u7z0eoaqdrz.jpg"
+        },
+        {
+          "url": "https://allianceflaxlinenhemp.eu/rails/active_storage/blobs/redirect/eyJfcmFpbHMiOnsiZGF0YSI6MjkwLCJwdXIiOiJibG9iX2lkIn19--a8a74e21ad792159dee3a1dc743a69dd2799fdea/chanvre%20a%20travers%20histoire.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619075/atlas/jdsr2nwfbfgyfimudrff.jpg"
+        },
+        {
+          "url": "https://newspack-coloradosun.s3.amazonaws.com/wp-content/uploads/2019/10/Hemp-7.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/originals/04/e5/c2/04e5c26f85759591758de800cad90423.jpg"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773617761/atlas/kopx9umk0kiraorjmqkz.png",
+      "sustainability": {
+        "environmentalRating": 2,
+        "waterUsage": 1,
+        "carbonFootprint": 2,
+        "chemicalProcessing": 2,
+        "circularity": 4,
+        "biodegradable": true,
+        "recyclable": true,
+        "certifications": [
+          "GOTS",
+          "European Flax",
+          "OEKO-TEX"
+        ]
+      }
+    },
+    "ramie": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773617599/atlas/norhci5sujyyxuaswrot.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619101/atlas/zjnehkg1uphhf6reyrjx.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/c_crop,x_0,y_0,w_790,h_755/v1771619103/atlas/oiiebhob1fuaethvjfhd.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619104/atlas/ximcswutj743kuvcxizg.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/e4/1c/51/e41c517c664d7f96b00a848bc4eea09f.jpg"
+        },
+        {
+          "url": "https://media.jamesdunloptextiles.com/image-transform/8cu89TjtOYIFJGZftnClsWL5NRc=/fit=cover,width=563,height=423,format=auto/https://media.jamesdunloptextiles.com/media/news/2022_05/26ea8bc023cf110f9f112c336a2e8315--knit-crochet-spinning_MqRLCCU.jpg"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773617599/atlas/norhci5sujyyxuaswrot.jpg"
+    },
+    "viscose-rayon": {
+      "category": "fiber",
+      "status": "published",
+      "galleryImages": [
+        {
+          "url": "https://2d73cea0.delivery.rocketcdn.me/app/uploads/2022/09/forest-greenery-viscose-630x474.jpg"
+        },
+        {
+          "url": "https://images.squarespace-cdn.com/content/v1/60458ebee63f657c39a44622/1622003429074-8YISCFAIK9VS4GDNUNX8/tencel+process+for+tsg+blog.png"
+        },
+        {
+          "url": "https://media.microlabgallery.com/142-17%20TL1%20Rayon%201aTN.jpg"
+        },
+        {
+          "url": "https://www.aprayon.com/wp-content/uploads/2022/09/viscose-rayon-manufacturing-process.jpg"
+        },
+        {
+          "url": "https://i.etsystatic.com/8671835/r/il/ccedea/4955420778/il_570xN.4955420778_qr0k.jpg"
+        },
+        {
+          "url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEheeAAekfwNRPgc1DBa6HxD2keuVarNA_1qJhr4B8hSwWQDs3XFBWzGm3t8vvZ8RM59gURdbVmE9ZffVUgq4H3PJyGe7YFi1h8BH3bjKiu9v_SVxQd9RN1aO-3kXDUUZMuBJF4AH9A9kcs/w1200-h630-p-k-no-nu/viscose-manufacturing-textile-sphere.jpg"
+        },
+        {
+          "url": "https://sino-silk.com/wp-content/uploads/2024/08/Viscose-vs-Rayon-1.jpg"
+        },
+        {
+          "url": "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiKKmhRgFVv5Nw9GvPcl8I61ReWuAdhRsh5xj3OBWDXjjKj9jZgTm4xuX4ZyjOC9pskVCCxgWPsHAjJD0zGi_xk0HQHfNztTDO852LSZT_hFj5k-q6bIsN-Aybs02TKeswSBprZCQBjz50/s1600/Viscose+Manufacturing.png"
+        },
+        {
+          "url": "https://www.alpinemeadowsguild.org/images/ramie2.jpg"
+        }
+      ],
+      "image": "https://2d73cea0.delivery.rocketcdn.me/app/uploads/2022/09/forest-greenery-viscose-630x474.jpg"
+    },
+    "felt": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619184/atlas/xbtkwreyjuogrzymhkib.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619357/atlas/vkzrtpdvm0ajacx3ga8z.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619358/atlas/aw9qzjj07zlh0xikcrns.jpg"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619184/atlas/xbtkwreyjuogrzymhkib.jpg"
+    },
+    "cork": {
+      "galleryImages": [
+        {
+          "url": "https://i.pinimg.com/1200x/e6/5e/60/e65e60dc4ce9535edbbf19a99fc51517.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/91/51/e5/9151e5911a809515b430fdf636327755.jpg"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1714408620909-ae74e86a60c3?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxjb3JrJTIwYmFyayUyMG9hayUyMHRyZWUlMjBoYXJ2ZXN0fGVufDF8fHx8MTc3MTk4ODg2NHww&ixlib=rb-4.1.0&q=80&w=1080"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/cf/e0/4a/cfe04a75f539ba04ade13b0470c9d7b2.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/9d/a4/a3/9da4a3956ef362f36431b159eb6e0674.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/b6/06/df/b606df6402f72c94e1c0325fdd0021b0.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/c4/24/02/c42402aff26b2b444e8f6eaa0055b9f6.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/34/e1/59/34e1594924d5773c4125e7186e04a678.jpg"
+        }
+      ],
+      "image": "https://i.pinimg.com/1200x/e6/5e/60/e65e60dc4ce9535edbbf19a99fc51517.jpg"
+    },
+    "flax-linen": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771539245/vpznodascnuqzj8xptd8.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/c1/06/17/c1061749d534a853efc33e69413b927f.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619089/atlas/gaggmu9ccig2plu26vue.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619085/atlas/c5bij9fpoikcxwuppbjh.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/59/0d/58/590d58f6a1323bc986a029eade391ca1.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619086/atlas/aiwfp2jfeixwvm88za9t.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/f7/c6/ed/f7c6ed8fe44ca30fe957a84a0fda2dce.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/05/55/e5/0555e51000a0c3c96effc963a67098ec.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/55/ec/fc/55ecfc33a04a584129f63687929290ef.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619091/atlas/semplekcxck2jlsjfxpr.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/88/dd/2a/88dd2a31000533f3e42330f368fa6603.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/04/5a/e7/045ae70fd3547f31f37e5aaca85cc208.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/36/1e/0a/361e0a21651864223251bd9340098365.jpg"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771539245/vpznodascnuqzj8xptd8.jpg"
+    },
+    "jute": {
+      "galleryImages": [
+        {
+          "url": "https://cdn.create.vista.com/api/media/small/452219996/stock-photo-huge-jute-fields-rows-jute-trying-touch-sky-jute-field"
+        },
+        {
+          "url": "https://cdn.create.vista.com/api/media/small/655648600/stock-photo-green-raw-jute-plant-top-view-pattern-texture-can-used"
+        },
+        {
+          "url": "https://media.jamesdunloptextiles.com/image-transform/cGr5Tvek0EhXC9uoVkXzEWV6YiA=/fit=cover,width=1128,height=750,format=auto/https://media.jamesdunloptextiles.com/media/news/2022_05/shutterstock_1340391350.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619095/atlas/iwpky4ruxdodh64nldsc.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619097/atlas/ytnsyiolzlaesqw7r3os.jpg"
+        },
+        {
+          "url": "https://cdn.create.vista.com/api/media/small/612221846/stock-photo-raw-jute-fiber-hanging-sun-drying-jute-cultivation-assam-india"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619092/atlas/nepjatyfyca2jmoxycdz.jpg"
+        },
+        {
+          "url": "https://cdn.create.vista.com/api/media/small/315725286/stock-photo-closeup-image-green-jute-plants-jute-cultivation-assam-india-jute"
+        }
+      ],
+      "image": "https://cdn.create.vista.com/api/media/small/452219996/stock-photo-huge-jute-fields-rows-jute-trying-touch-sky-jute-field"
+    },
+    "nettle": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771714087/atlas/vm96tfgwy69otsdf9ilp.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771828917/atlas/mpzb1fd0p8coaca1uptd.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771828918/atlas/rynjjzlzwnlwctloisvv.jpg"
+        },
+        {
+          "url": "https://inaturalist-open-data.s3.amazonaws.com/photos/61707441/large.jpeg"
+        },
+        {
+          "url": "https://roundthebendfarm.org/wp-content/uploads/2020/04/DSC_0067-scaled.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771828910/atlas/yhwt0izk9bfiypxoojib.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/c_crop,x_13,y_12,w_604,h_810/v1771828909/atlas/ndamslbpawqsynq8fzah.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771828911/atlas/w4udqri9siwbq1saj1xj.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771828912/atlas/qdy2z5lliiaw3zwwtemw.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771828913/atlas/xgvvsviy1w7f2tqz1q4g.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771828914/atlas/vr3xay6zlrh6fgcq2oaz.webp"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771828914/atlas/qxhixvgykto5oiit7lys.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771828916/atlas/icruy7klvxqozczz4vfi.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771828919/atlas/vknwzfqxxxssdm4ogjcj.jpg"
+        },
+        {
+          "url": "https://live.staticflickr.com/7400/27546490314_56b60a783e_b.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771828915/atlas/putehpjhtofvsopcamqm.jpg"
+        },
+        {
+          "url": "https://trueloveseeds.com/cdn/shop/products/BBR-Nettle_1_1024x1024.jpg?v=1571609442"
+        },
+        {
+          "url": "https://northernwoodlands.org/images/jcogs_img/cache/nettle1_-_28de80_-_af91a5e2b5b595881b8dcb537ba2f41ad86f1393.webp"
+        },
+        {
+          "url": "https://cdn.shopify.com/s/files/1/0072/0909/1117/files/stinging_nettle2.jpg"
+        },
+        {
+          "url": "https://images.squarespace-cdn.com/content/v1/56104e42e4b0827aaf01c65e/1495032271622-BCYZEE5CFZZ01HMHS2IX/image-asset.jpeg"
+        },
+        {
+          "url": "https://www.adaptiveseeds.com/wp-content/uploads/2017/12/Stinging-Nettle-2.jpg"
+        }
+      ]
+    },
+    "kapok": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771723041/atlas/bymapkiz4ietts4t7eki.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771723035/atlas/n4eo2tcqe1tto3oazhsh.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771723037/atlas/qzojfabdpwowzoywbhin.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771723043/atlas/axe5atqmtswjlujv6km6.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771723039/atlas/slelcrvpywztgc3pdil1.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771723042/atlas/boqoj61dd5qwqdlszigi.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771723038/atlas/zfkwgh49vec3smxgcbuz.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/ed/70/50/ed705078984f082ac92735216c0bb7db.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/60/86/11/60861147d4791edb05cebcce77b4b327.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/3c/77/af/3c77afca3337ae70664bd38bb7ac8490.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/ee/bf/5d/eebf5d026056e4afb0d2d70a69d71c61.jpg"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771723041/atlas/bymapkiz4ietts4t7eki.jpg"
+    },
+    "sisal": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746446/atlas/k7wtevjwuygt9xjmgdin.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746647/atlas/wnukb33o1lcsdri3e0wm.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746447/atlas/suwdp1lxvsm5yvsydj4d.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746651/atlas/oro04ekjcn6nxuhyndis.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746646/atlas/pqem8lpla3fcmyikbj4g.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746652/atlas/smrxzs306mqx6ju5skt0.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/c_crop,x_69,y_19,w_882,h_602/v1771746642/atlas/wglux5xuxrdvp3g7mu9u.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619146/atlas/yobmizwki6grlddpdlx4.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746653/atlas/s0rig3cng8ahlaamaole.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746450/atlas/hfxf6by6kdtzjngaxxd3.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746452/atlas/kirdzyrnubqqf71mdn0l.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/c_crop,x_0,y_0,w_1200,h_743/v1771746453/atlas/dkad6lpurjbkvcb3prrl.webp"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746449/atlas/k2nlicabre0aplxfxryj.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746644/atlas/o5txpwp1lufccesu6f0l.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746648/atlas/urbbnrrwd3jgzjp1f5kn.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746649/atlas/akhuxfbcnarziea7urds.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746650/atlas/elh0zli5mdhhde50fftt.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746649/atlas/lgxrgcbwc3vbtctj81xw.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746454/atlas/jvadpkc8baxjxxhanpbs.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746450/atlas/nnmdkm9ts6pkcx7zbpq6.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746451/atlas/sk5xadxhurp0lfjn5lnu.jpg"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771746446/atlas/k7wtevjwuygt9xjmgdin.jpg"
+    },
+    "abaca": {
+      "galleryImages": [
+        {
+          "url": "https://i.pinimg.com/736x/f4/ef/50/f4ef509cf53a15e6eb951b63c59d89f9.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619148/atlas/ejoqyjpuabqk9l0wdao9.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619149/atlas/frtxfaemdegnw8myds5a.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748688/atlas/skeozdno1yhxzsqboxvc.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/f8/53/e5/f853e59bf397b37f306d1bc8ebef75c8.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748693/atlas/fj9rxodkcsz09eewajsa.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619154/atlas/ong9rnnwemjduqt92x2y.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619147/atlas/eu3b1ht6b5zmldipacqg.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748686/atlas/k1t9swxpwlobsiqgrgmc.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748683/atlas/x6y3ocyutjact1dq5y23.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619152/atlas/h5i9gzd6hr6uzwlyrfjc.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619181/atlas/wb7uhw68q6odzjpllgnw.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748680/atlas/csmhwexzba8c9hwe0oby.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748682/atlas/r9y9bulw1mqptijriyuq.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748681/atlas/z54sfyyhr9of2kgxuylc.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748684/atlas/l1uwfrj8vtlgfzfsqupl.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748684/atlas/xj0aqirurdqirgcm6ifc.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748686/atlas/xmir9g9nrxfxpspbeyp3.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748687/atlas/moqjcxlfpqxxpgf9124k.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748689/atlas/zae1ump5ic7y3kds7faa.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748690/atlas/kzfhgk5a2cmg6izfs7vn.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748690/atlas/uqdkqksjglk3nkxyhgbd.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748691/atlas/mwkrcslj7yrdqyvslod4.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/e7/1d/7a/e71d7a516cbe65ddae78c0b4ceb9958c.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748692/atlas/vpbfsp8muaiijobyrhsg.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748693/atlas/xgeg4i3oj2sazogeibn8.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/aa/ad/73/aaad73d68ff4de166519eb95356f4e97.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/57/da/e4/57dae42684d77469c383436ae375f668.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/ec/02/6f/ec026f8cb883fcc52e0b9d20180f33d1.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/21/2f/4a/212f4a3d68ba270b1f6750935f48ef88.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/32/1e/8e/321e8eb33060d6e2b7a5cdbeeaf8660c.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/03/a6/a5/03a6a58c4964065de6b871d5b75c20da.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/76/a9/ab/76a9ab4de5ecb1e4c5764b63db953e42.jpg"
+        }
+      ],
+      "image": "https://i.pinimg.com/736x/f4/ef/50/f4ef509cf53a15e6eb951b63c59d89f9.jpg",
+      "name": "Abacá"
+    },
+    "qiviut": {
+      "name": "Qiviut",
+      "galleryImages": [
+        {
+          "url": "https://i.pinimg.com/1200x/b3/e0/9d/b3e09d64dcef81a6c2e6ffff17b5c759.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/95/1a/2a/951a2a603c44b18bc07fed321f16ddfb.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/93/22/d1/9322d1871aae1102f670beafd1c00c92.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/03/2f/f7/032ff7bad17a9c932b54cb53723d36ed.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/82/cd/9c/82cd9cf471c1654773eb1dd9a8f0259d.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/1b/6d/b2/1b6db2110e513bb02e4f79ab05e581eb.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/a0/90/77/a09077defb7869a143bae533cb2aea3e.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/02/35/25/023525346259a94f10964c15c9250bef.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/df/1b/9b/df1b9b124c01f8af1fdcf5183e796a86.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/8e/7a/66/8e7a66dbfc88fbb49e1037928e3a7f1e.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/bc/c4/85/bcc4851955e38885f7b5e96ae404b79f.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/e8/15/20/e81520d48cc5fac12da3e5d8efe34150.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/0e/dc/4f/0edc4f59bed2eaddf6bcd9aacf053044.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/f6/10/95/f61095256cdd7251b4c79d5686a420ce.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/3a/72/7a/3a727aee5ee6cf3284961908db952442.jpg"
+        }
+      ],
+      "image": "https://i.pinimg.com/1200x/b3/e0/9d/b3e09d64dcef81a6c2e6ffff17b5c759.jpg"
+    },
+    "angora": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741077/atlas/cyns84qym5shzehdgjft.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741088/atlas/vk0uskoicccdscrbgipu.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/c_crop,x_7,y_6,w_1010,h_669/v1771741074/atlas/disiefaywmksf4hp1occ.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741089/atlas/c9qnhcyy0eo09dy3lcw3.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741074/atlas/gads6lqyezgd0vosv39h.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741078/atlas/a8fzlcvwx5eeutiwzkzb.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741077/atlas/sx88ey2dxemejpdha44s.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741072/atlas/t0rfehhvu68pj0ynj8hd.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741075/atlas/wn4rxgwlhzngztyvsjhw.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741076/atlas/jk5ifvg5yzylsyow5yqp.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741079/atlas/kt33cepkht3fr17xd1ck.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741080/atlas/nuqqrtixu7k2moqdwyjg.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741081/atlas/rpqb4gwapwvpxoulvmbm.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741081/atlas/asaj547h6ukhwfxgc1h3.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741082/atlas/ysmirxigpprf2ncot4to.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741083/atlas/rbojjyysl8ztrvxoknex.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741086/atlas/zpkzzedxngkkykpgw4ws.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741087/atlas/sgbbsnntxtxw6x7s2vt5.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741088/atlas/gpj66qtu5c1c0knihpdw.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741090/atlas/jdif7vqaeecmysf5fzep.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741091/atlas/ijbwbmcfneyllujeymfs.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741092/atlas/iz21uvurpdk8vmo35huw.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741092/atlas/wv0nvsdyelrpnrbcvgix.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741093/atlas/uvijnbspdzxem4dj26st.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741094/atlas/ddh3qaxxx2glluywcgmp.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741095/atlas/k6yqklzbblggeolo6i8f.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741096/atlas/r9lndx7trkc2flykvkth.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741097/atlas/vsqvyzozjutb6yc5thrc.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/af/49/0b/af490bb693332dc7020166419d46ef59.jpg"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741077/atlas/cyns84qym5shzehdgjft.jpg"
+    },
+    "llama": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619222/atlas/w5twa1owfr4vkbvgzt18.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619224/atlas/nm4v5g66tbrdp4zf0k0u.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619225/atlas/fbpd3d6i51zrt9zkv7uq.png"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619236/atlas/rnkhf5toocpqmxh8dy8v.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619229/atlas/zqbjsnj9h7avivchhl7k.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619239/atlas/shy6srrbdyexnkcajkb6.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619247/atlas/hcnbosnu1qymrcaxqvug.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619242/atlas/gsck6jybgul3ygjlpvr1.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619245/atlas/qfcgpckfqudsxyizrvhm.jpg"
+        }
+      ]
+    },
+    "henequen": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619158/atlas/zg1mqfgqqlyxm5syt2fj.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619156/atlas/i9h3sb5psqmyvitcfh50.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619164/atlas/aychyppaxppjdd8czqmi.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619161/atlas/hmrxdmlpp2nldevlks3n.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619168/atlas/gt6m7x6y2pt8yr9d1hh5.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619163/atlas/q7p14cyr9gnb9udc9eqv.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619166/atlas/us5s9zsnmm9a9pme4mgv.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/c_crop,x_0,y_83,w_640,h_477/v1771619170/atlas/mhglvnzoxzs1ufuueol1.jpg"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619158/atlas/zg1mqfgqqlyxm5syt2fj.jpg"
+    },
+    "kenaf": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771656856/atlas/qnssqaxykqog9esauhqs.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771656856/atlas/s1u4qj152zdt8zfg6pz5.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/c_crop,x_0,y_4,w_220,h_306/v1771656859/atlas/o5cbe7lspdiwnezlce4e.png"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771656914/atlas/t6eqe3odbw9rpwtwvyzp.jpg"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771656856/atlas/qnssqaxykqog9esauhqs.jpg"
+    },
+    "mohair": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741074/atlas/gads6lqyezgd0vosv39h.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741088/atlas/vk0uskoicccdscrbgipu.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/c_crop,x_7,y_6,w_1010,h_669/v1771741074/atlas/disiefaywmksf4hp1occ.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741077/atlas/cyns84qym5shzehdgjft.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741078/atlas/a8fzlcvwx5eeutiwzkzb.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741077/atlas/sx88ey2dxemejpdha44s.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741072/atlas/t0rfehhvu68pj0ynj8hd.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741075/atlas/wn4rxgwlhzngztyvsjhw.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741076/atlas/jk5ifvg5yzylsyow5yqp.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741079/atlas/kt33cepkht3fr17xd1ck.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741080/atlas/nuqqrtixu7k2moqdwyjg.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741081/atlas/rpqb4gwapwvpxoulvmbm.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741082/atlas/ysmirxigpprf2ncot4to.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741083/atlas/rbojjyysl8ztrvxoknex.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619216/atlas/zcp45m47mrdgfn9w7k9w.png"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741086/atlas/zpkzzedxngkkykpgw4ws.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741087/atlas/sgbbsnntxtxw6x7s2vt5.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741089/atlas/c9qnhcyy0eo09dy3lcw3.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741092/atlas/iz21uvurpdk8vmo35huw.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741095/atlas/k6yqklzbblggeolo6i8f.jpg"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741074/atlas/gads6lqyezgd0vosv39h.jpg"
+    },
+    "pineapple": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619124/atlas/w1yt5po5mcws4zgrtjfs.png"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619126/atlas/z6dp7jzl5zqiy3ggsluu.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619132/atlas/dauat7oh467mzocnxz9n.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619133/atlas/qh0axevmwsjjnmj4ntpj.png"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619142/atlas/z8mlybczh2qstlrcxmoz.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619129/atlas/blrg9dqpridqzw3umb2r.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619138/atlas/t2tpq3tenfdhswlttzos.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619136/atlas/opt6kvnhf0uhalwdjqwb.png"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619124/atlas/w1yt5po5mcws4zgrtjfs.png"
+    },
+    "silk": {
+      "galleryImages": [
+        {
+          "url": "https://i.pinimg.com/1200x/72/8d/72/728d72f3357a696894fbc7ea93066a0c.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/08/6c/fe/086cfef32fd93821ecbcfd82ae48cd11.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771645646/atlas/fg2czrebuvxoinpqedtp.jpg"
+        },
+        {
+          "url": "https://www.all-creatures.org/articles/ar-denying-flight-silk-01.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/bb/15/1d/bb151d263ba060a7b999d430a8a2bb87.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/dc/e2/82/dce2824326a864f5200a53e9a4d5c3d3.jpg"
+        },
+        {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Silkworms3000px.jpg/3840px-Silkworms3000px.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/5b/e2/5d/5be25d1d4a8e4fc12b4174323505a8a1.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/7d/91/dd/7d91ddbf17c907e0152b03b9522aca55.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/70/cb/fa/70cbfaf65379943e6f620b0b7635e091.jpg"
+        },
+        {
+          "url": "https://cdn4.volusion.store/2dojv-qf9mt/v/vspfiles/photos/Z74.01-3.jpg?v-cache=1755183577"
+        },
+        {
+          "url": "https://static.vecteezy.com/system/resources/thumbnails/074/111/962/small/close-up-of-a-silkworm-pupa-inside-its-cocoon-natures-wonder-photo.jpeg"
+        }
+      ],
+      "image": "https://i.pinimg.com/1200x/72/8d/72/728d72f3357a696894fbc7ea93066a0c.jpg"
+    },
+    "bamboo": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619174/atlas/fru5la7c6aitgta2i5f8.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619175/atlas/v3hdyhfhug91ajiey75m.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619290/atlas/pjdkdgoxrrz5u2qwusdz.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771749992/atlas/jvnkfstlnqqeahamdog3.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771749994/atlas/jkjzi7ymzlfrt4ypwufb.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619174/atlas/mbom8cy4rmsfosndtfop.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/49/9e/dd/499edd98dc763fea79ea858ad338238f.jpg"
+        }
+      ]
+    },
+    "alpaca": {
+      "galleryImages": [
+        {
+          "url": "https://i.pinimg.com/736x/a2/42/02/a2420233f3d74ec5b62f55d35181864f.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/13/f2/60/13f2607dc1745948154bf25db7e5e9ce.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/60/12/7c/60127ce5e418b0df04a475f74ec3ad12.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619208/atlas/spgrxiqfiz6gcxdvqmk8.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619213/atlas/edblonehrotg5u6ckebk.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/0b/13/0c/0b130cfa2fe03ff278a7439d3d56b0e4.jpg"
+        },
+        {
+          "url": "https://cdn.celticandco.com/cdn-cgi/image/w=655,f=auto/original/161666.jpg"
+        },
+        {
+          "url": "https://cdn.celticandco.com/cdn-cgi/image/w=655,f=auto/original/161663.jpg"
+        },
+        {
+          "url": "https://cdn.celticandco.com/cdn-cgi/image/w=655,f=auto/original/161665.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/a3/6a/cf/a36acf6b861aefd8b43573f67aa028e9.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/39/18/94/391894d41934e28a2f187c37e840cdd6.jpg"
+        }
+      ],
+      "image": "https://i.pinimg.com/736x/a2/42/02/a2420233f3d74ec5b62f55d35181864f.jpg"
+    },
+    "bison": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619257/atlas/yqxympjgmhtejsmh9t07.avif"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771815787/atlas/o14pdcea9t4mwbyecmd0.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619255/atlas/mplwe2qsjn0qjt2v1lqw.avif"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771815780/atlas/e4jadrqo9z2ogkkhbse2.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771815778/atlas/f2mxp0nhx0bzivd6jjgs.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771815781/atlas/wtykvhinyujm68uddxz9.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771815782/atlas/bzwxqaau939lo6eg1adw.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771815783/atlas/g4cbfixwzj9ud3ngmpon.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771815784/atlas/pzmr1se3cqro3h8y6fzx.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771815786/atlas/t60swdqkdchi8bvus1ls.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771815788/atlas/lianyc1dggqipsgtjfy8.jpg"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619257/atlas/yqxympjgmhtejsmh9t07.avif"
+    },
+    "yak": {
+      "galleryImages": [
+        {
+          "url": "https://i.pinimg.com/736x/93/46/8d/93468d72e50ffbfecbd67d17f34f6333.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/ed/a9/b1/eda9b1b685ad96bd382d6e5996e3a147.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/35/5c/6a/355c6a50d4c73aff151feb7037a99dee.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/a8/e5/7c/a8e57caf586f78b3197ef4777a141c1e.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/3c/55/00/3c5500dbb184f0667d7420fb9333cf00.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/94/94/70/949470a3495bd4e220fac48f345c35a9.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/7e/05/18/7e05184c56342b8e08612f6090dbc940.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/aa/b1/ad/aab1adbeaa124cc8e86314bb34466858.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/39/ae/dd/39aedd6fe69c56959117905db10b7492.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/34/ff/4c/34ff4c5d32b90061fbfa8f2c6be3cfdd.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/3e/d4/2b/3ed42b108eacc78674b01dcec4e1d326.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/8e/30/91/8e3091d9f3c5301bd501f7c8cf57871c.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/8d/3e/35/8d3e35ff8a6765fdf25d5722ca188f4d.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/9d/c1/c2/9dc1c239e6aefeffe657a40b7b872f74.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/0c/8f/d2/0c8fd2059b02263b3d15ccd6a0d1d71a.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/cc/00/78/cc0078e6e8fc990e5783b1bab01c49f5.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/e1/30/59/e13059296cc149caf79fc4b576040bb8.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/b0/5c/1f/b05c1f069224484e3b6dbf6a72d5b751.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/d3/73/63/d3736385efe530182ce2a9d6f29bb72d.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619253/atlas/epurwzsvlfws4fi3tez3.jpg"
+        },
+        {
+          "url": "https://cdn.shopify.com/s/files/1/0981/7996/files/The_White_Yak_3.jpg?v=1604969707"
+        }
+      ],
+      "image": "https://i.pinimg.com/736x/93/46/8d/93468d72e50ffbfecbd67d17f34f6333.jpg"
+    },
+    "curaua": {
+      "galleryImages": [
+        {
+          "url": "https://pensamentoverde.com.br/wp-content/uploads/2014/05/img26.jpg"
+        }
+      ],
+      "image": "https://pensamentoverde.com.br/wp-content/uploads/2014/05/img26.jpg",
+      "status": "draft"
+    },
+    "vicuna": {
+      "galleryImages": [
+        {
+          "url": "https://www.gafencushop.com/wp-content/uploads/2021/11/Cosying-up-to-vicuna-a-rare-winter-warmer-and-the-world’s-most-expensive-fabric-gafencu-14.jpg"
+        },
+        {
+          "url": "https://www.gafencushop.com/wp-content/uploads/2021/11/Cosying-up-to-vicuna-a-rare-winter-warmer-and-the-world’s-most-expensive-fabric-gafencu-4.jpg"
+        },
+        {
+          "url": "https://www.gafencushop.com/wp-content/uploads/2021/11/Cosying-up-to-vicuna-a-rare-winter-warmer-and-the-world’s-most-expensive-fabric-gafencu-12.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773764949/atlas/nuot3qhlxubofhhit0fu.jpg"
+        },
+        {
+          "url": "https://vicunia.ch/wp-content/uploads/2024/03/Kamel_02-1024x640.jpg"
+        }
+      ],
+      "image": "https://www.gafencushop.com/wp-content/uploads/2021/11/Cosying-up-to-vicuna-a-rare-winter-warmer-and-the-world’s-most-expensive-fabric-gafencu-14.jpg"
+    },
+    "merino": {
+      "galleryImages": [
+        {
+          "url": "https://www.segardmasurel.com/wp-content/uploads/laine-de-merinos-1-600x600.png"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/29/cd/24/29cd246f73bebbe5ebc13c55fd726127.jpg"
+        },
+        {
+          "url": "https://www.raisingsheep.net/wp-content/uploads/2020/08/delaine-merino-sheep-768x403.jpg"
+        },
+        {
+          "url": "https://cdn.celticandco.com/cdn-cgi/image/w=1334,q=80,f=auto/original/66836.jpg"
+        },
+        {
+          "url": "https://images.fineartamerica.com/images-medium-large-5/1-merino-sheep-piperanne-worcester.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/5f/33/a8/5f33a8f045000217ef469d5ab1ea4829.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619188/atlas/br5oyf2xfogdzeosru9s.jpg"
+        },
+        {
+          "url": "https://milligansganderhillfarm.wordpress.com/wp-content/uploads/2013/06/merino-ewe-and-lamb.jpg"
+        },
+        {
+          "url": "https://minus33.com/cdn/shop/files/MWOBS-Sheep.jpg?v=1697646104&width=2400"
+        },
+        {
+          "url": "https://cdn.shopify.com/s/files/1/1641/5195/files/4a89464d9c177167eca2260acb0c4264_large.jpg?v=1484292769"
+        },
+        {
+          "url": "https://cottoncreekfarms.com/wp-content/uploads/2024/01/Three-Merino-Sheep-Grazing.jpg"
+        },
+        {
+          "url": "https://www.toyoboshi.co.jp/en/wp-content/uploads/2025/05/wool_img_6165.jpg"
+        },
+        {
+          "url": "https://cdn.shopify.com/s/files/1/0294/4928/9868/files/Baby_Merino_Sheep_Smiling.jpg?v=1700493735"
+        },
+        {
+          "url": "https://www.worldofwool.co.uk/cdn/shop/articles/Merino_1435e189-1c18-4c7e-ac44-11ef42b70652.jpg?v=1749809195"
+        },
+        {
+          "url": "https://cdn.shopify.com/s/files/1/0024/2535/6333/files/merino-sheep_60aada6e-9d4a-425a-95d5-3d918f2f8846.jpg?v=1606211669"
+        },
+        {
+          "url": "https://images.unsplash.com/photo-1554755209-85e44182e019?fm=jpg&q=60&w=3000&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bWVyaW5vJTIwc2hlZXB8ZW58MHx8MHx8fDA%3D"
+        },
+        {
+          "url": "https://woolandprince.com/cdn/shop/files/01282025_MegaMenuPromoBlocks_About_WhyMerinoBeatsCotton_WP_600x800_030f9cd1-ad94-4eda-8b6c-95c32c345f55.jpg?crop=center&height=1200&v=1738085586&width=900"
+        },
+        {
+          "url": "https://cdn.celticandco.com/cdn-cgi/image/w=1000,f=auto/original/133590.jpg"
+        },
+        {
+          "url": "https://cdn.celticandco.com/cdn-cgi/image/w=1000,f=auto/original/133592.jpg"
+        },
+        {
+          "url": "https://scontent.fcps3-1.fna.fbcdn.net/v/t39.30808-6/485615612_1092373926265060_3727930127715563473_n.jpg?stp=dst-jpg_s1080x2048_tt6&_nc_cat=100&ccb=1-7&_nc_sid=13d280&_nc_ohc=138ZYbcz3ZkQ7kNvwFuQS2p&_nc_oc=AdnYzodR-sSspzBY9QsOCjcS07u2nvhC8UmIYbFnDMi_5r9FKUnxnse0h6LNDaTxOMFZgJcHqanmyPJUvoH54_Zk&_nc_zt=23&_nc_ht=scontent.fcps3-1.fna&_nc_gid=aYCRnf2ivGIZE4fyx_I8XQ&_nc_ss=8&oh=00_AfxIZZ251J5z4n9Eq8Q0eMlnnQBn1PL77Nqv9_8spO5kFw&oe=69BEEE9D"
+        },
+        {
+          "url": "https://parachutehome.com/cdn/shop/articles/What-is-Merino-Wool_Hero_Retouched-1.jpg?v=1741064952"
+        },
+        {
+          "url": "https://hae-wear.com/cdn/shop/articles/Merino-ha--Header_812026ac-061c-4bc3-ad89-776164dfcae2.jpg?v=1759836117"
+        },
+        {
+          "url": "https://cdn.4f.com.pl/media/wysiwyg/4._Wszystko_co_chcielibys_cie_wiedziec_o_we_nie_merino_1.jpg"
+        },
+        {
+          "url": "https://cdn.shopify.com/s/files/1/0294/4928/9868/files/olivercharlesmerinoyakwoolkhulluantimicrobialodorresistantthermoregulatingsustainablenaturalwoolmaterial9-1675321515336_1200x.jpg?v=1707179409"
+        },
+        {
+          "url": "https://www.humaneworld.org/sites/default/files/styles/sa_social_media_facebook/public/2025-11/humane-crafting-win26-hero.jpg?h=c9a3a702&itok=LPQYFLX5"
+        },
+        {
+          "url": "https://www.segardmasurel.com/wp-content/uploads/laine-de-merinos.png"
+        },
+        {
+          "url": "https://cdn.shopify.com/s/files/1/0024/2535/6333/files/merino-wool-sheep-one-sheep_a997b7ac-0666-4391-b9f4-bcb99ba8a254.jpg?v=1606211723"
+        }
+      ],
+      "image": "https://www.segardmasurel.com/wp-content/uploads/laine-de-merinos-1-600x600.png"
+    },
+    "coir": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771538775/lmgulrcokuc0ixdd40if.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/b2/57/67/b25767878be0f8ecd446e5250dc3b1de.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/78/c6/23/78c6239b6234621862b3e5f73037a9bd.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/6d/0e/ec/6d0eec643aec0808740635be837bde39.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/95/6f/80/956f8020b8131263001d16fc3b90af96.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/98/7f/2e/987f2e3818d13d92f5f97533717b7be8.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/82/e9/9a/82e99aac050edb2a85de858c33358d2f.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/ba/51/8f/ba518ff272c7153c9fa3c0aa7a07a722.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/87/ed/36/87ed369aa638634ee776388d19633ba7.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/9e/63/98/9e63982f73f1b04fd17fc62841b0a4f6.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/39/20/f5/3920f588c8536828171edf531d60a4fd.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/a4/8c/09/a48c09e30d147f2ce8862c53e7aaf298.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/4e/70/90/4e70908b78641d53ac0efed4d1c85880.jpg"
+        }
+      ]
+    },
+    "cashmere": {
+      "galleryImages": [
+        {
+          "url": "https://i.pinimg.com/1200x/2a/1d/80/2a1d80ef86926b63b9b3b561acc7a383.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/98/7e/d1/987ed1df709200ac802eec24c95d0045.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/08/22/a5/0822a506abb35e491d01ef55bf80e338.jpg"
+        },
+        {
+          "url": "https://imageio.forbes.com/blogs-images/josephdeacetis/files/2018/11/LANDSCAPE4.jpg?format=jpg&width=1440"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/14/c7/38/14c738feec8e2e3b28b289aba11b235a.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/53/38/26/533826f06d2427ae430f8d9a815e9f07.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619218/atlas/wwsaqii8lm9hdfzjgddw.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/d4/a7/62/d4a76201114a61e39b68de665e8217b1.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/ed/dc/cf/eddccf7d346dfe196b6c26157e5cf3aa.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/6d/38/ea/6d38ea0ff89fe22a04aec60f312825d0.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/4a/2f/27/4a2f275f06814473722dc72e8c85c881.jpg"
+        },
+        {
+          "url": "https://imageio.forbes.com/blogs-images/josephdeacetis/files/2018/11/FABRIC-1.jpg?format=jpg&width=1440"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/c0/50/67/c0506775be5eca596181f72866610ab6.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/34/22/e0/3422e090cd7583cc1440a3e80da5e2eb.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/33/9f/05/339f056242c951bda0c884f04b5102fc.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/fd/19/c1/fd19c1305110c3999e095e3968bf3635.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/5c/7e/3d/5c7e3dcd5eb5ea19b82c7fb739a6334c.jpg"
+        },
+        {
+          "url": "https://www.toyoboshi.co.jp/en/wp-content/uploads/2025/05/Cashmere_quad_DSC_6024.jpg"
+        }
+      ],
+      "image": "https://i.pinimg.com/1200x/2a/1d/80/2a1d80ef86926b63b9b3b561acc7a383.jpg"
+    },
+    "ayate": {
+      "galleryImages": [
+        {
+          "url": "https://www.mdpi.com/fibers/fibers-03-00064/article_deploy/html/images/fibers-03-00064-g001-1024.png"
+        },
+        {
+          "url": "https://www.mezcalistas.com/wp-content/uploads/2023/06/anna-bruce-hermano-maguey-edit-2023-38-of-126-1024x701.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771742430/atlas/cj0uvxenofxwhz8bicli.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771742431/atlas/accb5pyahaml6zathyex.webp"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771742432/atlas/guwughaaiftye9wkerjt.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771742434/atlas/fkkukgaxkk4mclrpnjfn.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619685/atlas/mhehbhrvqb9e10ma5dxe.jpg"
+        }
+      ],
+      "image": "https://www.mdpi.com/fibers/fibers-03-00064/article_deploy/html/images/fibers-03-00064-g001-1024.png"
+    },
+    "sweetgrass": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619635/atlas/cpiq70rhbutlzou9xbbk.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619631/atlas/etdog21xcilwjv1ipkej.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619637/atlas/fnyi5flvohpjhpt28usm.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619634/atlas/o04pyd78pdrlxnqlgvvf.jpg"
+        }
+      ]
+    },
+    "camel": {
+      "galleryImages": [
+        {
+          "url": "https://www.mongoltextile.com/web/image/17080-e6d19f33/temee.png?access_token=085eea56-703d-4a82-a7e2-bf77c0013d8f"
+        },
+        {
+          "url": "https://media-assets.anichini.com/catalog/product/cache/53dbd28f1649dc89faee9d0749094f3f/a/n/anichini-camel-hair.jpg"
+        },
+        {
+          "url": "https://ask-nature.sfo3.digitaloceanspaces.com/wp-content/uploads/2021/07/31120027/Camel-Fur_Chris_Hunkeler-2160x1437.jpeg"
+        },
+        {
+          "url": "https://www.moth-prevention.com/cdn/shop/files/Camel_Hair_Fabric_Textile_Sample.jpg?v=1630016215&width=960"
+        },
+        {
+          "url": "https://images.imagerenderer.com/images-medium-large-5/camel-hair-sem-power-and-syred.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619249/atlas/kddshu1gldly58a587tf.avif"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619250/atlas/dwr2tlw2vfcmbqhxhuo6.avif"
+        },
+        {
+          "url": "https://www.moth-prevention.com/cdn/shop/files/Camel_Hair_Fabric_from_desert_camels.jpg?v=1630015924&width=960"
+        },
+        {
+          "url": "https://camelushome.com/wp-content/uploads/2019/10/camel_new2.jpg"
+        }
+      ],
+      "image": "https://www.mongoltextile.com/web/image/17080-e6d19f33/temee.png?access_token=085eea56-703d-4a82-a7e2-bf77c0013d8f"
+    },
+    "esparto": {
+      "galleryImages": [
+        {
+          "url": "https://www.weberseeds.de/gallery/esparto-grass.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/f8/88/6c/f8886c5318dc9a6fe2e63af09e6646a1.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619176/atlas/jksxm0rrccoesefxivqn.jpg"
+        },
+        {
+          "url": "https://wildsideholidays.co.uk/wp-content/uploads/2021/02/Esparto-trenza.jpg"
+        },
+        {
+          "url": "https://alchetron.com/cdn/esparto-feaf34d3-e4f5-4a31-8646-c01743764d1-resize-750.jpeg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/2d/75/48/2d7548e607a68a08bd437b7b4f5220d7.jpg"
+        },
+        {
+          "url": "https://alchetron.com/cdn/esparto-a0ff111a-e49d-476a-81ea-13395a64870-resize-750.jpg"
+        }
+      ],
+      "image": "https://www.weberseeds.de/gallery/esparto-grass.jpg"
+    },
+    "lincoln": {
+      "status": "draft"
+    },
+    "chambira": {
+      "galleryImages": [
+        {
+          "url": "https://inaturalist-open-data.s3.amazonaws.com/photos/20337235/large.jpg"
+        },
+        {
+          "url": "https://scontent-sea1-1.cdninstagram.com/v/t39.30808-6/481789353_1028254482668424_4189956575715403000_n.jpg?stp=dst-jpg_e35_s1080x1080_sh0.08_tt6&_nc_ht=scontent-sea1-1.cdninstagram.com&_nc_cat=100&_nc_oc=Q6cZ2QHo0wAq3Aa_9W5YrhSWZn2wLTdKj4QFFJtDqOzTo--VEVYgMfFZnH2CB1ZlrAfTFtKfZ8e9VlE6SuwSO5GHzuX5&_nc_ohc=gDH4rq-Gy-gQ7kNvwFLVtS5&_nc_gid=fyOnyj2BAuco5PpAsdWbpg&edm=APs17CUAAAAA&ccb=7-5&oh=00_AfzaqQc0PDe4mIAliM1G6-ulfU4PZX7L5JKKe8dmD5PdZw&oe=69C0087F&_nc_sid=10d13b"
+        },
+        {
+          "url": "https://cdn.prod.website-files.com/66b7984f4f5fa77f3974834f/677c5c1f646ee4dd81934d75_IMG_5019.jpg"
+        },
+        {
+          "url": "https://amazonecology.files.wordpress.com/2011/07/lucio-separating-chambira-leaves.jpg"
+        },
+        {
+          "url": "https://www.palmpedia.net/wiki/images/d/d4/891eee26-8900-478e-aea6-0d2ec0ee0a0a.jpg"
+        },
+        {
+          "url": "https://cdn.prod.website-files.com/66b7984f4f5fa77f3974834f/66b7984f4f5fa77f39748c95_IMG_6176.jpg"
+        },
+        {
+          "url": "https://inaturalist-open-data.s3.amazonaws.com/photos/20338334/large.jpg"
+        },
+        {
+          "url": "https://amazonecology.wordpress.com/wp-content/uploads/2012/12/hermelida-dalila-with-chambira-web.jpg?w=500"
+        },
+        {
+          "url": "https://cdn.prod.website-files.com/66b7984f4f5fa77f3974834f/66b7984f4f5fa77f39748ca3_IMG_6180.jpg"
+        },
+        {
+          "url": "https://cdn.prod.website-files.com/66b7984f4f5fa77f3974834f/66b7984f4f5fa77f39748c9c_018A0354%202.jpg"
+        },
+        {
+          "url": "https://cdn.prod.website-files.com/66b7984f4f5fa77f3974834f/66b7984f4f5fa77f39748c94_IMG_6614.jpg"
+        },
+        {
+          "url": "https://cdn.prod.website-files.com/66b7984f4f5fa77f3974834f/66b7984f4f5fa77f39748c97_018A9947.jpg"
+        },
+        {
+          "url": "https://cdn.prod.website-files.com/66b7984f4f5fa77f3974834f/66b7984f4f5fa77f397491c1_6491750320198976625db793_IMG_5801.jpeg"
+        },
+        {
+          "url": "https://cdn.prod.website-files.com/66b7984f4f5fa77f3974834f/677c5ba7467320a5509c6f64_677c5b8a55471b0276029899_018A0830.jpeg"
+        },
+        {
+          "url": "https://cdn.prod.website-files.com/66b7984f4f5fa77f3974834f/677c5d28a01df855684dac5a_IMG_7892.jpg"
+        },
+        {
+          "url": "https://cdn.prod.website-files.com/66b7984f4f5fa77f3974834f/66b7984f4f5fa77f397491c5_649174d5b831a64e96d65bb2_IMG_7882.jpeg"
+        }
+      ],
+      "image": "https://inaturalist-open-data.s3.amazonaws.com/photos/20337235/large.jpg"
+    },
+    "bombax": {
+      "status": "draft"
+    },
+    "romney": {
+      "galleryImages": [
+        {
+          "url": "https://i.pinimg.com/736x/6f/19/a2/6f19a27d8691702f302e8019241a6f01.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/b6/94/30/b69430a2d5a3bd1c9872dd92a436041f.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619187/atlas/emivlmjdqsk66u2qhji8.jpg"
+        }
+      ],
+      "image": "https://i.pinimg.com/736x/6f/19/a2/6f19a27d8691702f302e8019241a6f01.jpg"
+    },
+    "peace-silk": {
+      "galleryImages": [
+        {
+          "url": "https://i.pinimg.com/1200x/ab/f3/93/abf393fde9ba18d8beb532ac846ebcfb.jpg"
+        },
+        {
+          "url": "https://sino-silk.com/wp-content/uploads/2024/10/Peace-Silk-1.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619272/atlas/bwyoiumzmx5d2kqhvsnz.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/1200x/9a/4e/93/9a4e93dbf1117ada209bd4080374f15e.jpg"
+        },
+        {
+          "url": "https://anothertomorrow.co/cdn/shop/files/IMG_20200817_153633.webp?v=1694557551&width=3840"
+        },
+        {
+          "url": "https://seidentraum.de/cdn/shop/files/Maulbeerkokons_offen_CCC.jpg?v=1755921210&width=1500"
+        },
+        {
+          "url": "https://cdn.shopify.com/s/files/1/0345/0365/5561/files/Woman_in_a_conical_hat_sorting_white_silk_cocoons_on_the_workshop_floor.png?v=1757535536"
+        },
+        {
+          "url": "https://miro.medium.com/1*tG12nDtW5pi_-DaItweEvg.jpeg"
+        },
+        {
+          "url": "https://sino-silk.com/wp-content/uploads/2024/10/What-is-Peace-Silk.jpg"
+        }
+      ],
+      "image": "https://i.pinimg.com/1200x/ab/f3/93/abf393fde9ba18d8beb532ac846ebcfb.jpg"
+    },
+    "tussah": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619274/atlas/u54xnyn30xhvcs7pgqxq.jpg"
+        },
+        {
+          "url": "https://cdn.viva.org.uk/wp-content/uploads/2020/12/silkworm-and-cocoon.jpg"
+        },
+        {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/6/6f/Muga_Silkworm.JPG"
+        },
+        {
+          "url": "https://www.sartorbohemia.com/data/tmp/105/0/48817_105.jpg"
+        }
+      ]
+    },
+    "vetiver": {
+      "galleryImages": [
+        {
+          "url": "https://lakesofindia.wordpress.com/wp-content/uploads/2025/06/vetiver_grass_1296x.webp?w=1024"
+        },
+        {
+          "url": "https://5.imimg.com/data5/HP/VI/YN/SELLER-2324264/vetiver-oil-haiti.jpg"
+        },
+        {
+          "url": "https://5.imimg.com/data5/IOS/Default/2024/12/470436626/ZU/EU/GK/72263552/product-jpeg.png"
+        },
+        {
+          "url": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSrUChlPjb0LqDmSfIY0PJnnTOkgy334wmaZg&s"
+        },
+        {
+          "url": "https://www.lesourceur.com/wp-content/uploads/2024/04/ambre-gris-1-6vetiver-scaled.webp"
+        },
+        {
+          "url": "https://static.vecteezy.com/system/resources/previews/007/555/716/non_2x/rafting-vetiver-roof-near-the-bridge-free-photo.jpg"
+        },
+        {
+          "url": "https://lakesofindia.com/wp-content/uploads/2025/06/bdfa70_159f84b1b34344408b35980e5ee2ba1amv2_w_491.webp"
+        }
+      ],
+      "image": "https://lakesofindia.wordpress.com/wp-content/uploads/2025/06/vetiver_grass_1296x.webp?w=1024"
+    },
+    "sabai-grass": {
+      "galleryImages": [
+        {
+          "url": "https://cdn.sanity.io/images/nlpqts3z/production/e4aca24c6807c93395637e40322ef234cc110d20-1920x1080.jpg"
+        },
+        {
+          "url": "https://mayurbhanjtour.com/wp-content/uploads/2021/05/sabaigrass-scaled.jpg"
+        },
+        {
+          "url": "https://www.stuartxchange.org/Kaboot1.jpg"
+        },
+        {
+          "url": "https://media.licdn.com/dms/image/v2/D4E12AQHwX9Mx6gbj3g/article-cover_image-shrink_600_2000/article-cover_image-shrink_600_2000/0/1722896853725?e=2147483647&v=beta&t=TFzoukTsabH-8ZwR3Cw3dztf1fBBzJnOIUXQrfB4Txw"
+        },
+        {
+          "url": "https://cdn.sanity.io/images/nlpqts3z/production/3de69146abd1c2c15a2ca6464b3ae1bef436537a-1920x1080.jpg?auto=format"
+        }
+      ],
+      "image": "https://cdn.sanity.io/images/nlpqts3z/production/e4aca24c6807c93395637e40322ef234cc110d20-1920x1080.jpg"
+    },
+    "sansevieria": {
+      "galleryImages": [
+        {
+          "url": "https://images.squarespace-cdn.com/content/v1/5349c238e4b0bbdac301dbb0/43e584e5-d5db-49ea-8d61-acb286897b93/ADAM+ROBINSON+DESIGN+Plant+of+The+Month+41.jpg"
+        },
+        {
+          "url": "https://upload.wikimedia.org/wikipedia/commons/f/fb/Snake_Plant_%28Sansevieria_trifasciata_%27Laurentii%27%29.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/6f/40/f4/6f40f42432fe5d04fca2206b58d75976.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/736x/49/6d/f7/496df78adcc01b7f702457c07989c43b.jpg"
+        },
+        {
+          "url": "https://keyserver.lucidcentral.org/weeds/data/media/Images/sansevieria_trifasciata/sansevieriatrifasciata4.jpg"
+        },
+        {
+          "url": "https://www.theledger.com/gcdn/presto/2022/05/03/NLED/80023345-9b67-4300-9b76-755fb5b7f5b2-May_6_Bowstring_hemp.jpg?width=660&height=451&fit=crop&format=pjpg&auto=webp"
+        },
+        {
+          "url": "https://bushguide101.com/wp-content/uploads/2023/05/K1024_DSC_1210.jpg"
+        }
+      ],
+      "image": "https://images.squarespace-cdn.com/content/v1/5349c238e4b0bbdac301dbb0/43e584e5-d5db-49ea-8d61-acb286897b93/ADAM+ROBINSON+DESIGN+Plant+of+The+Month+41.jpg"
+    },
+    "river-reed": {
+      "status": "draft"
+    },
+    "harakeke": {
+      "status": "draft"
+    },
+    "sano": {
+      "status": "draft"
+    },
+    "lokta": {
+      "status": "draft"
+    },
+    "sunn-hemp": {
+      "status": "draft"
+    },
+    "piassava": {
+      "galleryImages": [
+        {
+          "url": "https://inaturalist-open-data.s3.amazonaws.com/photos/204748884/medium.jpg"
+        },
+        {
+          "url": "https://www.palmpedia.net/wiki/images/thumb/f/f5/Piaçaa.jpg/663px-Piaçaa.jpg"
+        },
+        {
+          "url": "https://t3.ftcdn.net/jpg/06/48/73/42/360_F_648734254_HS4hfsr3AWxYYfp3F0F2O3RqUncLyeIt.jpg"
+        },
+        {
+          "url": "https://media.istockphoto.com/id/2193938389/photo/piassava-in-barcelos-rio-negro-basin-amazonas-state.jpg?s=612x612&w=0&k=20&c=T-tnp4BwngxypSq4ObeVpwu9a78HWFSTNZtUpLUknJs="
+        },
+        {
+          "url": "https://media.istockphoto.com/id/2193938415/photo/piassava-in-barcelos-rio-negro-basin-amazonas-state.jpg?s=612x612&w=0&k=20&c=X6seh0Y1WiU2jxARsBb5Mb2nN7lBxXbTawgxtVpQMaE="
+        },
+        {
+          "url": "https://www.palmpedia.net/wiki/images/c/c8/F962dcc55f71ad5b1c4b31cd9f9e6657748aa74a.jpg"
+        }
+      ],
+      "image": "https://inaturalist-open-data.s3.amazonaws.com/photos/204748884/medium.jpg"
     }
+  },
+  "quoteData": {
+    "organic-cotton": [
+      {
+        "text": "Whoever controls cotton controls the world.",
+        "attribution": "Southern Planter Saying, 1850s"
+      }
+    ]
   }
 }

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shouldHandleHistoryShortcut, shouldToggleInspectorShortcut } from "./AtlasWorkbenchShell";
+import { shouldHandleHistoryShortcut, shouldToggleInspectorShortcut } from "./atlas-workbench-shortcuts";
 
 function makeEvent(overrides: Partial<KeyboardEvent> = {}): KeyboardEvent {
   return {

@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { buildKnowledgeFibers } from "./Library";
+import { buildKnowledgeFibers } from "./library-knowledge-fibers";
 
 describe("buildKnowledgeFibers", () => {
   it("includes profile IDs that exist only in Profiles data", () => {

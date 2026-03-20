@@ -3,6 +3,7 @@ import React from "react";
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ProfileCard } from "./ImageDatabaseManager";
+import { SEEDED_TAG_PATHS } from "./image-tag-paths";
 
 function renderProfileCardForTags(options: { tags: string[]; allTagPaths: string[] }) {
   const onAddTag = vi.fn();
@@ -48,8 +49,7 @@ afterEach(() => {
 
 describe("ProfileCard multi-layer tag editor", () => {
   it("keeps fruit available in the fiber > plant tag layer", async () => {
-    const module = await import("./ImageDatabaseManager");
-    expect(module.SEEDED_TAG_PATHS).toContain("fiber/plant/fruit");
+    expect(SEEDED_TAG_PATHS).toContain("fiber/plant/fruit");
   });
 
   it("opens taxonomy navigator from a selected tag pill", () => {

@@ -21,12 +21,11 @@ import {
   type PlateType,
   type GalleryImageEntry,
   getGalleryImages,
-  worldNames,
 } from "../data/atlas-data";
-import { dataSource } from "../data/data-provider";
 import { useSwipe } from "../hooks/use-swipe";
 import { useImagePipeline } from "../context/image-pipeline";
 import { ProgressiveImage } from "./progressive-image";
+import { getAvailablePlates } from "./plate-availability";
 import {
   AboutPlate,
   InsightPlate,
@@ -47,55 +46,6 @@ import {
   ChevronDown,
   Layers,
 } from "lucide-react";
-
-/* ── Plate ordering for mobile storytelling arc ── */
-const MOBILE_PLATE_ORDER: PlateType[] = [
-  "about",
-  "insight1",
-  "insight2",
-  "quote",
-  "trade",
-  "regions",
-  "worldNames",
-  "process",
-  "anatomy",
-  "care",
-  "seeAlso",
-];
-
-/* ── Data-availability filter (mirrors plate-layout.ts logic) ── */
-export function getAvailablePlates(fiber: FiberProfile): PlateType[] {
-  const processData = dataSource.getProcessData();
-  const anatomyData = dataSource.getAnatomyData();
-  const careData = dataSource.getCareData();
-  const quoteData = dataSource.getQuoteData();
-
-  return MOBILE_PLATE_ORDER.filter((pt) => {
-    switch (pt) {
-      case "worldNames": {
-        const names = worldNames[fiber.id];
-        return names && names.length > 1;
-      }
-      case "process":
-        return (processData[fiber.id] ?? []).length > 0;
-      case "anatomy":
-        return !!anatomyData[fiber.id];
-      case "care":
-        return !!careData[fiber.id];
-      case "quote":
-        return (quoteData[fiber.id] ?? []).length > 0;
-      case "insight1":
-      case "insight2": {
-        const sentences = fiber.about?.match(/[^.!?]+[.!?]+/g) ?? [];
-        return sentences.length >= 2;
-      }
-      case "seeAlso":
-        return fiber.seeAlso.length > 0;
-      default:
-        return true;
-    }
-  });
-}
 
 /* ── Animation constants ── */
 const SLIDE_DURATION = 0.42;

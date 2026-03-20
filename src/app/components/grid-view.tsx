@@ -25,7 +25,7 @@ import {
   DETAIL_FADE, EXHALE_EASE,
   type CellVisibility,
 } from "../utils/plate-layout";
-import { getAvailablePlates } from "./mobile-detail-view";
+import { getAvailablePlates } from "./plate-availability";
 import { Search, X } from "lucide-react";
 import { useImagePipeline } from "../context/image-pipeline";
 import { GridSkeleton } from "./grid-skeleton";

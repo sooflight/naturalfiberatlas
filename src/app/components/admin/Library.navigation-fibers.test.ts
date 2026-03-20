@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildKnowledgeFibers } from "./Library";
+import { buildKnowledgeFibers } from "./library-knowledge-fibers";
 
 describe("buildKnowledgeFibers navigation coverage", () => {
   it("adds runtime navigation node entries that are missing from atlas fibers/content", () => {

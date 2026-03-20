@@ -19,6 +19,8 @@ This document defines how **publishable atlas data** flows from editing to **Git
 
 **Production** serves **bundle only** (no `localStorage`). The app enforces this when `VITE_ENABLE_ADMIN=false`: `atlas:*` draft keys in the browser are ignored so returning visitors are not stuck on old hero images from past sessions. **Local dev** shows bundle + overrides.
 
+**Automated check:** After every `vite build`, [`verify-bundle-in-dist.test.ts`](../../src/app/utils/admin/verify-bundle-in-dist.test.ts) asserts that `dist/assets/atlas-content-*.js` contains every fiber `id` from `fibers.ts` and that `new-images-*.js` embeds URLs from [`new-images.json`](../../new-images.json). It runs at the end of `npm run verify` and in `npm run ci:verify`. If you edited data only in the browser, this test still passes until you merge into those files and rebuild—use it to confirm the **built** output matches Git before deploying.
+
 ## Tier B — Admin / machine config (optional for a reproducible public build)
 
 API keys, Cloudinary config, image DB scratch state, workbench UI, etc. live in `localStorage` or env. They do **not** need to be in Git for the public site to build.

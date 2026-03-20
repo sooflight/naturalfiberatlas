@@ -36,35 +36,16 @@ import { classifyProfileCategory } from "../data/profile-sequencing";
 import { isAdminEnabled } from "../config/admin-access";
 import { resolveAdminRouteState } from "../components/admin/admin-route-contract";
 import { readPassportStatusOverrides } from "../utils/admin/passportStatusOverrides";
+import { hasPromotedOverridesContent } from "../utils/admin/promoted-overrides-sync";
+import {
+  mapAdminViewToWorkflowPhase,
+  type AdminView,
+  type AdminWorkflowPhase,
+} from "./admin-workflow-phase";
 
 /* ══════════════════════════════════════════════════════════
    Context shape
    ══════════════════════════════════════════════════════════ */
-
-export type AdminView = "list" | "edit" | "changes" | "batch" | "health" | "staging" | "diff" | "changesets" | "sequence" | "knowledge";
-export type AdminWorkflowPhase = "discover" | "inspect" | "edit" | "validate" | "commit";
-
-export function mapAdminViewToWorkflowPhase(view: AdminView): AdminWorkflowPhase {
-  switch (view) {
-    case "list":
-      return "discover";
-    case "knowledge":
-    case "sequence":
-      return "inspect";
-    case "edit":
-    case "batch":
-      return "edit";
-    case "health":
-    case "staging":
-    case "diff":
-      return "validate";
-    case "changes":
-    case "changesets":
-      return "commit";
-    default:
-      return "discover";
-  }
-}
 
 interface AtlasDataContextValue {
   source: AtlasDataSource;
@@ -204,6 +185,7 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
     if (!import.meta.env.DEV || import.meta.env.MODE === "test") return;
     const timer = window.setTimeout(() => {
       const diff = dataSource.exportDiffJSON();
+      if (!hasPromotedOverridesContent(diff)) return;
       if (diff === lastAutoSyncedDiffRef.current) return;
       void fetch("/__admin/auto-sync-promoted-overrides", {
         method: "POST",
