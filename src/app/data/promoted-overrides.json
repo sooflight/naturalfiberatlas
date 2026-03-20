@@ -1,5 +1,11 @@
 {
   "fibers": {
+    "modal": {
+      "status": "published"
+    },
+    "bamboo-viscose": {
+      "status": "published"
+    },
     "looms": {
       "status": "draft"
     },

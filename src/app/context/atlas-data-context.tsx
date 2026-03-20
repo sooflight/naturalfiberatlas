@@ -35,6 +35,7 @@ import type { FiberIndexEntry } from "../data/atlas-data";
 import { classifyProfileCategory } from "../data/profile-sequencing";
 import { isAdminEnabled } from "../config/admin-access";
 import { resolveAdminRouteState } from "../components/admin/admin-route-contract";
+import { readPassportStatusOverrides } from "../utils/admin/passportStatusOverrides";
 
 /* ══════════════════════════════════════════════════════════
    Context shape
@@ -178,6 +179,25 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
   );
   const hasOverrides = useMemo(() => dataSource.hasOverrides(), [version]);
   const lastAutoSyncedDiffRef = useRef<string>("");
+  const migratedLegacyStatusRef = useRef(false);
+
+  useEffect(() => {
+    if (!adminEnabled || !isBrowser || !adminMode) return;
+    if (import.meta.env.MODE === "test") return;
+    if (migratedLegacyStatusRef.current) return;
+    migratedLegacyStatusRef.current = true;
+
+    const legacy = readPassportStatusOverrides();
+    const entries = Object.entries(legacy);
+    if (entries.length === 0) return;
+
+    for (const [profileId, status] of entries) {
+      const current = dataSource.getFiberById(profileId)?.status ?? "published";
+      if (current !== status) {
+        dataSource.updateFiber(profileId, { status });
+      }
+    }
+  }, [adminEnabled, adminMode, isBrowser]);
 
   useEffect(() => {
     if (!adminEnabled || !isBrowser || !adminMode) return;
