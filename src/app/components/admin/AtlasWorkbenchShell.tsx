@@ -381,7 +381,9 @@ function AtlasWorkbenchShellContent() {
     const localGlobalOrder = parseJSON<string[]>(localStorage.getItem("atlas:fiber-order"));
     const localGroupOrders = parseJSON<Record<string, string[]>>(localStorage.getItem("atlas:fiber-order-groups"));
     const localNavThumbOverrides = parseJSON<Record<string, unknown>>(localStorage.getItem("atlas:nav-parent-images"));
-    const localDeletedFiberIds = parseJSON<string[]>(localStorage.getItem("atlas:deletedFiberIds")) ?? [];
+    const effectiveLocalDeletedFiberIds = bundledProfiles
+      .map((profile) => profile.id)
+      .filter((id) => !source.getFiberById(id));
 
     // Preflight: force payload parity with local effective status/deletion state.
     const bundledDeleted = new Set(
@@ -390,7 +392,7 @@ function AtlasWorkbenchShellContent() {
         .map((id) => id.trim()),
     );
     const localDeletedSet = new Set(
-      localDeletedFiberIds
+      effectiveLocalDeletedFiberIds
         .filter((id): id is string => typeof id === "string" && id.trim().length > 0)
         .map((id) => id.trim()),
     );
@@ -446,7 +448,7 @@ function AtlasWorkbenchShellContent() {
             groups: localGroupOrders,
           },
           navThumbOverrides: localNavThumbOverrides,
-          deletedFiberIds: localDeletedFiberIds,
+          deletedFiberIds: effectiveLocalDeletedFiberIds,
         }),
       });
       const payload = await response.json() as { ok?: boolean; error?: string; publish?: PublishState };

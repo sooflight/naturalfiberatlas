@@ -433,7 +433,7 @@ function TopNavInner({
 
   return (
     <div
-      className="flex h-screen w-full flex-col overflow-hidden"
+      className="flex min-h-dvh w-full flex-col overflow-hidden"
       style={{ backgroundColor: ATLAS_AMBIENT_BG, transition: ATLAS_AMBIENT_TRANSITION }}
     >
       <div

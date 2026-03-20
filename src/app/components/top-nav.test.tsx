@@ -160,4 +160,16 @@ describe("TopNav search sync", () => {
     expect(contentRegion).not.toBeNull();
     expect(contentRegion).toHaveClass("overflow-y-auto");
   });
+
+  it("uses dynamic viewport height for the main shell", () => {
+    const { container } = render(
+      <TopNav activeNodeId={null} onNavigate={() => {}}>
+        <div>content</div>
+      </TopNav>,
+    );
+
+    const shell = container.querySelector(".flex.w-full.flex-col.overflow-hidden");
+    expect(shell).not.toBeNull();
+    expect(shell).toHaveClass("min-h-dvh");
+  });
 });
