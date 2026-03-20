@@ -435,6 +435,14 @@ function AtlasWorkbenchShellContent() {
       return;
     }
     const finalDiffJson = JSON.stringify(diffPayload, null, 2);
+    const effectiveStatusById: Record<string, AtlasProfileStatus> = {};
+    for (const profile of bundledProfiles) {
+      if (localDeletedSet.has(profile.id)) continue;
+      const fromPassport = passportStatusOverrides[profile.id];
+      const fromLocal = source.getFiberById(profile.id)?.status;
+      const fromBundled = source.getBundledFiber(profile.id)?.status;
+      effectiveStatusById[profile.id] = normalizeAtlasStatus(fromPassport ?? fromLocal ?? fromBundled);
+    }
     try {
       setIsPublishing(true);
       const response = await fetch("/__admin/publish", {
@@ -449,6 +457,7 @@ function AtlasWorkbenchShellContent() {
           },
           navThumbOverrides: localNavThumbOverrides,
           deletedFiberIds: effectiveLocalDeletedFiberIds,
+          effectiveStatusById,
         }),
       });
       const payload = await response.json() as { ok?: boolean; error?: string; publish?: PublishState };
@@ -545,6 +554,8 @@ function AtlasWorkbenchShellContent() {
 
     const localVsBundled: string[] = [];
     const localVsPayload: string[] = [];
+    const bundledOnlyLive: string[] = [];
+    const localOnlyLive: string[] = [];
     for (const bundled of bundledRows) {
       const localStatus = localById.get(bundled.id)?.status ?? "archived";
       const localLive = localStatus === "published";
@@ -552,6 +563,8 @@ function AtlasWorkbenchShellContent() {
       const payloadLive = payloadById.get(bundled.id)?.status === "published";
       if (localLive !== bundledLive) localVsBundled.push(bundled.id);
       if (localLive !== payloadLive) localVsPayload.push(bundled.id);
+      if (bundledLive && !localLive) bundledOnlyLive.push(bundled.id);
+      if (localLive && !bundledLive) localOnlyLive.push(bundled.id);
     }
 
     return {
@@ -561,6 +574,8 @@ function AtlasWorkbenchShellContent() {
       deletedLocally,
       localVsBundled,
       localVsPayload,
+      bundledOnlyLive,
+      localOnlyLive,
     };
   }, [passportOverrideVersion, source]);
 
@@ -737,6 +752,16 @@ function AtlasWorkbenchShellContent() {
             }
           >
             Local vs Payload Delta: {parityDiagnostics.localVsPayload.length}
+          </span>
+          <span
+            className={cn(parityDiagnostics.bundledOnlyLive.length > 0 ? "text-amber-200" : "text-neutral-500")}
+            title={
+              parityDiagnostics.bundledOnlyLive.length > 0
+                ? `Bundled-only live IDs (${parityDiagnostics.bundledOnlyLive.length}): ${parityDiagnostics.bundledOnlyLive.join(", ")}`
+                : "No bundled-only live IDs"
+            }
+          >
+            Bundled-only Live IDs: {parityDiagnostics.bundledOnlyLive.length}
           </span>
         </div>
 
