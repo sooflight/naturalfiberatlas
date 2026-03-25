@@ -1554,6 +1554,39 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sourcing": {},
     "endUse": {},
     "status": "draft"
+  },
+  "columbia": {
+    "materialId": "columbia",
+    "lastUpdated": "2026-03-25",
+    "performance": {},
+    "process": {},
+    "dyeing": {},
+    "sustainability": {},
+    "sourcing": {},
+    "endUse": {},
+    "status": "draft"
+  },
+  "tapa": {
+    "materialId": "tapa",
+    "lastUpdated": "2026-03-25",
+    "performance": {},
+    "process": {},
+    "dyeing": {},
+    "sustainability": {},
+    "sourcing": {},
+    "endUse": {},
+    "status": "published"
+  },
+  "fig-barkcloth": {
+    "materialId": "fig-barkcloth",
+    "lastUpdated": "2026-03-25",
+    "performance": {},
+    "process": {},
+    "dyeing": {},
+    "sustainability": {},
+    "sourcing": {},
+    "endUse": {},
+    "status": "published"
   }
 };
 
