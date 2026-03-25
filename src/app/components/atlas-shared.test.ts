@@ -49,6 +49,21 @@ describe("atlas-shared getThumbUrl", () => {
     expect(getThumbUrl("regen")).toBe("https://example.com/regen-from-imagebase.jpg");
   });
 
+  it("prefers mineral-regenerated over regen in atlas-images when both exist", () => {
+    const getItem = globalThis.localStorage.getItem as unknown as ReturnType<typeof vi.fn>;
+    getItem.mockImplementation((key: string) => {
+      if (key === "atlas-images") {
+        return JSON.stringify({
+          "mineral-regenerated": [{ url: "https://example.com/published-regen-thumb.jpg" }],
+          regen: [{ url: "https://example.com/stale-regen-thumb.jpg" }],
+        });
+      }
+      return null;
+    });
+
+    expect(getThumbUrl("regen")).toBe("https://example.com/published-regen-thumb.jpg");
+  });
+
   it("resolves admin tree IDs (seed-fibers, grass-fibers) when frontend requests singular (seed-fiber, grass-fiber)", () => {
     const getItem = globalThis.localStorage.getItem as unknown as ReturnType<typeof vi.fn>;
     getItem.mockImplementation((key: string) => {

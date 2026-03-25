@@ -893,9 +893,12 @@ export default function Library({ forcedMode }: LibraryProps) {
   };
 
   return (
-    <div className="h-full flex bg-[#060606]">
-      {/* Profile Sidebar Navigation */}
-      <div className="flex-shrink-0 relative z-10" style={{ width: NODE_SIDEBAR_WIDTH_PX }}>
+    <div className="flex h-full min-h-0 min-w-0 bg-[#060606]">
+      {/* Profile Sidebar Navigation — column is height-bounded so NodeSidebar can scroll internally */}
+      <div
+        className="relative z-10 flex h-full min-h-0 flex-shrink-0 flex-col overflow-hidden"
+        style={{ width: NODE_SIDEBAR_WIDTH_PX }}
+      >
         <NodeSidebar
           selectedId={selectedId}
           onSelect={handleNodeSelect}
@@ -904,7 +907,7 @@ export default function Library({ forcedMode }: LibraryProps) {
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 min-w-0 flex flex-col overflow-hidden relative bg-[#060606]">
+      <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[#060606]">
         <div className="h-full w-full">
           {renderContent()}
         </div>

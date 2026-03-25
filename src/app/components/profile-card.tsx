@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useImagePipeline } from "../context/image-pipeline";
 import { useCrossfade } from "../hooks/use-crossfade";
+import { useHasRealHover } from "../hooks/use-has-real-hover";
 import { useImageBrightness } from "../hooks/use-image-brightness";
 import { buildProfileCardCrossfadeImages } from "../utils/profile-card-images";
 import { GlassCard } from "./glass-card";
@@ -89,6 +90,7 @@ export function ProfileCard({
   const pipeline = useImagePipeline();
   const revealed = isSelected ? "is-revealed" : "";
   const [hovered, setHovered] = useState(false);
+  const hasRealHover = useHasRealHover();
   const hoverLogRef = useRef(false);
   const brightness = useImageBrightness(pipeline.transform(image, "glow"));
   const nameShadow = useMemo(() => {
@@ -104,7 +106,7 @@ export function ProfileCard({
   const { activeIndex, previousIndex } = useCrossfade({
     id,
     imageCount: crossfadeImages.length,
-    paused: hovered || crossfadePaused,
+    paused: (hasRealHover && hovered) || crossfadePaused,
   });
   const debugProfileCycle =
     import.meta.env.DEV

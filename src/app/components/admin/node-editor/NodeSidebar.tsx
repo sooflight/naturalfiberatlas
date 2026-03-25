@@ -311,6 +311,7 @@ export function NodeSidebar({ selectedId, onSelect, knowledgeFibers = [] }: Node
         flexDirection: "column",
         borderRight: `1px solid ${T.color.border}`,
         height: "100%",
+        minHeight: 0,
       }}
     >
       <div
@@ -416,8 +417,8 @@ export function NodeSidebar({ selectedId, onSelect, knowledgeFibers = [] }: Node
         </div>
       </div>
       <div
-        className="scrollbar-none"
-        style={{ flex: 1, overflow: "auto", scrollbarWidth: "none", msOverflowStyle: "none" }}
+        className="scrollbar-none min-h-0 flex-1"
+        style={{ overflow: "auto", scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         <div style={{ padding: `${T.space.sm}px ${T.space.sm}px ${T.space.md}px`, display: "flex", flexDirection: "column", gap: T.space.sm }}>
           {[

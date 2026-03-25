@@ -200,7 +200,11 @@ const ADMIN_TO_FRONTEND_THUMB_ALIASES: Record<string, string[]> = {
 
 function getThumbCandidateIds(nodeId: string): string[] {
   const aliases = ADMIN_TO_FRONTEND_THUMB_ALIASES[nodeId];
-  return aliases ? [nodeId, ...aliases] : [nodeId];
+  if (!aliases?.length) return [nodeId];
+  // Prefer admin / bundled keys (e.g. mineral-regenerated, bast-fibers) before the
+  // public nav segment id so published nav-thumb-overrides and Image DB wins are not
+  // shadowed by a stale `regen` (or other) entry in atlas-images localStorage.
+  return [...aliases, nodeId];
 }
 
 export function getThumbUrl(nodeId: string): string | null {

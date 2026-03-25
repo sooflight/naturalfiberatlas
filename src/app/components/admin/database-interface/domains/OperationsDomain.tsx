@@ -1,8 +1,12 @@
-import React, { useState, useEffect, useMemo } from "react";
-import { BarChart3, Activity, Database, TrendingUp, AlertTriangle, RefreshCw, Zap, HardDrive, Clock, CheckCircle, XCircle } from "lucide-react";
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { BarChart3, Activity, Database, TrendingUp, AlertTriangle, RefreshCw, Zap, HardDrive, Clock, CheckCircle, XCircle, Rocket } from "lucide-react";
 import { cn } from "@/database-interface/lib/utils";
 import { getDataSourceStats, getCacheHitRate, getRecentEvents, clearTelemetry } from "@/utils/dataSourceTelemetry";
 import { getActivityLog, ActivityEvent, ActivityAction, ActivityEntityType } from "@/utils/activityLog";
+import { dataSource } from "../../../../data/data-provider";
+import { useAtlasData } from "../../../../context/atlas-data-context";
+import { computePublishParityDiagnostics } from "@/utils/publish-parity";
+import { subscribePassportStatusOverrides } from "@/utils/passportStatusOverrides";
 
 /**
  * Overview Domain - System health and telemetry dashboard.
@@ -15,11 +19,26 @@ import { getActivityLog, ActivityEvent, ActivityAction, ActivityEntityType } fro
  * - Error tracking and alerts
  */
 export default function OverviewDomain() {
+  const { version } = useAtlasData();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [passportOverrideVersion, setPassportOverrideVersion] = useState(0);
   const [activityFilter, setActivityFilter] = useState<{
     action?: ActivityAction;
     entityType?: ActivityEntityType;
   }>({});
+
+  useEffect(() => subscribePassportStatusOverrides(() => setPassportOverrideVersion((v) => v + 1)), []);
+
+  const publishParity = useMemo(
+    () => computePublishParityDiagnostics(dataSource),
+    [version, passportOverrideVersion, refreshTrigger],
+  );
+
+  const deltaBlocksPublish = publishParity.localVsPayload.length > 0;
+
+  const handleRefreshAll = useCallback(() => {
+    setRefreshTrigger((prev) => prev + 1);
+  }, []);
 
   // Get real telemetry data
   const dataSourceStats = useMemo(() => getDataSourceStats(), [refreshTrigger]);
@@ -41,7 +60,7 @@ export default function OverviewDomain() {
     Math.round(((totalDataOverview - (dataSourceStats.kv.errors + dataSourceStats.json.errors)) / totalDataOverview) * 100) : 100;
 
   const handleRefresh = () => {
-    setRefreshTrigger(prev => prev + 1);
+    handleRefreshAll();
   };
 
   const handleClearTelemetry = () => {
@@ -56,7 +75,7 @@ export default function OverviewDomain() {
         <div className="flex items-center gap-2">
           <BarChart3 className="w-5 h-5 text-blue-400" />
           <h1 className="text-sm font-semibold">Overview</h1>
-          <p className="text-xs text-neutral-500 ml-2">System health & telemetry</p>
+          <p className="text-xs text-neutral-500 ml-2">Telemetry, activity, and publish parity</p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -78,6 +97,95 @@ export default function OverviewDomain() {
 
       {/* Dashboard Content */}
       <div className="flex-1 overflow-y-auto p-6">
+        {/* Publish parity — source of truth for local vs bundle vs export diff (previously the global strip) */}
+        <div className="mb-8 rounded-lg border border-white/[0.08] bg-white/[0.02]">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/[0.06] px-4 py-3">
+            <div className="flex items-center gap-2 min-w-0">
+              <Rocket className="w-4 h-4 shrink-0 text-emerald-400/90" />
+              <div>
+                <h2 className="text-sm font-medium text-white">Publish parity</h2>
+                <p className="text-[11px] text-neutral-500">
+                  Local workspace vs bundled catalog vs publish payload (export diff + passport overrides). Run Promote is blocked when
+                  <span className="text-neutral-400"> local vs payload delta ≠ 0</span>.
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className={cn(
+                  "rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-widest",
+                  deltaBlocksPublish
+                    ? "bg-rose-500/15 text-rose-300 border border-rose-500/25"
+                    : "bg-emerald-500/15 text-emerald-300 border border-emerald-500/25",
+                )}
+              >
+                {deltaBlocksPublish ? `Delta ${publishParity.localVsPayload.length} — blocked` : "Delta 0 — ok"}
+              </span>
+            </div>
+          </div>
+          <div className="grid gap-4 p-4 sm:grid-cols-3">
+            <div className="rounded-md border border-white/[0.05] bg-black/30 px-3 py-2">
+              <div className="text-[10px] uppercase tracking-widest text-neutral-500">Local live</div>
+              <div className="mt-1 text-lg font-semibold text-white tabular-nums">
+                {publishParity.localCounts.all}
+                <span className="text-sm font-normal text-neutral-500"> ({publishParity.localCounts.fiber} fiber)</span>
+              </div>
+            </div>
+            <div className="rounded-md border border-white/[0.05] bg-black/30 px-3 py-2">
+              <div className="text-[10px] uppercase tracking-widest text-neutral-500">Bundled live</div>
+              <div className="mt-1 text-lg font-semibold text-white tabular-nums">
+                {publishParity.bundledCounts.all}
+                <span className="text-sm font-normal text-neutral-500"> ({publishParity.bundledCounts.fiber} fiber)</span>
+              </div>
+            </div>
+            <div className="rounded-md border border-white/[0.05] bg-black/30 px-3 py-2">
+              <div className="text-[10px] uppercase tracking-widest text-neutral-500">Publish payload live</div>
+              <div className="mt-1 text-lg font-semibold text-white tabular-nums">
+                {publishParity.payloadCounts.all}
+                <span className="text-sm font-normal text-neutral-500"> ({publishParity.payloadCounts.fiber} fiber)</span>
+              </div>
+            </div>
+          </div>
+          <div className="grid gap-3 border-t border-white/[0.05] px-4 py-3 text-xs sm:grid-cols-2">
+            <div className={cn(publishParity.deletedLocally.length > 0 ? "text-amber-200" : "text-neutral-500")}>
+              <span className="text-neutral-500">Local deleted (bundled rows not in workspace): </span>
+              {publishParity.deletedLocally.length}
+              {publishParity.deletedLocally.length > 0 && (
+                <span className="mt-1 block font-mono text-[10px] leading-relaxed text-neutral-400 break-all">
+                  {publishParity.deletedLocally.join(", ")}
+                </span>
+              )}
+            </div>
+            <div className={cn(publishParity.bundledOnlyLive.length > 0 ? "text-amber-200" : "text-neutral-500")}>
+              <span className="text-neutral-500">Bundled-only live (not live locally): </span>
+              {publishParity.bundledOnlyLive.length}
+              {publishParity.bundledOnlyLive.length > 0 && (
+                <span className="mt-1 block font-mono text-[10px] leading-relaxed text-neutral-400 break-all">
+                  {publishParity.bundledOnlyLive.join(", ")}
+                </span>
+              )}
+            </div>
+            <div className={cn(publishParity.localVsBundled.length > 0 ? "text-amber-200" : "text-neutral-500")}>
+              <span className="text-neutral-500">Local vs bundled (status drift): </span>
+              {publishParity.localVsBundled.length}
+              {publishParity.localVsBundled.length > 0 && (
+                <span className="mt-1 block font-mono text-[10px] leading-relaxed text-neutral-400 break-all">
+                  {publishParity.localVsBundled.join(", ")}
+                </span>
+              )}
+            </div>
+            <div className={cn(deltaBlocksPublish ? "text-rose-200" : "text-emerald-300/90")}>
+              <span className="text-neutral-500">Local vs payload (blocks Run Promote): </span>
+              {publishParity.localVsPayload.length}
+              {publishParity.localVsPayload.length > 0 && (
+                <span className="mt-1 block font-mono text-[10px] leading-relaxed text-rose-200/90 break-all">
+                  {publishParity.localVsPayload.join(", ")}
+                </span>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* Real-time Stats Grid */}
         <div className="grid grid-cols-4 gap-4 mb-8">
           <div className="p-4 rounded-lg border border-white/[0.06] bg-white/[0.02]">
