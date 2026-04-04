@@ -93,6 +93,8 @@ export function HomePage() {
   );
 
   return (
+    <>
+      <h1 className="sr-only">Natural Fiber Atlas</h1>
     <TopNav
       activeNodeId={activeNodeId}
       onNavigate={(id) => {
@@ -121,5 +123,6 @@ export function HomePage() {
         onSearchChange={setSearch}
       />
     </TopNav>
+    </>
   );
 }

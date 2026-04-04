@@ -25,6 +25,8 @@ import { dataSource } from "../../data/data-provider";
 import { ProcessEditor, AnatomyEditor, CareEditor, QuoteEditor, WorldNamesEditor } from "./supplementary-editors";
 import { GalleryEditor } from "./gallery-editor";
 import { ImageQuickActions } from "./image-quick-actions";
+import { getCloudinaryConfig } from "./runtime/cloudinary-upload";
+import { uploadFromUrl } from "@/utils/cloudinary";
 import { splitAboutText } from "../plate-primitives";
 import { toast } from "sonner";
 
@@ -830,24 +832,65 @@ export function FiberEditor({ fiberId }: { fiberId: string }) {
           fiberId={fiberId}
           fiberName={draft.name}
           existingImageUrls={(draft.galleryImages ?? []).map((img) => img.url)}
-          onAddImages={(urls) => {
-            const current = draft.galleryImages ?? [];
-            const seededCurrent =
-              current.length === 0 && draft.image
-                ? [{ url: draft.image, title: "" }, ...current]
-                : current;
-            const seen = new Set(seededCurrent.map((entry) => entry.url));
-            const additions = urls
-              .filter((url) => !seen.has(url))
-              .map((url) => ({
-                url,
-                title: "",
-              }));
-            const next = [...seededCurrent, ...additions];
-            pushUpdate({
-              galleryImages: next,
-              image: next[0]?.url ?? draft.image,
-            });
+          onAddImages={(urls, mode) => {
+            void (async () => {
+              let resolved = urls;
+              if (mode === "upload") {
+                const config = getCloudinaryConfig();
+                if (!config) {
+                  toast.error("Set Cloudinary cloud name and upload preset in Admin settings to use Upload & Add.");
+                  return;
+                }
+                const uploaded: string[] = [];
+                for (const url of urls) {
+                  try {
+                    uploaded.push(await uploadFromUrl(url, config, { folder: "atlas" }));
+                  } catch (e) {
+                    const msg = e instanceof Error ? e.message : "Upload failed";
+                    toast.error(msg);
+                  }
+                }
+                if (uploaded.length === 0) return;
+                resolved = uploaded;
+              }
+
+              let addedCount = 0;
+              setDraft((prev) => {
+                if (!prev) return prev;
+                const current = prev.galleryImages ?? [];
+                const seededCurrent =
+                  current.length === 0 && prev.image
+                    ? [{ url: prev.image, title: "" }, ...current]
+                    : current;
+                const seen = new Set(seededCurrent.map((entry) => entry.url));
+                const additions = resolved
+                  .filter((url) => !seen.has(url))
+                  .map((url) => ({
+                    url,
+                    title: "",
+                  }));
+                addedCount = additions.length;
+                const next = [...seededCurrent, ...additions];
+                const patch: Partial<FiberProfile> = {
+                  galleryImages: next,
+                  image: next[0]?.url ?? prev.image,
+                };
+                pendingPatchRef.current = { ...pendingPatchRef.current, ...patch };
+                setSaveState("pending");
+                if (timerRef.current) clearTimeout(timerRef.current);
+                timerRef.current = setTimeout(() => {
+                  timerRef.current = null;
+                  const accumulated = pendingPatchRef.current;
+                  pendingPatchRef.current = {};
+                  updateFiber(fiberId, accumulated);
+                  confirmSave();
+                }, 300);
+                return { ...prev, ...patch };
+              });
+              if (mode === "upload" && addedCount > 0) {
+                toast.success(`Added ${addedCount} image(s) via Cloudinary`);
+              }
+            })();
           }}
           onOpenAdvancedWorkspace={() =>
             navigate(`/admin/images?fiber=${encodeURIComponent(fiberId)}`)

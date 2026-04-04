@@ -1,6 +1,8 @@
 import { useMemo, useState } from "react";
 import { Compass, ExternalLink, Upload } from "lucide-react";
 import { CloudinaryDropzone } from "./cloudinary-dropzone";
+import { parseImageUrlsFromPastedText } from "@/utils/paste-image-urls";
+import { hotlinkProneImageUrlHint } from "@/utils/hotlink-host-hints";
 
 type CommitMode = "direct" | "upload";
 
@@ -10,13 +12,6 @@ interface ImageQuickActionsProps {
   existingImageUrls: string[];
   onAddImages: (urls: string[], mode: CommitMode) => void;
   onOpenAdvancedWorkspace: () => void;
-}
-
-function normalizeUrls(input: string): string[] {
-  return input
-    .split(/\n|,|\s+/)
-    .map((line) => line.trim())
-    .filter((line) => /^https?:\/\//i.test(line));
 }
 
 export function ImageQuickActions({
@@ -30,7 +25,15 @@ export function ImageQuickActions({
   const [stagedInput, setStagedInput] = useState("");
   const [isUploading, setIsUploading] = useState(false);
 
-  const stagedUrls = useMemo(() => normalizeUrls(stagedInput), [stagedInput]);
+  const stagedUrls = useMemo(() => parseImageUrlsFromPastedText(stagedInput), [stagedInput]);
+
+  const hotlinkHint = useMemo(() => {
+    for (const u of stagedUrls) {
+      const h = hotlinkProneImageUrlHint(u);
+      if (h) return h;
+    }
+    return null;
+  }, [stagedUrls]);
 
   const clearAndClose = () => {
     setStagedInput("");
@@ -41,7 +44,7 @@ export function ImageQuickActions({
   const appendStagedUrls = (urls: string[]) => {
     if (urls.length === 0) return;
     setStagedInput((prev) => {
-      const existing = normalizeUrls(prev);
+      const existing = parseImageUrlsFromPastedText(prev);
       const next = [...existing, ...urls];
       return next.join("\n");
     });
@@ -132,6 +135,14 @@ export function ImageQuickActions({
                   style={{ fontSize: "11px", fontFamily: "ui-monospace, SFMono-Regular, Menlo, monospace" }}
                   placeholder={"Paste one URL per line..."}
                 />
+                {hotlinkHint && (
+                  <div
+                    className="mb-2 px-2 py-1.5 rounded border border-amber-500/25 bg-amber-500/[0.06] text-amber-200/80"
+                    style={{ fontSize: "10px", lineHeight: 1.35 }}
+                  >
+                    {hotlinkHint}
+                  </div>
+                )}
                 <div className="flex items-center gap-2 mt-3">
                   <button
                     onClick={() => {

@@ -22,6 +22,8 @@ interface GlassCardProps {
   contentDensity?: number;
   ariaLabel?: string;
   tabIndex?: number;
+  /** Profile grid: return focus after closing detail view */
+  dataAtlasFiberId?: string;
 }
 
 /**
@@ -48,6 +50,7 @@ export function GlassCard({
   contentDensity = 0,
   ariaLabel,
   tabIndex,
+  dataAtlasFiberId,
 }: GlassCardProps) {
   const Tag = as;
   const pipeline = useImagePipeline();
@@ -140,6 +143,7 @@ export function GlassCard({
         onMouseLeave={() => onHoverChange?.(false)}
         aria-label={ariaLabel}
         tabIndex={tabIndex}
+        {...(dataAtlasFiberId ? { "data-atlas-fiber-id": dataAtlasFiberId } : {})}
         {...(as === "button" ? { type: "button" as const } : {})}
         className={`
           relative aspect-[3/4] w-full overflow-hidden rounded-xl p-0 pointer-events-auto

@@ -1,7 +1,7 @@
 import { ProgressiveImage } from "./progressive-image";
 import { ProfileImageExperience } from "./profile-image-experience";
 import { useImagePipeline } from "../context/image-pipeline";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type FiberProfile, type GalleryImageEntry } from "../data/atlas-data";
 import { dataSource } from "../data/data-provider";
 import { resolveRegionDots, InteractiveWorldMap, SustainabilityRadar, getSustainabilityMetrics } from "./map-helpers";
@@ -601,20 +601,28 @@ export function ContactSheetPlate({
     return Array.from(buttons).indexOf(button);
   }, []);
 
+  const rootRef = useRef<HTMLDivElement>(null);
+
+  /* React does not support onPointerEnterCapture on DOM elements; use capture-phase pointerover. */
+  useEffect(() => {
+    const el = rootRef.current;
+    if (!el) return;
+    const onPointerOverCapture = (event: PointerEvent) => {
+      const target = event.target as HTMLElement | null;
+      const button = target?.closest("button");
+      if (!button || !(button instanceof HTMLButtonElement)) return;
+      const index = resolveFilmstripIndex(el, button);
+      if (index < 0) return;
+      const image = images[index];
+      if (!image) return;
+      prefetchLightbox(image.url);
+    };
+    el.addEventListener("pointerover", onPointerOverCapture, true);
+    return () => el.removeEventListener("pointerover", onPointerOverCapture, true);
+  }, [images, prefetchLightbox, resolveFilmstripIndex]);
+
   return (
-    <div
-      className="h-full w-full overflow-hidden"
-      onPointerEnterCapture={(event) => {
-        const target = event.target as HTMLElement | null;
-        const button = target?.closest("button");
-        if (!button || !(button instanceof HTMLButtonElement)) return;
-        const index = resolveFilmstripIndex(event.currentTarget, button);
-        if (index < 0) return;
-        const image = images[index];
-        if (!image) return;
-        prefetchLightbox(image.url);
-      }}
-    >
+    <div ref={rootRef} className="h-full w-full overflow-hidden">
       <ProfileImageExperience
         fiberName={fiberName}
         images={images}

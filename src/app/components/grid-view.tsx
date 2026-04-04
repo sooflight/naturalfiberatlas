@@ -18,7 +18,13 @@ import { useDetailLifecycle } from "../hooks/use-detail-lifecycle";
 import { useLightboxState } from "../hooks/use-lightbox-state";
 import { useScreenPlateState } from "../hooks/use-screen-plate-state";
 import { getWarmupPolicy, warmUpImageAnalysis } from "../utils/image-warmup";
-import { parseHash, writeHash, saveScrollPosition, restoreScrollPosition } from "../utils/hash-routing";
+import {
+  FIBER_PATH_PREFIX,
+  parseUrlNavigationState,
+  writeBrowseHashState,
+  saveScrollPosition,
+  restoreScrollPosition,
+} from "../utils/hash-routing";
 import { smoothScrollTo } from "../utils/smooth-scroll";
 import {
   computePlateLayout,
@@ -29,7 +35,7 @@ import { getAvailablePlates } from "./plate-availability";
 import { Search, X } from "lucide-react";
 import { useImagePipeline } from "../context/image-pipeline";
 import { GridSkeleton } from "./grid-skeleton";
-import { Link } from "react-router";
+import { Link, useLocation, useNavigate } from "react-router";
 import { preloadAboutRoute } from "../route-preload";
 import {
   ATLAS_GRID_CATEGORY_PILL_STYLE,
@@ -88,27 +94,8 @@ const categories = [
   { key: "dye", label: "Dye" },
 ] as const;
 
-function emitDebugProbe(hypothesisId: string, location: string, message: string, data: Record<string, unknown>): void {
-  const shouldEmit =
-    import.meta.env.DEV &&
-    import.meta.env.MODE !== "test";
-  if (!shouldEmit) return;
-  fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Debug-Session-Id": "a8300e",
-    },
-    body: JSON.stringify({
-      sessionId: "a8300e",
-      runId: "search-detail-cards-debug",
-      hypothesisId,
-      location,
-      message,
-      data,
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
+function emitDebugProbe(_hypothesisId: string, _location: string, _message: string, _data: Record<string, unknown>): void {
+  /* Local agent-ingest removed — re-enable only with VITE_ATLAS_DEBUG_INGEST if needed. */
 }
 
 interface GridViewProps {
@@ -168,6 +155,13 @@ export function GridView({
 
   /* ── Reactive data from DataProvider (live preview in admin mode) ── */
   const { fiberIndex, adminMode, editingFiberId, setEditingFiberId } = useAtlasData();
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const buildFiberPath = useCallback((id: string, category: string) => {
+    const qs = category !== "all" ? `?cat=${encodeURIComponent(category)}` : "";
+    return `${FIBER_PATH_PREFIX}${encodeURIComponent(id)}${qs}`;
+  }, []);
 
   const isAnimalFiber = useCallback((fiber: (typeof fiberIndex)[number]): boolean => {
     const fiberType = fiber.profilePills.fiberType.toLowerCase();
@@ -391,6 +385,8 @@ export function GridView({
   const selectedIndexDriftRef = useRef<{ id: string | null; index: number }>({ id: null, index: -1 });
   const gridRef = useRef<HTMLDivElement>(null);
   const tiltRefs = useRef<Map<string, HTMLDivElement>>(new Map());
+  const closeDetailButtonRef = useRef<HTMLButtonElement>(null);
+  const pendingFocusFiberIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!selectedId) return;
@@ -716,6 +712,8 @@ export function GridView({
   }, []);
 
   const handleClose = useCallback(() => {
+    const returnId = selectedIdRef.current;
+    if (returnId) pendingFocusFiberIdRef.current = returnId;
     setMobileDetailOpen(false);
     if (pushedDetailRef.current) {
       history.back(); // popstate handler will clear selectedId
@@ -775,15 +773,19 @@ export function GridView({
   const pushedDetailRef = useRef(false);
   const popstateNavigating = useRef(false);
 
-  /* popstate listener — browser Back/Forward restores state from URL hash */
+  /* popstate listener — browser Back/Forward restores state from path + hash */
   useEffect(() => {
     const onPop = () => {
       popstateNavigating.current = true;
-      const { fiberId, category } = parseHash();
+      const { fiberId, category } = parseUrlNavigationState(
+        window.location.pathname,
+        window.location.search,
+        window.location.hash,
+      );
       setSelectedId(fiberId);
       if (category) setActiveCategory(category);
       pushedDetailRef.current = false;
-      /* Defer clearing the guard so the writeHash effect (which fires
+      /* Defer clearing the guard so the URL sync effect (which fires
          synchronously after setSelectedId) sees it and skips. */
       requestAnimationFrame(() => { popstateNavigating.current = false; });
     };
@@ -791,7 +793,33 @@ export function GridView({
     return () => window.removeEventListener("popstate", onPop);
   }, []);
 
-  /* Hash + scroll tracking on selection/category changes */
+  /* Entering grid detail: focus header close when present; else the hero profile card (TopNav + hideHeader). */
+  useEffect(() => {
+    if (!selectedId || transitionRef.current) return;
+    const sid = selectedId;
+    const rid = requestAnimationFrame(() => {
+      if (closeDetailButtonRef.current) {
+        closeDetailButtonRef.current.focus();
+      } else {
+        document.querySelector<HTMLElement>(`[data-atlas-fiber-id="${CSS.escape(sid)}"]`)?.focus();
+      }
+    });
+    return () => cancelAnimationFrame(rid);
+  }, [selectedId]);
+
+  /* After closing detail, return focus to the profile card that was open. */
+  useEffect(() => {
+    if (selectedId !== null) return;
+    const fiberId = pendingFocusFiberIdRef.current;
+    pendingFocusFiberIdRef.current = null;
+    if (!fiberId) return;
+    queueMicrotask(() => {
+      const el = document.querySelector<HTMLElement>(`[data-atlas-fiber-id="${CSS.escape(fiberId)}"]`);
+      el?.focus();
+    });
+  }, [selectedId]);
+
+  /* Path + hash + scroll tracking on selection/category changes */
   const prevHashSelRef = useRef<string | null>(null);
   useEffect(() => {
     /* Skip if this render was triggered by popstate — URL is already correct */
@@ -800,27 +828,56 @@ export function GridView({
       return;
     }
 
+    const pathname = location.pathname;
+    const pathQs = `${location.pathname}${location.search}`;
+
     const entering = prevHashSelRef.current === null && selectedId !== null;
     const leaving = prevHashSelRef.current !== null && selectedId === null;
+    const switching =
+      prevHashSelRef.current !== null
+      && selectedId !== null
+      && prevHashSelRef.current !== selectedId;
 
     if (entering) {
       saveScrollPosition();
-      writeHash(selectedId, activeCategory, true);  // pushState
+      const target = buildFiberPath(selectedId, activeCategory);
+      if (pathQs !== target) {
+        navigate(target);
+      }
       pushedDetailRef.current = true;
     } else if (leaving) {
-      /* If we're leaving via handleClose → history.back(), the URL is already
-         updated by the browser before popstate fires. If leaving by some other
-         path (search/category change while in detail), replaceState. */
+      /* handleClose uses history.back when possible; otherwise search/category
+         clears selection while still on /fiber/:id — navigate back to browse. */
       if (pushedDetailRef.current) {
-        writeHash(selectedId, activeCategory, false);
+        if (window.location.pathname.startsWith(FIBER_PATH_PREFIX)) {
+          if (activeCategory === "all") {
+            navigate("/", { replace: true });
+          } else {
+            navigate(
+              { pathname: "/", hash: `?cat=${encodeURIComponent(activeCategory)}` },
+              { replace: true },
+            );
+          }
+        } else {
+          writeBrowseHashState(pathname, null, activeCategory, false);
+        }
         pushedDetailRef.current = false;
       }
       restoreScrollPosition();
+    } else if (switching) {
+      navigate(buildFiberPath(selectedId!, activeCategory), { replace: true });
     } else {
-      writeHash(selectedId, activeCategory, false);  // replaceState
+      if (selectedId && window.location.pathname.startsWith(FIBER_PATH_PREFIX)) {
+        const next = buildFiberPath(selectedId, activeCategory);
+        if (pathQs !== next) {
+          navigate(next, { replace: true });
+        }
+      } else {
+        writeBrowseHashState(pathname, selectedId, activeCategory, false);
+      }
     }
     prevHashSelRef.current = selectedId;
-  }, [selectedId, activeCategory]);
+  }, [selectedId, activeCategory, location.pathname, location.search, navigate, buildFiberPath]);
 
   /* ── Parse hash on load ── */
   const initialHashHandled = useRef(false);
@@ -828,7 +885,11 @@ export function GridView({
     if (initialHashHandled.current) return;
     initialHashHandled.current = true;
 
-    const { fiberId, category } = parseHash();
+    const { fiberId, category } = parseUrlNavigationState(
+      window.location.pathname,
+      window.location.search,
+      window.location.hash,
+    );
     if (category) setActiveCategory(category);
     if (fiberId) {
       const fiber = fiberIndex.find((f) => f.id === fiberId);
@@ -953,6 +1014,8 @@ export function GridView({
               {/* Close — always rendered to avoid header flex reflow;
                   opacity + pointer-events toggle visibility */}
               <button
+                ref={closeDetailButtonRef}
+                type="button"
                 onClick={handleClose}
                 className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/[0.06] border border-white/10 text-white/50 hover:text-white/80 hover:border-white/20 transition-[color,border-color,opacity] duration-200 cursor-pointer ml-auto"
                 style={{
@@ -962,6 +1025,7 @@ export function GridView({
                 }}
                 tabIndex={selectedId ? 0 : -1}
                 aria-hidden={!selectedId}
+                aria-label={selectedId ? "Close profile detail" : undefined}
               >
                 <X size={12} />
                 <span className="hidden sm:inline">Close</span>

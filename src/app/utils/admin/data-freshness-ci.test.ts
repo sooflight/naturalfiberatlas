@@ -6,8 +6,8 @@ import { runCensus } from "./dataCensus";
  * canonical dataset grows or shrinks (see docs/runbooks/data-freshness.md).
  */
 const BUNDLED_CENSUS_BASELINE = {
-  navLeafProfiles: 119,
-  passports: 56,
+  navLeafProfiles: 118,
+  passports: 58,
   suppliers: 5,
   evidence: 9,
   supplierLinks: 11,

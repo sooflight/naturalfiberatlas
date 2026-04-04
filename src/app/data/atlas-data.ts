@@ -1700,10 +1700,6 @@ export const quoteData: Record<string, QuoteEntry[]> = {
     { text: "Eri is the only silk that never kills the worm — the open-ended cocoon lets the moth emerge before harvesting.", attribution: "Assamese Sericulture" },
     { text: "In Assam, eri silk is 'the fabric of peace' — ahimsa woven into every thread.", attribution: "Northeast Indian Textile Heritage" },
   ],
-  muga: [
-    { text: "Muga silk glows more golden with every wash — the only silk that improves with age and laundering.", attribution: "Assam Silk Directorate" },
-    { text: "The Ahom kings reserved muga for royalty — golden silk from golden worms, found nowhere else on Earth.", attribution: "Assamese Royal Heritage" },
-  ],
   ayate: [
     { text: "The tilma of Juan Diego, on which Our Lady of Guadalupe appeared in 1531, was woven from maguey ayate.", attribution: "Mexican Catholic Tradition" },
     { text: "Ayate starts rough and finishes soft — the more you use it, the more it gives.", attribution: "Mexican Market Wisdom" },
@@ -1831,7 +1827,6 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619272/atlas/bwyoiumzmx5d2kqhvsnz.jpg", "Peace silk"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619274/atlas/u54xnyn30xhvcs7pgqxq.jpg", "Tussah silk"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619275/atlas/vhtctqa2blfnurmnuj6m.jpg", "Eri silk"),
-    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619277/atlas/bum6jmracrdlcg1ur8kw.jpg", "Muga silk"),
   ],
   bamboo: [
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619174/atlas/fru5la7c6aitgta2i5f8.jpg", "Bamboo grove"),

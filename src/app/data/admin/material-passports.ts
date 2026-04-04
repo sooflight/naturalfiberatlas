@@ -1335,17 +1335,6 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "endUse": {},
     "status": "published"
   },
-  "muga": {
-    "materialId": "muga",
-    "lastUpdated": "2026-02-28",
-    "performance": {},
-    "process": {},
-    "dyeing": {},
-    "sustainability": {},
-    "sourcing": {},
-    "endUse": {},
-    "status": "published"
-  },
   "peace-silk": {
     "materialId": "peace-silk",
     "lastUpdated": "2026-02-28",

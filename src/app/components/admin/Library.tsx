@@ -250,32 +250,47 @@ export default function Library({ forcedMode }: LibraryProps) {
 
     // Fallback to static data if no live data (transition phase)
     const allNodeIds = new Set<string>();
-    Object.keys(ATLAS_IMAGES).forEach(id => allNodeIds.add(id));
-    Object.keys(MATERIAL_PASSPORTS).forEach(id => allNodeIds.add(id));
+    Object.keys(ATLAS_IMAGES).forEach((id) => allNodeIds.add(id));
+    Object.keys(MATERIAL_PASSPORTS).forEach((id) => allNodeIds.add(id));
+    /* Catalog-only profiles (e.g. expansion fibers) must appear here or they vanish from Library grid / “live” list */
+    for (const entry of fiberIndex) {
+      allNodeIds.add(entry.id);
+    }
 
     // Exclude profiles soft-deleted via right-click > Delete Profile (dataSource.deleteFiber)
     const items = Array.from(allNodeIds)
       .filter((id) => !dataSource.isFiberDeleted(id))
-      .map(id => ({
-        id,
-        nodeData: null,
-        passport: MATERIAL_PASSPORTS[id] || null,
-        images: ATLAS_IMAGES[id] || [],
-        completion: {
-          hasImages: toImageArray(ATLAS_IMAGES[id]).length > 0,
-          hasKnowledge: !!MATERIAL_PASSPORTS[id],
-          hasRichContent: !!MATERIAL_PASSPORTS[id]?.summary,
-        },
-        status: (
-          MATERIAL_PASSPORTS[id]?.status === "published"
-            ? "published"
-            : MATERIAL_PASSPORTS[id]?.status === "archived"
-              ? "archived"
-              : "draft"
-        ) as "published" | "draft" | "archived",
-      }));
+      .map((id) => {
+        const fiber = dataSource.getFiberById(id);
+        const passport = MATERIAL_PASSPORTS[id] ?? null;
+        const atlasRaw = ATLAS_IMAGES[id];
+        const fromAtlas = toImageArray(atlasRaw);
+        const hero = fiber?.image?.trim();
+        const images =
+          fromAtlas.length > 0 ? fromAtlas : hero ? [hero] : [];
+
+        const passportStatus = passport?.status;
+        const fromPassport =
+          passportStatus === "published" || passportStatus === "archived" ? passportStatus : null;
+        const fs = fiber?.status;
+        const fromFiber = fs === "published" || fs === "archived" ? fs : null;
+        const status = (fromPassport ?? fromFiber ?? "draft") as "published" | "draft" | "archived";
+
+        return {
+          id,
+          nodeData: null,
+          passport,
+          images,
+          completion: {
+            hasImages: images.length > 0,
+            hasKnowledge: !!passport,
+            hasRichContent: !!passport?.summary,
+          },
+          status,
+        };
+      });
     return items;
-  }, [liveProfiles, dataVersion]);
+  }, [liveProfiles, dataVersion, fiberIndex]);
 
   const knowledgeFibers = useMemo(() => {
     const getImageForId = (id: string) => {

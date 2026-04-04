@@ -1281,7 +1281,6 @@
     "peace-silk": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619272/atlas/bwyoiumzmx5d2kqhvsnz.jpg",
     "tussah": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619274/atlas/u54xnyn30xhvcs7pgqxq.jpg",
     "eri": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619275/atlas/vhtctqa2blfnurmnuj6m.jpg",
-    "muga": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619277/atlas/bum6jmracrdlcg1ur8kw.jpg",
     "horsehair": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619278/atlas/lnnkjf82gd2q6ipf42v3.jpg",
     "spider-silk": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619279/atlas/er6dkflqfsskvsyvdyw2.jpg",
     "modal": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619281/atlas/arlz1b51vhdn3orb1ry3.jpg",
@@ -3029,9 +3028,6 @@
     "eri": [
       "fiber/animal/silk"
     ],
-    "muga": [
-      "fiber/animal/silk"
-    ],
     "horsehair": [
       "fiber/animal/silk"
     ],
@@ -3663,7 +3659,6 @@
     "mulberry-silk": "~3500 BCE",
     "tussah": "~2000 BCE",
     "eri": "~Ancient",
-    "muga": "~Ancient",
     "peace-silk": "~1990s",
     "horsehair": "~Ancient",
     "spider-silk": "~2000s",
@@ -3791,7 +3786,6 @@
     "mulberry-silk": "Asia",
     "tussah": "Asia",
     "eri": "Asia",
-    "muga": "Asia",
     "peace-silk": "Asia",
     "horsehair": "Global",
     "spider-silk": "Global",

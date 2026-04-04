@@ -120,6 +120,8 @@ export const ProgressiveImage = memo(function ProgressiveImage({
 
   if (!src) return null;
 
+  const decorative = !alt.trim();
+
   return (
     <div
       className={`progressive-image-wrapper ${className}`}
@@ -141,7 +143,8 @@ export const ProgressiveImage = memo(function ProgressiveImage({
       <img
         ref={imgRef}
         src={targetLoaded ? targetSrc : undefined}
-        alt={alt}
+        alt={decorative ? "" : alt}
+        aria-hidden={decorative ? true : undefined}
         className={`progressive-image-target ${targetLoaded ? "is-loaded" : ""}`}
         loading={loading}
         draggable={draggable}

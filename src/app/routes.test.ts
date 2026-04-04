@@ -87,6 +87,11 @@ describe("route access controls", () => {
     expect(route && "lazy" in route ? route.lazy : undefined).toBeUndefined();
   });
 
+  it("includes public fiber profile path segment", () => {
+    const paths = getChildPaths(false);
+    expect(paths).toContain("fiber/:fiberId");
+  });
+
   it("lazy-loads the index route home page", async () => {
     const route = getIndexRoute(false, makeFlags());
     expect(route).toBeDefined();

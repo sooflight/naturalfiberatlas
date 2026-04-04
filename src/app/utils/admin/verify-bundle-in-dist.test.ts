@@ -79,4 +79,13 @@ describe.skipIf(!distReady)("production bundle includes Git catalog (dist)", () 
       `new-images.json has profile links that do not include fibers.ts hero URL for: ${stale.join(", ")}`,
     ).toEqual([]);
   });
+
+  it("includes robots.txt and sitemap.xml beside the production index", () => {
+    const robotsPath = join(root, "dist/robots.txt");
+    const sitemapPath = join(root, "dist/sitemap.xml");
+    expect(existsSync(robotsPath), "run npm run build before dist assertions").toBe(true);
+    expect(existsSync(sitemapPath)).toBe(true);
+    expect(readFileSync(robotsPath, "utf8")).toContain("Sitemap:");
+    expect(readFileSync(sitemapPath, "utf8")).toContain("/fiber/");
+  });
 });

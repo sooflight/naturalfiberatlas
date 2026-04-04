@@ -2,19 +2,29 @@
  * not-found.tsx — 404 page for unmatched routes.
  */
 
+import { useEffect } from "react";
 import { Link } from "react-router";
 import { ArrowLeft } from "lucide-react";
 
 export function NotFoundPage() {
+  useEffect(() => {
+    const prev = document.title;
+    document.title = "Page not found — Natural Fiber Atlas";
+    return () => {
+      document.title = prev;
+    };
+  }, []);
+
   return (
     <div className="min-h-dvh bg-[#111111] text-white flex items-center justify-center">
-      <div className="text-center space-y-6">
-        <p
+      <main className="text-center space-y-6 px-6" aria-labelledby="not-found-heading">
+        <h1
+          id="not-found-heading"
           className="text-white/10 tracking-[0.2em] uppercase"
           style={{ fontSize: "64px", fontWeight: 200, lineHeight: 1 }}
         >
           404
-        </p>
+        </h1>
         <p className="text-white/30" style={{ fontSize: "13px" }}>
           We could not find that page in the Atlas.
         </p>
@@ -29,7 +39,7 @@ export function NotFoundPage() {
           <ArrowLeft size={13} />
           Return to Atlas
         </Link>
-      </div>
+      </main>
     </div>
   );
 }

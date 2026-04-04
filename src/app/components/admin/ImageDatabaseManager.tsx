@@ -36,6 +36,7 @@ import { AdminProfileStoryboard } from './AdminProfileStoryboard';
 import { useAdminSettings } from '@/contexts/AdminSettingsContext';
 import { useAdminSave } from '@/contexts/AdminSaveContext';
 import { toUrlArray } from '@/utils/imageUrl';
+import { extractFirstImageUrlFromClipboardText } from '@/utils/paste-image-urls';
 import { useDebounce } from '@/utils/debounce';
 import { MATERIAL_PASSPORTS } from '@/data/material-passports';
 import { mutateAdminStatus } from '@/utils/adminStatusApi';
@@ -2225,8 +2226,8 @@ export default function ImageDatabaseManager({
   const pasteFromClipboard = useCallback(async (key: string) => {
     try {
       const text = await navigator.clipboard.readText();
-      const url = text.trim();
-      if (!url || !/^https?:\/\//i.test(url)) {
+      const url = extractFirstImageUrlFromClipboardText(text);
+      if (!url) {
         flash('Clipboard does not contain a valid URL');
         return;
       }

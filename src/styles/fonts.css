@@ -1,3 +1,4 @@
+/* display=swap avoids invisible text during font load; subset=latin limits bytes */
 @import url('https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&display=swap&subset=latin');
 
 @font-face {

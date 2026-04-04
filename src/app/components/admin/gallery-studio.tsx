@@ -27,6 +27,8 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import { ImageContextActions } from "./image-context-actions";
+import { extractFirstImageUrlFromClipboardText } from "@/utils/paste-image-urls";
+import { hotlinkProneImageUrlHint } from "@/utils/hotlink-host-hints";
 
 /* ── Drag item type ── */
 const GALLERY_IMAGE = "GALLERY_IMAGE";
@@ -403,11 +405,14 @@ export function GalleryStudio({
     const el = containerRef.current;
     if (!el) return;
     const onPaste = (e: ClipboardEvent) => {
-      const text = e.clipboardData?.getData("text/plain")?.trim();
-      if (text && (text.startsWith("http://") || text.startsWith("https://"))) {
+      const raw = e.clipboardData?.getData("text/plain") ?? "";
+      const url = extractFirstImageUrlFromClipboardText(raw);
+      if (url) {
         e.preventDefault();
-        push([...draft, { url: text, title: "" }]);
+        push([...draft, { url, title: "" }]);
         toast.success("Image pasted");
+        const hint = hotlinkProneImageUrlHint(url);
+        if (hint) toast.message(hint, { duration: 10_000 });
       }
     };
     el.addEventListener("paste", onPaste);

@@ -62,27 +62,6 @@ function WorkbenchFiberRedirect() {
   return createElement(Navigate, { to, replace: true });
 }
 
-function debugAdminRoutes(message: string, data: Record<string, unknown>, hypothesisId: string) {
-  // #region agent log
-  fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "X-Debug-Session-Id": "da2446",
-    },
-    body: JSON.stringify({
-      sessionId: "da2446",
-      runId: "pre-fix",
-      hypothesisId,
-      location: "src/app/routes.ts",
-      message,
-      data,
-      timestamp: Date.now(),
-    }),
-  }).catch(() => {});
-  // #endregion
-}
-
 async function loadHomeRoute() {
   const mod = await preloadHomeRoute();
   return { Component: mod.HomePage };
@@ -92,6 +71,27 @@ async function loadAboutRoute() {
   const mod = await preloadAboutRoute();
   return { Component: mod.AboutPage };
 }
+
+async function loadFiberProfileRoute() {
+  await preloadHomeRoute();
+  const mod = await import("./pages/fiber-profile-route");
+  return { Component: mod.FiberProfileRoute };
+}
+
+/** Shown during initial hydration while lazy public routes load (silences Router HydrateFallback warning). */
+const publicRouteHydrateFallback = createElement(
+  "div",
+  {
+    className: "min-h-dvh bg-[#111111] flex items-center justify-center",
+    role: "status",
+    "aria-busy": true,
+    "aria-label": "Loading Natural Fiber Atlas",
+  },
+  createElement("div", {
+    className: "h-9 w-9 rounded-full border-2 border-white/15 border-t-white/55 animate-spin",
+    "aria-hidden": true,
+  }),
+);
 
 function buildAdminRoutes(adminEnabled: boolean, flags: AdminFeatureFlags): RouteObject[] {
   if (!adminEnabled) {
@@ -103,17 +103,6 @@ function buildAdminRoutes(adminEnabled: boolean, flags: AdminFeatureFlags): Rout
   const adminElement = useRedirect
     ? createElement(AdminRedirectPage, { baseUrl })
     : createElement(AdminShellElement);
-
-  debugAdminRoutes(
-    "buildAdminRoutes",
-    {
-      adminEnabled,
-      adminCanonicalUrl: baseUrl,
-      useRedirect,
-      advancedImagesRoute: flags.advancedImagesRoute,
-    },
-    "H1",
-  );
 
   const adminRoutes: RouteObject[] = [
     { path: "admin", element: adminElement },
@@ -149,8 +138,24 @@ export function buildAppRoutes(
       Component: RootLayout,
       errorElement: createElement(RouteErrorPage),
       children: [
-        { index: true, lazy: loadHomeRoute, errorElement: createElement(RouteErrorPage) },
-        { path: "about", lazy: loadAboutRoute, errorElement: createElement(RouteErrorPage) },
+        {
+          index: true,
+          lazy: loadHomeRoute,
+          hydrateFallbackElement: publicRouteHydrateFallback,
+          errorElement: createElement(RouteErrorPage),
+        },
+        {
+          path: "about",
+          lazy: loadAboutRoute,
+          hydrateFallbackElement: publicRouteHydrateFallback,
+          errorElement: createElement(RouteErrorPage),
+        },
+        {
+          path: "fiber/:fiberId",
+          lazy: loadFiberProfileRoute,
+          hydrateFallbackElement: publicRouteHydrateFallback,
+          errorElement: createElement(RouteErrorPage),
+        },
         ...buildAdminRoutes(adminEnabled, flags),
         { path: "*", Component: NotFoundPage, errorElement: createElement(RouteErrorPage) },
       ],

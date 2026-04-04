@@ -1,43 +1,78 @@
 /**
- * Hash-based deep link helpers for the Natural Fiber Atlas.
+ * Deep-link helpers for the Natural Fiber Atlas.
  *
- * URL format: #fiberId?cat=category
- *   e.g. #hemp?cat=fiber  →  select hemp, filter to fibers
- *         #hemp            →  select hemp, show all categories
- *         #?cat=textile    →  no selection, filter to textiles
+ * Browse on `/` uses the hash: #fiberId?cat=category
+ * Shareable / indexable profile URLs use /fiber/:id?cat=… (see routes + GridView).
  *
- * Navigation State Machine (#5):
- *   - Uses pushState for fiber selection so browser Back closes detail views
- *   - Uses replaceState for category changes (lightweight, no history entry)
- *   - Exposes a popstate listener hook for back/forward navigation
+ * Navigation state machine:
+ *   - Fiber open from grid: React Router push to /fiber/:id
+ *   - Browser Back closes detail (popstate)
+ *   - Category changes on /: replaceState on hash; on /fiber/: replaceState on path
  */
 
-export function parseHash(): { fiberId: string | null; category: string | null } {
-  const raw = window.location.hash.replace(/^#/, "");
-  if (!raw) return { fiberId: null, category: null };
+export const FIBER_PATH_PREFIX = "/fiber/";
 
-  const [path, query] = raw.split("?");
-  const params = new URLSearchParams(query ?? "");
-  const category = params.get("cat");
-  const fiberId = path || null;
-
-  return { fiberId, category };
+export function parseFiberPath(pathname: string): string | null {
+  if (!pathname.startsWith(FIBER_PATH_PREFIX)) return null;
+  const rest = pathname.slice(FIBER_PATH_PREFIX.length);
+  if (!rest) return null;
+  const segment = rest.split("/")[0];
+  if (!segment) return null;
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    return null;
+  }
 }
 
 /**
- * Write the current selection state to the URL hash.
- *
- * @param selectedId  — currently selected fiber (null = browse mode)
- * @param activeCategory — active filter category
- * @param push — if true, creates a new history entry (pushState);
- *               if false, replaces the current entry (replaceState).
- *               Default: true for fiber selection changes, false for category-only.
+ * Resolve fiber + category from pathname (fiber routes), hash (home), and optional ?cat= on fiber URLs.
  */
-export function writeHash(
+export function parseUrlNavigationState(
+  pathname: string,
+  search: string,
+  hash: string,
+): { fiberId: string | null; category: string | null } {
+  const pathFiber = parseFiberPath(pathname);
+  const qs = new URLSearchParams(search.startsWith("?") ? search.slice(1) : search);
+  const categoryFromSearch = qs.get("cat");
+
+  if (pathFiber) {
+    return { fiberId: pathFiber, category: categoryFromSearch };
+  }
+
+  const raw = hash.replace(/^#/, "");
+  if (!raw) {
+    return { fiberId: null, category: categoryFromSearch };
+  }
+
+  const [pathPart, queryPart] = raw.split("?");
+  const hp = new URLSearchParams(queryPart ?? "");
+  const categoryFromHash = hp.get("cat");
+  const fiberId = pathPart || null;
+  return {
+    fiberId,
+    category: categoryFromHash ?? categoryFromSearch,
+  };
+}
+
+/** @deprecated use parseUrlNavigationState */
+export function parseHash(): { fiberId: string | null; category: string | null } {
+  if (typeof window === "undefined") return { fiberId: null, category: null };
+  return parseUrlNavigationState(window.location.pathname, window.location.search, window.location.hash);
+}
+
+/**
+ * Sync hash on `/` only (browse + legacy deep links). No-op on `/fiber/…` — Router handles that.
+ */
+export function writeBrowseHashState(
+  pathname: string,
   selectedId: string | null,
   activeCategory: string,
   push: boolean = false,
 ) {
+  if (pathname.startsWith(FIBER_PATH_PREFIX)) return;
+
   let hash = "";
   if (selectedId) hash += selectedId;
   if (activeCategory !== "all") {
@@ -54,15 +89,22 @@ export function writeHash(
   }
 }
 
+/** @deprecated use writeBrowseHashState(pathname, …) from components with Router location */
+export function writeHash(
+  selectedId: string | null,
+  activeCategory: string,
+  push: boolean = false,
+) {
+  writeBrowseHashState(typeof window !== "undefined" ? window.location.pathname : "/", selectedId, activeCategory, push);
+}
+
 /** Saved scroll position for grid-browse mode */
 let savedScrollY: number | null = null;
 
-/** Call when entering detail mode to snapshot scroll position */
 export function saveScrollPosition(): void {
   savedScrollY = window.scrollY;
 }
 
-/** Call when leaving detail mode to restore scroll position */
 export function restoreScrollPosition(): void {
   if (savedScrollY !== null) {
     requestAnimationFrame(() => {

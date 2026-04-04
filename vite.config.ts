@@ -1,8 +1,10 @@
 import { defineConfig, loadEnv } from 'vite'
 import path from 'path'
+import fs from 'fs'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { adminPlugin } from './vite/admin-plugin'
+import { generateSeoStaticFiles } from './vite/seo-static'
 
 const OPENROUTER_API_URL = 'https://openrouter.ai/api/v1/chat/completions'
 const DEFAULT_OPENROUTER_MODEL = 'openai/gpt-4o-mini'
@@ -30,6 +32,42 @@ function extractFirstJsonObject(input: string): string {
   const fenceMatch = trimmed.match(/```(?:json)?\s*([\s\S]*?)\s*```/i)
   if (fenceMatch && fenceMatch[1]) return fenceMatch[1].trim()
   return trimmed
+}
+
+/** Emit robots.txt + sitemap.xml into dist/; serve the same in dev (Playwright / parity). */
+function seoStaticFilesPlugin(env: Record<string, string>) {
+  return {
+    name: 'seo-static-files',
+    configureServer(server: {
+      middlewares: { use(fn: (req: unknown, res: unknown, next: () => void) => void): void }
+    }) {
+      server.middlewares.use((req: { url?: string }, res: {
+        setHeader(n: string, v: string): void
+        end(b: string): void
+      }, next: () => void) => {
+        const pathname = req.url?.split('?')[0]
+        if (pathname === '/robots.txt' || pathname === '/sitemap.xml') {
+          const { robots, sitemap } = generateSeoStaticFiles(env, process.cwd())
+          if (pathname === '/robots.txt') {
+            res.setHeader('Content-Type', 'text/plain; charset=utf-8')
+            res.end(robots)
+            return
+          }
+          res.setHeader('Content-Type', 'application/xml; charset=utf-8')
+          res.end(sitemap)
+          return
+        }
+        next()
+      })
+    },
+    closeBundle() {
+      const dist = path.resolve(__dirname, 'dist')
+      if (!fs.existsSync(dist)) return
+      const { robots, sitemap } = generateSeoStaticFiles(env, process.cwd())
+      fs.writeFileSync(path.join(dist, 'sitemap.xml'), sitemap, 'utf8')
+      fs.writeFileSync(path.join(dist, 'robots.txt'), robots, 'utf8')
+    },
+  }
 }
 
 function openRouterDevProxyPlugin() {
@@ -126,6 +164,8 @@ export default defineConfig(({ mode }) => {
   const localEnv = loadEnv(mode, process.cwd(), '')
   Object.assign(process.env, localEnv)
 
+  const envForSeo: Record<string, string> = { ...localEnv }
+
   return {
   server: {
     port: 3000,
@@ -138,6 +178,7 @@ export default defineConfig(({ mode }) => {
     tailwindcss(),
     openRouterDevProxyPlugin(),
     adminPlugin(),
+    seoStaticFilesPlugin(envForSeo),
   ],
   resolve: {
     alias: [

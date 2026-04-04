@@ -11,7 +11,7 @@ describe("buildKnowledgeFibers navigation coverage", () => {
           id: "fiber",
           label: "Fiber",
           children: [
-            { id: "regen", label: "Regen" },
+            { id: "regen", label: "Rayon" },
           ],
         },
       ],

@@ -112,8 +112,9 @@ vi.mock("../utils/image-warmup", () => ({
 }));
 
 vi.mock("../utils/hash-routing", () => ({
-  parseHash: () => ({ fiberId: null, category: null }),
-  writeHash: () => {},
+  FIBER_PATH_PREFIX: "/fiber/",
+  parseUrlNavigationState: () => ({ fiberId: null, category: null }),
+  writeBrowseHashState: () => {},
   saveScrollPosition: () => {},
   restoreScrollPosition: () => {},
 }));
@@ -173,9 +174,11 @@ describe("GridView image sync", () => {
     const search = sampleFiber.name;
 
     render(
-      <AtlasDataProvider>
-        <GridView hideHeader externalSearch={search} />
-      </AtlasDataProvider>,
+      <MemoryRouter>
+        <AtlasDataProvider>
+          <GridView hideHeader externalSearch={search} />
+        </AtlasDataProvider>
+      </MemoryRouter>,
     );
 
     const card = await screen.findByTestId(`profile-card-${sampleFiber.id}`);
@@ -203,17 +206,21 @@ describe("GridView image sync", () => {
     const sampleFiber = bundledFibers[0];
     const nonMatchSearch = "__not-a-real-fiber-name__";
     const { rerender } = render(
-      <AtlasDataProvider>
-        <GridView hideHeader externalSearch={sampleFiber.name} />
-      </AtlasDataProvider>,
+      <MemoryRouter>
+        <AtlasDataProvider>
+          <GridView hideHeader externalSearch={sampleFiber.name} />
+        </AtlasDataProvider>
+      </MemoryRouter>,
     );
 
     await screen.findByTestId(`profile-card-${sampleFiber.id}`);
 
     rerender(
-      <AtlasDataProvider>
-        <GridView hideHeader externalSearch={nonMatchSearch} />
-      </AtlasDataProvider>,
+      <MemoryRouter>
+        <AtlasDataProvider>
+          <GridView hideHeader externalSearch={nonMatchSearch} />
+        </AtlasDataProvider>
+      </MemoryRouter>,
     );
 
     await waitFor(() => {
@@ -353,9 +360,11 @@ describe("GridView image sync", () => {
     });
 
     render(
-      <AtlasDataProvider>
-        <GridView hideHeader externalSearch={sampleFiber.name} />
-      </AtlasDataProvider>,
+      <MemoryRouter>
+        <AtlasDataProvider>
+          <GridView hideHeader externalSearch={sampleFiber.name} />
+        </AtlasDataProvider>
+      </MemoryRouter>,
     );
 
     await waitFor(() => {
@@ -417,9 +426,11 @@ describe("GridView image sync", () => {
     });
 
     render(
-      <AtlasDataProvider>
-        <GridView hideHeader externalSearch={sampleFiber.name} />
-      </AtlasDataProvider>,
+      <MemoryRouter>
+        <AtlasDataProvider>
+          <GridView hideHeader externalSearch={sampleFiber.name} />
+        </AtlasDataProvider>
+      </MemoryRouter>,
     );
 
     await waitFor(() => {

@@ -696,3 +696,17 @@ q,
   background: rgba(255, 255, 255, 0.06);
   margin: 4px 0;
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   Performance / iOS WebKit — stacked backdrop-blur is costly; cap blur
+   when the user prefers reduced motion (also helps font/layout work settle).
+   ═══════════════════════════════════════════════════════════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop-blur-md,
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl {
+    backdrop-filter: blur(8px) saturate(1) !important;
+    -webkit-backdrop-filter: blur(8px) saturate(1) !important;
+  }
+}

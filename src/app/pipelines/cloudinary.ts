@@ -3,13 +3,20 @@
  *
  * Inserts on-the-fly resize/format parameters into Cloudinary URLs
  * so the CDN returns right-sized images instead of full-resolution originals.
- * Non-Cloudinary URLs pass through unchanged.
+ *
+ * Optional: set `VITE_CLOUDINARY_FETCH_REMOTE=true` to serve arbitrary `http(s)`
+ * image URLs through Cloudinary **fetch** delivery (same-origin-friendly, avoids
+ * hotlink CORS issues in canvas/WebKit). Requires fetch to be allowed on your
+ * Cloudinary cloud. Cloud name defaults to `dawxvzlte` or `VITE_CLOUDINARY_CLOUD_NAME`.
  */
 
 import type { ImageTransformPipeline, GlassAtlasPreset } from "./types";
 
 const CLOUDINARY_BASE = "res.cloudinary.com";
 const UPLOAD_SEGMENT = "/upload/";
+const FETCH_SEGMENT = "/image/fetch/";
+
+const DEFAULT_CLOUD_NAME = "dawxvzlte";
 
 const PRESET_TRANSFORMS: Record<GlassAtlasPreset, string> = {
   grid:         "w_320,h_427,c_fill,f_auto,q_auto",
@@ -24,26 +31,47 @@ const PRESET_TRANSFORMS: Record<GlassAtlasPreset, string> = {
   lightbox:     "w_1400,f_auto,q_auto",
 };
 
+function cloudName(): string {
+  const n = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+  return typeof n === "string" && n.trim() !== "" ? n.trim() : DEFAULT_CLOUD_NAME;
+}
+
+function fetchRemoteEnabled(): boolean {
+  return import.meta.env.VITE_CLOUDINARY_FETCH_REMOTE === "true";
+}
+
 export class CloudinaryPipeline implements ImageTransformPipeline {
   transform(src: string | undefined, preset: string): string | undefined {
     if (!src) return src;
-    if (!src.includes(CLOUDINARY_BASE)) return src;
+    if (src.includes(FETCH_SEGMENT)) return src;
 
     const transforms = PRESET_TRANSFORMS[preset as GlassAtlasPreset];
-    if (!transforms) return src; // unknown preset — passthrough
+    if (!transforms) return src;
 
-    const idx = src.indexOf(UPLOAD_SEGMENT);
-    if (idx === -1) return src;
+    if (src.includes(CLOUDINARY_BASE)) {
+      const idx = src.indexOf(UPLOAD_SEGMENT);
+      if (idx === -1) return src;
 
-    const insertPoint = idx + UPLOAD_SEGMENT.length;
-    const before = src.slice(0, insertPoint);
-    const after = src.slice(insertPoint);
+      const insertPoint = idx + UPLOAD_SEGMENT.length;
+      const before = src.slice(0, insertPoint);
+      const after = src.slice(insertPoint);
 
-    // Avoid double-applying transforms — if the URL already has transforms
-    // (starts with a known param like "w_" or "f_"), skip.
-    if (/^[a-z]_/.test(after)) return src;
+      if (/^[a-z]_/.test(after)) return src;
 
-    return `${before}${transforms}/${after}`;
+      return `${before}${transforms}/${after}`;
+    }
+
+    if (
+      fetchRemoteEnabled() &&
+      /^https?:\/\//i.test(src) &&
+      !src.startsWith("data:") &&
+      !src.startsWith("blob:")
+    ) {
+      const encoded = encodeURIComponent(src);
+      return `https://res.cloudinary.com/${cloudName()}${FETCH_SEGMENT}${transforms}/${encoded}`;
+    }
+
+    return src;
   }
 }
 

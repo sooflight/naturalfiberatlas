@@ -75,7 +75,6 @@ export const galleryData: Record<string, GalleryImageEntry[]> = {
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619272/atlas/bwyoiumzmx5d2kqhvsnz.jpg", "Peace silk"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619274/atlas/u54xnyn30xhvcs7pgqxq.jpg", "Tussah silk"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619275/atlas/vhtctqa2blfnurmnuj6m.jpg", "Eri silk"),
-    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619277/atlas/bum6jmracrdlcg1ur8kw.jpg", "Muga silk"),
   ],
 
   bamboo: [

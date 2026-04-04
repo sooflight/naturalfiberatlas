@@ -151,6 +151,7 @@ export function ProfileCard({
       isSelected={isSelected}
       ariaLabel={`Open ${name} profile`}
       tabIndex={0}
+      dataAtlasFiberId={id}
       className="focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-0"
     >
       {/* Background image stack: active fades on top of previous image */}

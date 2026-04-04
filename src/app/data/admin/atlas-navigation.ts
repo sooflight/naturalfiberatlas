@@ -45,6 +45,7 @@ export const atlasNavigation: NavNode[] = [
         n("ramie", "Ramie"),
         n("nettle", "Nettle"),
         n("kenaf", "Kenaf"),
+        n("roselle", "Roselle (Hibiscus Fiber)"),
       ]),
 
       n("bark-fibers", "Bark Fiber", { description: "Fibers and strips sourced from outer bark layers." }, [
@@ -115,14 +116,13 @@ export const atlasNavigation: NavNode[] = [
           n("mulberry-silk", "Mulberry Silk"),
           n("tussah", "Tussah"),
           n("eri", "Eri"),
-          n("muga", "Muga"),
           n("peace-silk", "Peace Silk"),
         ]),
       ]),
 
     ]),
 
-    n("mineral-regenerated", "Regenerated", { shortLabel: "Regen", description: "Regenerated cellulosic fibers made from natural sources through chemical processing." }, [
+    n("mineral-regenerated", "Regenerated", { shortLabel: "Rayon", description: "Regenerated cellulosic fibers made from natural sources through chemical processing." }, [
       n("lyocell-tencel", "Lyocell / Tencel"),
       n("modal", "Modal"),
       n("viscose-rayon", "Viscose / Rayon"),
