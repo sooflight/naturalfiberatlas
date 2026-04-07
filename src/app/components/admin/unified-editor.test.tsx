@@ -69,6 +69,7 @@ vi.mock("./card-editor", () => ({
   TradeCard: () => <div>trade</div>,
   ProfilePillsCard: () => <div>pills</div>,
   SeeAlsoCard: () => <div>see also</div>,
+  YouTubeUrlCard: () => <div>youtube</div>,
 }));
 
 vi.mock("./supplementary-editors", () => ({

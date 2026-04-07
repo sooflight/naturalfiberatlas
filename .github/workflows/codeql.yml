@@ -31,5 +31,9 @@ jobs:
       - name: Autobuild
         uses: github/codeql-action/autobuild@v3
 
+      # Use upload: never until Code scanning is enabled (Settings → Security → Code scanning).
+      # Then remove the `with` block or set upload: always to publish SARIF to the Security tab.
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
+        with:
+          upload: never

@@ -170,6 +170,7 @@ describe("TopNav search sync", () => {
 
     const shell = container.querySelector(".flex.w-full.flex-col.overflow-hidden");
     expect(shell).not.toBeNull();
-    expect(shell).toHaveClass("min-h-dvh");
+    expect(shell).toHaveClass("h-dvh");
+    expect(shell).toHaveClass("min-h-0");
   });
 });
