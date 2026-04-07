@@ -30,7 +30,7 @@ if (!HTMLElement.prototype.scrollIntoView) {
 }
 
 describe("Lightbox image sizing", () => {
-  it("does not upscale hero image beyond its natural dimensions", async () => {
+  it("keeps hero sizing intrinsic via auto dimensions and max bounds (no flex blowout)", async () => {
     render(
       <Lightbox
         images={[
@@ -50,7 +50,30 @@ describe("Lightbox image sizing", () => {
 
     fireEvent.load(heroImage);
 
-    expect(heroImage).toHaveStyle({ width: "300px", height: "600px" });
+    expect(heroImage).toHaveStyle({
+      width: "auto",
+      height: "auto",
+      objectFit: "contain",
+    });
+    expect(heroImage.style.maxWidth).toMatch(/calc\(/);
+  });
+
+  it("does not set explicit pixel width from huge naturals (avoids flex min-width blowout)", async () => {
+    render(
+      <Lightbox
+        images={[{ url: "https://example.com/wide.jpg", title: "Wide" }]}
+        fiberName="Hemp"
+        onClose={() => {}}
+      />,
+    );
+
+    const heroImage = await screen.findByAltText("Wide");
+    Object.defineProperty(heroImage, "naturalWidth", { value: 12000, configurable: true });
+    Object.defineProperty(heroImage, "naturalHeight", { value: 8000, configurable: true });
+    fireEvent.load(heroImage);
+
+    expect(heroImage.style.width).toBe("auto");
+    expect(heroImage.style.height).toBe("auto");
   });
 
   it("renders hero image with contain fit to preserve source aspect ratio", async () => {

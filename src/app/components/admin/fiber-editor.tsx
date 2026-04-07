@@ -11,7 +11,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useAtlasData } from "../../context/atlas-data-context";
-import type { FiberProfile } from "../../data/atlas-data";
+import { type FiberProfile, mergeFiberGalleryWithFallback } from "../../data/atlas-data";
 import {
   ChevronDown,
   ChevronRight,
@@ -19,7 +19,11 @@ import {
   AlertCircle,
   Check,
   Lightbulb,
+  Plus,
+  X,
 } from "lucide-react";
+import { youtubeVideoIdFromUrl } from "../../utils/youtube-embed";
+import { getYoutubeEmbedUrlRowsForEdit } from "../../utils/youtube-embed-urls";
 import { fibers as bundledFibers } from "../../data/fibers";
 import { dataSource } from "../../data/data-provider";
 import { ProcessEditor, AnatomyEditor, CareEditor, QuoteEditor, WorldNamesEditor } from "./supplementary-editors";
@@ -28,6 +32,7 @@ import { ImageQuickActions } from "./image-quick-actions";
 import { getCloudinaryConfig } from "./runtime/cloudinary-upload";
 import { uploadFromUrl } from "@/utils/cloudinary";
 import { splitAboutText } from "../plate-primitives";
+import { insightExcerptFromAboutPart } from "../insight-excerpt";
 import { toast } from "sonner";
 
 const DEFAULT_SUSTAINABILITY: FiberProfile["sustainability"] = {
@@ -532,9 +537,9 @@ function InsightsPreview({ about, fiberName }: { about: string; fiberName: strin
           </div>
         ) : (
           <>
-            <div className="rounded-lg px-3 py-2.5 bg-blue-400/[0.02] border border-blue-400/[0.08]">
-              <span className="text-blue-400/30 block mb-1" style={{ fontSize: "9px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>
-                Auto-generated from About text · {sentences.length} sentences → {partsCount} segments
+            <div className="rounded-lg px-3 py-2.5 bg-[#5D9A6D]/[0.03] border border-[#5D9A6D]/10">
+              <span className="text-[#5D9A6D]/45 block mb-1" style={{ fontSize: "9px", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.08em" }}>
+                Pull-quotes from About segments · {sentences.length} sentences → {partsCount} cards (full text stays on Identity)
               </span>
             </div>
 
@@ -542,19 +547,18 @@ function InsightsPreview({ about, fiberName }: { about: string; fiberName: strin
               part ? (
               <div key={`insight-${idx}`} className="rounded-lg overflow-hidden border border-white/[0.06]">
                 <div className="px-3 py-1.5 bg-white/[0.02] flex items-center gap-1.5">
-                  <span className="text-blue-400/30" style={{ fontSize: "14px", lineHeight: 1 }}>◈</span>
                   <span className="text-white/40 uppercase tracking-wider" style={{ fontSize: "9px", fontWeight: 600 }}>
                     Insight {idx + 1} — {idx === 0 ? "Origins" : idx === 1 ? "Depth" : "Context"}
                   </span>
                 </div>
-                <div className="px-3 py-2.5 border-l-2 border-blue-400/20 ml-3">
+                <div className="px-3 py-2.5 border-l-2 border-[#5D9A6D]/25 ml-3">
                   <p className="text-white/60" style={{ fontSize: "11px", lineHeight: 1.6, fontFamily: "'PICA', 'Pica', serif", letterSpacing: "0.03em" }}>
-                    {part}
+                    {insightExcerptFromAboutPart(part, (idx + 1) as 1 | 2 | 3)}
                   </p>
                 </div>
                 <div className="px-3 py-1.5 flex items-center gap-1.5">
-                  <div className="w-4 h-px bg-blue-400/20" />
-                  <span className="text-blue-400/30 uppercase tracking-wider" style={{ fontSize: "8px" }}>
+                  <div className="w-4 h-px bg-[#5D9A6D]/25" />
+                  <span className="text-[#5D9A6D]/45 uppercase tracking-wider" style={{ fontSize: "8px" }}>
                     {fiberName} — {idx === 0 ? "Origins" : idx === 1 ? "Insight" : "Context"}
                   </span>
                 </div>
@@ -742,6 +746,12 @@ export function FiberEditor({ fiberId }: { fiberId: string }) {
     [fiberId, updateFiber, confirmSave],
   );
 
+  /** Same gallery as the public site; draft.galleryImages stays the persisted override only. */
+  const galleryImagesEffective = useMemo(
+    () => (draft ? mergeFiberGalleryWithFallback(fiberId, draft) : []),
+    [fiberId, draft],
+  );
+
   const resetFiber = useCallback(() => {
     const bundled = bundledFibers.find((f) => f.id === fiberId);
     if (bundled) {
@@ -768,6 +778,10 @@ export function FiberEditor({ fiberId }: { fiberId: string }) {
   /* C1: Count overrides per section */
   const basicOverrides = useMemo(() =>
     ["name", "subtitle", "image", "category"].filter((f) => overrideKeys.has(f)).length,
+    [overrideKeys],
+  );
+  const videoOverrides = useMemo(
+    () => (overrideKeys.has("youtubeEmbedUrl") || overrideKeys.has("youtubeEmbedUrls") ? 1 : 0),
     [overrideKeys],
   );
   const pillOverrides = useMemo(() => overrideKeys.has("profilePills") ? 1 : 0, [overrideKeys]);
@@ -831,7 +845,7 @@ export function FiberEditor({ fiberId }: { fiberId: string }) {
         <ImageQuickActions
           fiberId={fiberId}
           fiberName={draft.name}
-          existingImageUrls={(draft.galleryImages ?? []).map((img) => img.url)}
+          existingImageUrls={galleryImagesEffective.map((img) => img.url)}
           onAddImages={(urls, mode) => {
             void (async () => {
               let resolved = urls;
@@ -937,6 +951,70 @@ export function FiberEditor({ fiberId }: { fiberId: string }) {
             isOverridden={isFieldOverridden("about")} bundledValue={getBundledVal("about")} onReset={() => resetField("about")} />
         </Section>
 
+        <Section title="Video (YouTube)" badge={videoOverrides} forceOpen={forceOpenSection === "Video (YouTube)"}>
+          <p className="text-white/30 mb-3" style={{ fontSize: "10px", lineHeight: 1.5 }}>
+            Optional. Add one or more YouTube watch or share links; they stack in order on the public profile. Remove every link to hide the video card.
+          </p>
+          {(() => {
+            const stored = getYoutubeEmbedUrlRowsForEdit(draft);
+            const editRows = stored.length > 0 ? stored : [""];
+            const commitRows = (rows: string[]) => {
+              const hasContent = rows.some((r) => r.trim().length > 0);
+              pushUpdate({
+                youtubeEmbedUrls: hasContent ? rows : undefined,
+                youtubeEmbedUrl: undefined,
+              });
+            };
+            return (
+              <div className="space-y-3">
+                {editRows.map((url, i) => {
+                  const vid = url.trim() ? youtubeVideoIdFromUrl(url) : null;
+                  const invalid = url.trim().length > 0 && !vid;
+                  return (
+                    <div key={i} className="flex items-start gap-2">
+                      <div className="flex-1 min-w-0">
+                        <Field
+                          label={`YouTube URL ${i + 1}`}
+                          value={url}
+                          onChange={(v) => {
+                            const next = [...editRows];
+                            next[i] = v;
+                            commitRows(next);
+                          }}
+                          placeholder="https://www.youtube.com/watch?v=…"
+                        />
+                        {invalid && (
+                          <p className="text-amber-400/50 mt-1" style={{ fontSize: "9px" }}>
+                            Not a supported YouTube URL.
+                          </p>
+                        )}
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => commitRows(editRows.filter((_, j) => j !== i))}
+                        className="mt-6 p-2 rounded-md border border-white/[0.08] text-white/30 hover:text-red-400/70 cursor-pointer transition-colors shrink-0"
+                        title="Remove link"
+                        aria-label={`Remove YouTube URL ${i + 1}`}
+                      >
+                        <X size={14} />
+                      </button>
+                    </div>
+                  );
+                })}
+                <button
+                  type="button"
+                  onClick={() => commitRows([...editRows, ""])}
+                  className="w-full flex items-center justify-center gap-2 py-2 rounded-lg border border-dashed border-white/[0.12] text-white/35 hover:text-white/55 hover:border-white/[0.18] transition-colors cursor-pointer"
+                  style={{ fontSize: "10px", fontWeight: 600 }}
+                >
+                  <Plus size={14} />
+                  Add another YouTube link
+                </button>
+              </div>
+            );
+          })()}
+        </Section>
+
         {/* ── Insights Preview (auto-generated from About text) ── */}
         <InsightsPreview about={draft.about} fiberName={draft.name} />
 
@@ -1030,7 +1108,7 @@ export function FiberEditor({ fiberId }: { fiberId: string }) {
 
         <Section title="Gallery" badge={isFieldOverridden("galleryImages") ? 1 : 0} forceOpen={forceOpenSection === "Gallery"}>
           <GalleryEditor
-            images={draft.galleryImages}
+            images={galleryImagesEffective}
             onChange={(v) => {
               /* Auto-sync hero image from gallery[0] */
               const heroUrl = v.length > 0 ? v[0].url : draft.image;

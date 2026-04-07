@@ -1,6 +1,6 @@
 /** @vitest-environment jsdom */
 import React from "react";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import SettingsTab from "./SettingsTab";
@@ -42,6 +42,10 @@ vi.mock("@/utils/cloudinary", () => ({
 
 vi.mock("@/utils/activityLog", () => ({
   logActivity: vi.fn(),
+}));
+
+vi.mock("sonner", () => ({
+  toast: { success: vi.fn(), error: vi.fn() },
 }));
 
 vi.mock("@/contexts/AdminSettingsContext", async () => {
@@ -130,5 +134,36 @@ describe("SettingsTab key connection UX", () => {
     await waitFor(() => {
       expect(screen.getByTestId("Brave-connection-light").getAttribute("data-status")).toBe("error");
     }, { timeout: 2000 });
+  });
+});
+
+describe("SettingsTab profile image links export", () => {
+  afterEach(() => {
+    cleanup();
+    localStorage.removeItem("atlas-images");
+  });
+
+  it("exports profile image links as a JSON download", () => {
+    localStorage.setItem("atlas-images", JSON.stringify({ hemp: ["https://example.com/a.jpg"] }));
+    const createObjectUrl = vi.fn(() => "blob:atlas-export");
+    const revokeObjectUrl = vi.fn();
+    const originalCreateObjectURL = globalThis.URL.createObjectURL;
+    const originalRevokeObjectURL = globalThis.URL.revokeObjectURL;
+    globalThis.URL.createObjectURL = createObjectUrl;
+    globalThis.URL.revokeObjectURL = revokeObjectUrl;
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
+
+    try {
+      render(<SettingsTab />);
+      fireEvent.click(screen.getByRole("button", { name: /export json/i }));
+
+      expect(createObjectUrl).toHaveBeenCalledTimes(1);
+      expect(clickSpy).toHaveBeenCalledTimes(1);
+      expect(revokeObjectUrl).toHaveBeenCalledWith("blob:atlas-export");
+    } finally {
+      clickSpy.mockRestore();
+      globalThis.URL.createObjectURL = originalCreateObjectURL;
+      globalThis.URL.revokeObjectURL = originalRevokeObjectURL;
+    }
   });
 });

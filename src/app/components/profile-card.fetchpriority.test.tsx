@@ -1,6 +1,14 @@
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it, vi } from "vitest";
+import { fireEvent, render, screen } from "@testing-library/react";
+import { beforeAll, describe, expect, it, vi } from "vitest";
 import { ProfileCard } from "./profile-card";
+
+beforeAll(() => {
+  if (!HTMLImageElement.prototype.decode) {
+    HTMLImageElement.prototype.decode = function (this: HTMLImageElement) {
+      return Promise.resolve();
+    };
+  }
+});
 
 vi.mock("../context/image-pipeline", () => ({
   useImagePipeline: () => ({
@@ -11,7 +19,7 @@ vi.mock("../context/image-pipeline", () => ({
 vi.mock("../hooks/use-crossfade", () => ({
   useCrossfade: () => ({
     activeIndex: 0,
-    previousIndex: null,
+    previousIndex: 0,
   }),
 }));
 
@@ -41,7 +49,26 @@ describe("ProfileCard image priority attributes", () => {
 
     const images = screen.getAllByAltText("Cotton");
     expect(images.length).toBeGreaterThan(0);
+    fireEvent.load(images[0]);
     expect(images[0].getAttribute("fetchpriority")).toBe("high");
+  });
+
+  it("does not set fetchpriority high when fetchPriorityHigh is false", () => {
+    render(
+      <ProfileCard
+        id="flax"
+        name="Flax"
+        image="/img/flax.jpg"
+        category="fiber"
+        onClick={() => {}}
+        priority
+        fetchPriorityHigh={false}
+      />,
+    );
+
+    const images = screen.getAllByAltText("Flax");
+    fireEvent.load(images[0]);
+    expect(images[0].getAttribute("fetchpriority")).toBeNull();
   });
 
   it("does not emit React unknown-prop warning for fetchPriority", () => {

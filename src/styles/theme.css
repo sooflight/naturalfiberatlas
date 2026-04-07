@@ -11,6 +11,9 @@
   --font-weight-normal: 400;
   --font-ui: 'PICA', 'Pica', serif;
   --font-quote: 'PICA', 'Pica', serif;
+  /* Grid profile cards — fiber name overlay */
+  --font-atlas-profile-card-name: 'Lennon', var(--font-ui);
+  --atlas-profile-card-name-size: clamp(14px, 5cqi, 19px);
   --background: #111111;
   --foreground: #f5f5f5;
   --border: rgba(255, 255, 255, 0.08);
@@ -22,7 +25,7 @@
        subhead = sticky subheader; subhead-muted = md-only meta; hint = detail hint;
        link = about; empty-* = zero-results block; loading = overlay fallbacks ── */
   --atlas-grid-title: clamp(12px, 2.2svw, 15px);
-  --atlas-grid-search: clamp(11px, 2.5svw, 13px);
+  --atlas-grid-search: clamp(10px, 2.1svw, 12px);
   --atlas-grid-pill: clamp(10px, 2.2svw, 11px);
   --atlas-grid-close: clamp(11px, 2.5svw, 13px);
   --atlas-grid-subhead: clamp(10px, 2svw, 11px);
@@ -249,24 +252,17 @@ q,
   transform: translateY(0);
 }
 
-/* ── Grid cell entrance fade ── */
-@keyframes cellFadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
+/* ── Grid cell entrance fade ──
+   Avoid long keyframed fades + large stagger during scroll: they stack compositor
+   work while cells enter the viewport and make the main atlas scroll feel “sticky”. */
 .grid-cell {
   opacity: 0;
 }
 
 .grid-cell.cell-visible {
   opacity: 1;
-  animation: cellFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
-  animation-delay: calc(var(--stagger-index, 0) * 50ms);
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: calc(min(var(--stagger-index, 0), 5) * 24ms);
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -348,6 +344,18 @@ q,
   line-height: 1.15;
 }
 
+.atlas-nfa-mark-target {
+  transform: rotate(0deg);
+  transform-origin: 50% 50%;
+  transform-box: fill-box;
+  transition: transform 0.75s ease-in-out;
+}
+
+.atlas-wordmark-home:hover .atlas-nfa-mark-target,
+.atlas-wordmark-home:focus-visible .atlas-nfa-mark-target {
+  transform: rotate(180deg);
+}
+
 /* TopNav search field (mobile): placeholder + text track the field width */
 .atlas-topnav-search-slot {
   container-type: inline-size;
@@ -355,7 +363,7 @@ q,
 
 /* Uppercase + tracking; longest mobile copy ≈ “SEARCH 9999 PROFILES…” */
 .atlas-search-input-fluid {
-  font-size: max(5.5px, min(var(--atlas-grid-search), calc(100cqi / 22)));
+  font-size: max(5px, min(calc(var(--atlas-grid-search) * 0.88), calc(100cqi / 30)));
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -371,7 +379,7 @@ q,
     --radius: 0.375rem;
 
     --atlas-grid-title: clamp(13px, 3.2svw, 15px);
-    --atlas-grid-search: clamp(12px, 3.4svw, 14px);
+    --atlas-grid-search: clamp(9px, 2.5svw, 11px);
     --atlas-grid-pill: clamp(11px, 2.9svw, 12px);
     --atlas-grid-close: clamp(12px, 3.2svw, 14px);
     --atlas-grid-subhead: clamp(11px, 2.8svw, 12px);
@@ -383,6 +391,9 @@ q,
     --atlas-grid-empty-cta: clamp(11px, 2.9svw, 12px);
     --atlas-grid-loading: clamp(11px, 3svw, 12px);
     --atlas-nav-thumb-label: clamp(9px, 1.35svw, 10px);
+
+    /* Profile grid titles — slightly smaller than ≥640px so names don’t dominate narrow cards */
+    --atlas-profile-card-name-size: clamp(12px, 4.4cqi, 17px);
   }
 
   /* Border ring mask-composite can cause rendering artefacts on
@@ -426,21 +437,7 @@ q,
   will-change: auto;
 }
 
-/* ── ScreenPlate scrollbar ── */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 4px;
-}
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.08);
-  border-radius: 2px;
-}
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.15);
-  border-radius: 2px;
-}
+/* ScreenPlate / scroll regions: scrollbars hidden globally (see end of file). */
 
 /* ═══════════════════════════════════════════════════════════════════
    Progressive Image — LQIP blur-up transition
@@ -496,12 +493,12 @@ q,
 
 .grid-skeleton {
   contain: content;
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.04);
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.06);
 }
 
 .skeleton-bar {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.07);
 }
 
 /* Shimmer sweep — single pseudo-element gradient */
@@ -512,7 +509,7 @@ q,
   background: linear-gradient(
     110deg,
     transparent 25%,
-    rgba(255, 255, 255, 0.03) 37%,
+    rgba(255, 255, 255, 0.045) 37%,
     transparent 50%
   );
   background-size: 200% 100%;
@@ -594,8 +591,16 @@ q,
 /* ═══════════════════════════════════════════════════════════════════
    Lightbox filmstrip — hide scrollbar across all browsers
    ═══════════════════════════════════════════════════════════════════ */
+.scrollbar-none {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
 .scrollbar-none::-webkit-scrollbar {
+  /* width/height: 0 — Safari sometimes still shows a gutter with display:none alone */
   display: none;
+  width: 0;
+  height: 0;
+  background: transparent;
 }
 
 /* ═══════════════════════════════════════════════════════════════════
@@ -616,9 +621,9 @@ q,
    Detail content fade-in
    The card shell (GlassCard layers) snaps visible instantly via the
    motion.div's near-zero opacity transition. The plate content inside
-   fades in separately over CONTENT_FADE (0.528s), preventing the
-   layer-compositing flicker that occurred when all glass layers
-   transitioned opacity simultaneously.
+   fades in separately, preventing layer-compositing flicker when all glass
+   layers transitioned opacity simultaneously.
+   Duration must match src/app/utils/detail-motion.ts DETAIL_CONTENT_FADE_SECONDS.
    ═══════════════════════════════════════════════════════════════════ */
 
 @keyframes detail-content-reveal {
@@ -709,4 +714,51 @@ q,
     backdrop-filter: blur(8px) saturate(1) !important;
     -webkit-backdrop-filter: blur(8px) saturate(1) !important;
   }
+
+  .grid-cell.cell-visible {
+    transition: none;
+    transition-delay: 0s;
+  }
+
+  .profile-layer {
+    transition-duration: 0.01ms;
+    transition-delay: 0s;
+  }
+
+  .detail-content-fade {
+    animation: none;
+    opacity: 1;
+  }
+
+  .atlas-nfa-mark-target {
+    transition: none;
+  }
+
+  .atlas-wordmark-home:hover .atlas-nfa-mark-target,
+  .atlas-wordmark-home:focus-visible .atlas-nfa-mark-target {
+    transform: rotate(0deg);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   Global scrollbar suppression
+   Hide scrollbars on every scroll container (including while actively
+   scrolling / overlay scrollbars). !important overrides per-panel rules
+   in admin.css, .custom-scrollbar, and inline scrollbarWidth styles.
+   ═══════════════════════════════════════════════════════════════════ */
+
+* {
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+
+*::-webkit-scrollbar,
+*::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-button,
+*::-webkit-scrollbar-corner {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }

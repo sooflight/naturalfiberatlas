@@ -3,7 +3,7 @@
  */
 
 import type { AtlasMedia } from '@/types/atlas-media';
-import type { MouseEvent } from 'react';
+import type { MouseEvent, MutableRefObject } from 'react';
 
 export type ImageEntry = string | AtlasMedia;
 export type ImageMap = Record<string, ImageEntry | ImageEntry[]>;
@@ -70,6 +70,10 @@ export interface ImageLightboxProps {
   label: string;
   entryKey: string;
   onClose: () => void;
+  /** When set, assigned to a function that enters crop mode (same as the Crop toolbar control). */
+  startCropRef?: MutableRefObject<(() => void) | null>;
+  /** Shown when crop cannot be applied (e.g. unsupported delivery URL). */
+  onCropFeedback?: (message: string) => void;
   onCropImage?: (key: string, idx: number, url: string) => void;
   onContextMenuImage?: (event: MouseEvent<HTMLImageElement>, imageUrl: string, index: number) => void;
   onDownloadImage?: (imageUrl: string, index: number) => void;

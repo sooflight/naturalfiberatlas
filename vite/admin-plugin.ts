@@ -23,6 +23,10 @@ import {
   buildPromotedOverridesWritePayload,
   shouldWritePromotedOverrides,
 } from '../src/app/utils/admin/promoted-overrides-sync';
+import {
+  mergeAtlasImagesFromClientPatch,
+  mergeNewImagesJsonPayload,
+} from '../src/app/utils/admin/mergeAtlasImagesPatch';
 
 
 function readBody(req: IncomingMessage): Promise<string> {
@@ -840,6 +844,65 @@ function adminPlugin(): Plugin {
       // ── Atlas data CRUD ──
       use('/__admin/read-atlas-data', fileReadRoute(atlasFile));
       use('/__admin/save-atlas-data', rawWriteRoute(atlasFile, { backup: true }));
+      const newImagesFile = path.join(repoRoot, 'new-images.json');
+      use('/__admin/sync-image-catalog', postRoute(async (body, res) => {
+        const imagesPatch = body?.images;
+        const newImages = body?.newImages;
+        if (!imagesPatch || typeof imagesPatch !== 'object' || Array.isArray(imagesPatch)) {
+          jsonRes(res, { error: 'images object required' }, 400);
+          return;
+        }
+        if (!newImages || typeof newImages !== 'object' || Array.isArray(newImages)) {
+          jsonRes(res, { error: 'newImages object required' }, 400);
+          return;
+        }
+        if (!Array.isArray((newImages as { profiles?: unknown }).profiles)) {
+          jsonRes(res, { error: 'newImages.profiles array required' }, 400);
+          return;
+        }
+
+        const atlas = readAtlasJson();
+        const prevImages = atlas.images && typeof atlas.images === 'object' && !Array.isArray(atlas.images)
+          ? atlas.images as Record<string, unknown>
+          : {};
+        const mergedImages = mergeAtlasImagesFromClientPatch(prevImages, imagesPatch as Record<string, unknown>);
+        atlas.images = mergedImages;
+
+        const atlasOut = `${JSON.stringify(atlas, null, 2)}\n`;
+        JSON.parse(atlasOut);
+
+        rotateJsonBackups(atlasFile);
+        fs.writeFileSync(atlasFile, atlasOut, 'utf-8');
+
+        let diskNewRaw: unknown = { profiles: [] };
+        if (fs.existsSync(newImagesFile)) {
+          try {
+            diskNewRaw = JSON.parse(fs.readFileSync(newImagesFile, 'utf-8'));
+          } catch {
+            diskNewRaw = { profiles: [] };
+          }
+        }
+        const incomingProfiles = (newImages as { profiles: { profileKey: string; imageLinks: string[] }[] }).profiles;
+        const mergedNewImages = mergeNewImagesJsonPayload(
+          diskNewRaw as { profiles?: unknown },
+          {
+            exportedAt: typeof (newImages as { exportedAt?: unknown }).exportedAt === 'string'
+              ? (newImages as { exportedAt: string }).exportedAt
+              : nowIso(),
+            profiles: incomingProfiles,
+          },
+        );
+        const newImagesOut = `${JSON.stringify(mergedNewImages, null, 2)}\n`;
+        JSON.parse(newImagesOut);
+        rotateJsonBackups(newImagesFile);
+        fs.writeFileSync(newImagesFile, newImagesOut, 'utf-8');
+
+        jsonRes(res, {
+          ok: true,
+          atlasBytes: Buffer.byteLength(atlasOut, 'utf-8'),
+          newImagesBytes: Buffer.byteLength(newImagesOut, 'utf-8'),
+        });
+      }));
       use('/__admin/auto-sync-promoted-overrides', postRoute(async (body, res) => {
         const payload = (body && typeof body === 'object' && !Array.isArray(body))
           ? body

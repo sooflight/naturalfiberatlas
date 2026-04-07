@@ -1,6 +1,7 @@
 import type { FiberProfile, PlateType, GalleryImageEntry } from "../data/atlas-data";
 import {
   AboutPlate,
+  PropertiesPlate,
   InsightPlate,
   SilkVariantPlate,
   RegionsPlate,
@@ -12,6 +13,7 @@ import {
   ProcessPlate,
   AnatomyPlate,
   CarePlate,
+  YouTubeEmbedPlate,
 } from "./detail-plates";
 import { GlassCard } from "./glass-card";
 import { densityByPlate } from "./plate-primitives";
@@ -20,6 +22,7 @@ import { densityByPlate } from "./plate-primitives";
 const NON_SCREEN_PLATES: PlateType[] = [
   "contactSheet",
   "seeAlso",
+  "youtubeEmbed",
 ];
 
 interface DetailCardProps {
@@ -31,6 +34,8 @@ interface DetailCardProps {
   onOpenScreenPlate?: (plateType: PlateType) => void;
   /** For gallery plates: the specific images to display (no repeats) */
   galleryImages?: GalleryImageEntry[];
+  /** Global gallery index of `galleryImages[0]` (lightbox opens at offset + local index). */
+  galleryStartIndex?: number;
   /** For gallery plates: sequential index for filter variation */
   galleryIndex?: number;
   /** Stagger delay from the inhale cascade — used to offset the content fade
@@ -45,6 +50,7 @@ export function DetailCard({
   onOpenLightbox,
   onOpenScreenPlate,
   galleryImages,
+  galleryStartIndex = 0,
   galleryIndex = 0,
   contentDelay = 0,
 }: DetailCardProps) {
@@ -65,13 +71,18 @@ export function DetailCard({
         <ContactSheetPlate
           images={galleryImages}
           fiberName={fiber.name}
-          onOpenAt={(imgIndex, sourceRect) => onOpenLightbox?.(imgIndex, sourceRect)}
+          imageNumberOffset={galleryStartIndex}
+          onOpenAt={(imgIndex, sourceRect) =>
+            onOpenLightbox?.(galleryStartIndex + imgIndex, sourceRect)
+          }
         />
       );
     }
     switch (plateType) {
       case "about":
         return <AboutPlate fiber={fiber} />;
+      case "properties":
+        return <PropertiesPlate fiber={fiber} />;
       case "insight1":
         return <InsightPlate fiber={fiber} half={1} />;
       case "insight2":
@@ -101,6 +112,8 @@ export function DetailCard({
         return <SeeAlsoPlate fiber={fiber} onSelect={onSelectFiber} />;
       case "quote":
         return <QuotePlate fiber={fiber} />;
+      case "youtubeEmbed":
+        return <YouTubeEmbedPlate fiber={fiber} />;
       default:
         return null;
     }

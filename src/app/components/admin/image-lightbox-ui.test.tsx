@@ -41,10 +41,11 @@ describe("ImageLightbox editorial cinema UX", () => {
   });
 
   it("hides left and right navigation in crop mode", () => {
-    renderLightbox();
+    const { onClose } = renderLightbox();
 
     fireEvent.click(screen.getByRole("button", { name: /crop image/i }));
 
+    expect(onClose).not.toHaveBeenCalled();
     expect(screen.queryByRole("button", { name: /previous image/i })).toBeNull();
     expect(screen.queryByRole("button", { name: /next image/i })).toBeNull();
     expect(screen.getByRole("group", { name: /crop controls/i })).toBeTruthy();

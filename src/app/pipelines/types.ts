@@ -19,8 +19,9 @@ export type GlassAtlasPreset =
   | "seeAlso"      // Small square thumbnails in SeeAlso plate (~80×80)
   | "solo"         // Solo gallery plate image (~320×427)
   | "duo"          // Duo gallery plate image (~320×200)
-  | "contactSheet" // Contact sheet thumbnails (~160×160)
-  | "lightbox";    // Full-size lightbox view (~1400w)
+  | "contactSheet" // Contact sheet grid (~320×320, covers 2× DPR for ~160px tiles)
+  | "lightbox"     // Default lightbox hero (~1400w)
+  | "lightboxHi";  // Large displays / browser fullscreen (~2200w)
 
 /**
  * The core abstraction. One method, string in / string out.

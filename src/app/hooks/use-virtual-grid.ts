@@ -26,9 +26,11 @@ const LEAVE_GRACE_MS = 1500;
 /** Minimum intersection ratio to consider a cell "entering" */
 const ENTER_THRESHOLD = 0.01;
 
-export function useVirtualGrid(disabled: boolean) {
+export function useVirtualGrid(disabled: boolean, intersectionRoot?: Element | null) {
   // null = "render everything" (detail mode or initial)
   const [visibleIds, setVisibleIds] = useState<Set<string> | null>(null);
+  /** Bumps when the IO instance is (re)created so GridView can re-observe cells (refs run before the effect). */
+  const [virtualIoGeneration, setVirtualIoGeneration] = useState(0);
 
   // Internal mutable tracking (doesn't trigger renders on every IO callback)
   const liveSet = useRef(new Set<string>());
@@ -41,7 +43,18 @@ export function useVirtualGrid(disabled: boolean) {
     if (batchRaf.current !== null) return;
     batchRaf.current = requestAnimationFrame(() => {
       batchRaf.current = null;
-      setVisibleIds(new Set(liveSet.current));
+      const next = liveSet.current;
+      setVisibleIds((prev) => {
+        if (prev === null) return new Set(next);
+        if (prev.size !== next.size) return new Set(next);
+        for (const id of next) {
+          if (!prev.has(id)) return new Set(next);
+        }
+        for (const id of prev) {
+          if (!next.has(id)) return new Set(next);
+        }
+        return prev;
+      });
     });
   }, []);
 
@@ -54,6 +67,21 @@ export function useVirtualGrid(disabled: boolean) {
       // Avoiding setVisibleIds(null) eliminates a wasteful re-render
       // of GridView during inhale transitions.
       return;
+    }
+
+    liveSet.current.clear();
+    setVisibleIds(null);
+    for (const timer of leaveTimers.current.values()) clearTimeout(timer);
+    leaveTimers.current.clear();
+    if (batchRaf.current !== null) cancelAnimationFrame(batchRaf.current);
+    batchRaf.current = null;
+
+    const ioOpts: IntersectionObserverInit = {
+      rootMargin: ROOT_MARGIN,
+      threshold: [0, ENTER_THRESHOLD],
+    };
+    if (intersectionRoot) {
+      ioOpts.root = intersectionRoot;
     }
 
     const observer = new IntersectionObserver(
@@ -94,13 +122,11 @@ export function useVirtualGrid(disabled: boolean) {
 
         if (changed) scheduleFlush();
       },
-      {
-        rootMargin: ROOT_MARGIN,
-        threshold: [0, ENTER_THRESHOLD],
-      },
+      ioOpts,
     );
 
     observerRef.current = observer;
+    setVirtualIoGeneration((g) => g + 1);
 
     return () => {
       observer.disconnect();
@@ -111,7 +137,7 @@ export function useVirtualGrid(disabled: boolean) {
       if (batchRaf.current !== null) cancelAnimationFrame(batchRaf.current);
       batchRaf.current = null;
     };
-  }, [disabled, scheduleFlush]);
+  }, [disabled, scheduleFlush, intersectionRoot]);
 
   /** Ref callback for grid cells. Attach `data-virtual-id` and observe. */
   const observeCell = useCallback(
@@ -123,5 +149,5 @@ export function useVirtualGrid(disabled: boolean) {
     [disabled],
   );
 
-  return { visibleIds: disabled ? null : visibleIds, observeCell };
+  return { visibleIds: disabled ? null : visibleIds, observeCell, virtualIoGeneration };
 }

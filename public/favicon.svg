@@ -1,6 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="White book favicon">
-  <path
-    fill="#FFFFFF"
-    d="M10 14c0-2.2 1.8-4 4-4h17c2.4 0 4.7.7 6.7 2l2.3 1.5 2.3-1.5c2-1.3 4.3-2 6.7-2h1c2.2 0 4 1.8 4 4v34c0 2.2-1.8 4-4 4h-1c-2.4 0-4.7.7-6.7 2l-2.3 1.5-2.3-1.5c-2-1.3-4.3-2-6.7-2H14c-2.2 0-4-1.8-4-4V14zm4 0v34h17c2.9 0 5.8.7 8.3 2.1V16.1c-2.5-1.4-5.4-2.1-8.3-2.1H14zm36 0h-1c-2.9 0-5.8.7-8.3 2.1v34C43.2 48.7 46.1 48 49 48h1V14z"
-  />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" role="img" aria-label="Natural Fiber Atlas">
+  <!-- Geometry matches src/app/components/nfa-mark.tsx (update both when changing the mark). -->
+  <g fill="#e8e0d0">
+    <ellipse cx="12" cy="16.45" rx="2.35" ry="0.92" transform="rotate(-90, 12, 16.45)" />
+    <ellipse cx="13.732" cy="19.45" rx="2.35" ry="0.92" transform="rotate(30, 13.732, 19.45)" />
+    <ellipse cx="10.268" cy="19.45" rx="2.35" ry="0.92" transform="rotate(150, 10.268, 19.45)" />
+    <ellipse cx="7.768" cy="13.375" rx="2.35" ry="0.92" transform="rotate(-18, 7.768, 13.375)" />
+    <ellipse cx="5.45" cy="15.949" rx="2.35" ry="0.92" transform="rotate(102, 5.45, 15.949)" />
+    <ellipse cx="4.379" cy="12.655" rx="2.35" ry="0.92" transform="rotate(-138, 4.379, 12.655)" />
+    <ellipse cx="9.384" cy="8.4" rx="2.35" ry="0.92" transform="rotate(54, 9.384, 8.4)" />
+    <ellipse cx="6.22" cy="6.991" rx="2.35" ry="0.92" transform="rotate(174, 6.22, 6.991)" />
+    <ellipse cx="9.022" cy="4.955" rx="2.35" ry="0.92" transform="rotate(-66, 9.022, 4.955)" />
+    <ellipse cx="14.616" cy="8.4" rx="2.35" ry="0.92" transform="rotate(126, 14.616, 8.4)" />
+    <ellipse cx="14.978" cy="4.955" rx="2.35" ry="0.92" transform="rotate(-114, 14.978, 4.955)" />
+    <ellipse cx="17.78" cy="6.991" rx="2.35" ry="0.92" transform="rotate(6, 17.78, 6.991)" />
+    <ellipse cx="16.232" cy="13.375" rx="2.35" ry="0.92" transform="rotate(-162, 16.232, 13.375)" />
+    <ellipse cx="19.621" cy="12.655" rx="2.35" ry="0.92" transform="rotate(-42, 19.621, 12.655)" />
+    <ellipse cx="18.55" cy="15.949" rx="2.35" ry="0.92" transform="rotate(78, 18.55, 15.949)" />
+  </g>
 </svg>

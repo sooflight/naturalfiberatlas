@@ -69,15 +69,13 @@ vi.mock("../hooks/use-virtual-grid", () => ({
   useVirtualGrid: () => ({
     visibleIds: null,
     observeCell: () => {},
+    virtualIoGeneration: 0,
   }),
 }));
 
 vi.mock("../hooks/use-detail-lifecycle", () => ({
   useDetailLifecycle: () => ({
-    detailRevealed: false,
-    detailPrimed: false,
-    backdropActive: false,
-    detailSettled: false,
+    phase: "pre_raster",
   }),
 }));
 
@@ -109,6 +107,7 @@ vi.mock("../utils/image-warmup", () => ({
     decodeBatchSize: 3,
   }),
   warmUpImageAnalysis: () => {},
+  preloadContactSheetTargets: () => {},
 }));
 
 vi.mock("../utils/hash-routing", () => ({
@@ -120,7 +119,8 @@ vi.mock("../utils/hash-routing", () => ({
 }));
 
 vi.mock("../utils/smooth-scroll", () => ({
-  smoothScrollTo: () => {},
+  smoothScrollTo: () => Promise.resolve(),
+  smoothScrollToIfNeeded: () => Promise.resolve(),
 }));
 
 function defaultPlateLayoutResult() {
@@ -131,12 +131,14 @@ function defaultPlateLayoutResult() {
     profileExhaleDelays: new Map(),
     detailExhaleDelays: new Map(),
     gallerySlotImages: new Map(),
+    gallerySlotStartIndex: new Map(),
     plateExitOffsets: new Map(),
   };
 }
 
 vi.mock("../utils/plate-layout", () => ({
   DETAIL_FADE: 0.2,
+  EXHALE_MAX_STAGGER: 0.09,
   EXHALE_EASE: "easeOut",
   computePlateLayout: vi.fn(() => defaultPlateLayoutResult()),
 }));
@@ -394,6 +396,7 @@ describe("GridView image sync", () => {
       profileExhaleDelays: delayMap,
       detailExhaleDelays: delayMap,
       gallerySlotImages: new Map(),
+    gallerySlotStartIndex: new Map(),
       plateExitOffsets: new Map(),
     });
 

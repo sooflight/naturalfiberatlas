@@ -199,3 +199,29 @@ function preDecodeAmbientImages(
   // Start ambient decode after analysis warmup has had a head start
   scheduleIdle(decodeBatch, { timeout: 5000, fallbackMs: 2000 });
 }
+
+const preloadedContactSheet = new Set<string>();
+
+/**
+ * Prime the HTTP cache for contact-sheet–sized gallery URLs when a fiber is selected,
+ * so ProgressiveImage often hits a warm cache on first paint.
+ */
+export function preloadContactSheetTargets(
+  rawUrls: string[],
+  pipeline: ImageTransformPipeline,
+  options?: { max?: number },
+): void {
+  const max = options?.max ?? 40;
+  let count = 0;
+  for (const raw of rawUrls) {
+    if (count >= max) break;
+    const trimmed = raw?.trim();
+    if (!trimmed) continue;
+    const target = pipeline.transform(trimmed, "contactSheet");
+    if (!target || preloadedContactSheet.has(target)) continue;
+    preloadedContactSheet.add(target);
+    count += 1;
+    const img = new Image();
+    img.src = target;
+  }
+}

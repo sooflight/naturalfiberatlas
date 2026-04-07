@@ -9,7 +9,7 @@
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useNavigate } from "react-router";
 import { useAtlasData } from "../../context/atlas-data-context";
-import type { FiberProfile } from "../../data/atlas-data";
+import { type FiberProfile, mergeFiberGalleryWithFallback } from "../../data/atlas-data";
 import { dataSource } from "../../data/data-provider";
 import {
   Check,
@@ -40,6 +40,7 @@ import {
   TradeCard,
   ProfilePillsCard,
   SeeAlsoCard,
+  YouTubeUrlCard,
 } from "./card-editor";
 
 /* ── Image preview (match ImageBase) ── */
@@ -245,7 +246,10 @@ function InlineImageBaseProfileBox({
   sectionId?: string;
 }) {
   const navigate = useNavigate();
-  const urls = useMemo(() => toUrlArray(fiber.galleryImages), [fiber.galleryImages]);
+  const urls = useMemo(
+    () => toUrlArray(mergeFiberGalleryWithFallback(fiber.id, fiber)),
+    [fiber],
+  );
   const elRef = useRef<HTMLDivElement>(null);
   const preset = getPreviewPreset("list");
   const sizes = getPreviewSizes("list", IMAGEBASE_EMBED_ZOOM);
@@ -663,6 +667,11 @@ function UnifiedEditorContent({
           {/* ── Quotes (inline editor) ── */}
           <div data-editor-section="Quotes">
             <InlineQuoteCard fiber={draft} sectionId="Quotes" />
+          </div>
+
+          {/* ── YouTube (optional embed URL) — Knowledge / unified editor ── */}
+          <div data-editor-section="Video (YouTube)">
+            <YouTubeUrlCard fiber={draft} onUpdate={pushUpdate} />
           </div>
 
           {/* ── Process Steps (inline editor) ── */}

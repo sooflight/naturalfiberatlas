@@ -8,12 +8,28 @@ import {
   testCloudinaryConnection,
 } from "@/utils/cloudinary";
 import { logActivity } from "@/utils/activityLog";
+import { ATLAS_IMAGES } from "@/data/atlas-images";
+import { toast } from "sonner";
+import type { ImageMap } from "./image-database";
+import { buildProfileImageLinksExport } from "./ImageDatabaseManager";
 
 type ConnectionStatus = "unconnected" | "checking" | "connected" | "error";
 const IMAGE_PROVIDER_ORDER_STORAGE_KEY = "atlas-settings-image-provider-order";
 const AI_PROVIDER_ORDER_STORAGE_KEY = "atlas-settings-ai-provider-order";
 const HIDDEN_IMAGE_PROVIDER_IDS: ImageSource[] = ["flickr"];
 const HIDDEN_AI_PROVIDER_IDS: AiProvider[] = ["openai", "claude"];
+
+function readAtlasImagesMapFromStorage(): ImageMap {
+  try {
+    const s = localStorage.getItem("atlas-images");
+    if (!s) return ATLAS_IMAGES;
+    const parsed = JSON.parse(s) as unknown;
+    if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) return ATLAS_IMAGES;
+    return parsed as ImageMap;
+  } catch {
+    return ATLAS_IMAGES;
+  }
+}
 
 function readOrderedIds<T extends string>(storageKey: string, fallbackIds: readonly T[]): T[] {
   try {
@@ -348,6 +364,31 @@ export default function SettingsTab() {
   useEffect(() => {
     writeOrderedIds(AI_PROVIDER_ORDER_STORAGE_KEY, aiProviderOrder);
   }, [aiProviderOrder]);
+
+  const handleExportProfileImageLinks = useCallback(() => {
+    try {
+      const images = readAtlasImagesMapFromStorage();
+      const payload = buildProfileImageLinksExport(images);
+      const json = JSON.stringify(payload, null, 2);
+      const blob = new Blob([json], { type: "application/json" });
+      const blobUrl = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = blobUrl;
+      link.download = `atlas-profile-image-links-${new Date().toISOString().slice(0, 10)}.json`;
+      link.click();
+      URL.revokeObjectURL(blobUrl);
+      toast.success(`Exported ${payload.imageLinkCount} image links from ${payload.profileCount} profiles`);
+      logActivity({
+        tab: "settings",
+        action: "export",
+        entityType: "settings",
+        entityId: "profile-image-links",
+        summary: `Exported profile image links JSON (${payload.profileCount} profiles)`,
+      });
+    } catch {
+      toast.error("Export failed. Try again.");
+    }
+  }, []);
 
   const orderedImageProviders = [...visibleImageProviders].sort(
     (a, b) => imageProviderOrder.indexOf(a.id) - imageProviderOrder.indexOf(b.id)
@@ -710,6 +751,32 @@ export default function SettingsTab() {
             Quick = fast/lightweight. Quality = better textures, slower. Cloud HD = Replicate API. Cloudinary AI = server-signed Cloudinary upscale.
           </div>
         </div>
+      </Section>
+
+      {/* Profile image links export */}
+      <Section title="Profile image links">
+        <p style={{ fontSize: 11, color: "#888", lineHeight: 1.5, margin: 0 }}>
+          Export gallery URLs per profile from the Image Base workspace (stored in{" "}
+          <span style={{ fontFamily: "monospace" }}>localStorage</span> as{" "}
+          <span style={{ fontFamily: "monospace" }}>atlas-images</span>).
+        </p>
+        <button
+          type="button"
+          onClick={handleExportProfileImageLinks}
+          style={{
+            alignSelf: "flex-start",
+            padding: "8px 14px",
+            fontSize: 12,
+            fontWeight: 600,
+            borderRadius: 8,
+            border: "1px solid rgba(255,255,255,0.12)",
+            background: "rgba(255,255,255,0.04)",
+            color: "#ddd",
+            cursor: "pointer",
+          }}
+        >
+          Export JSON
+        </button>
       </Section>
 
       {/* Preferences */}

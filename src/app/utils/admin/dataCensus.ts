@@ -5,6 +5,13 @@ import { SUPPLIERS, MATERIAL_SUPPLIER_LINKS } from "../../data/admin/supplier-di
 import { EVIDENCE_RECORDS } from "../../data/admin/evidence-records";
 import { runQualityGates, checkImageCompleteness, type QualityReport } from "./qualityGates";
 import type { ContentStatus } from "../../types/material";
+import { getBundledActiveFibers } from "../../data/data-provider";
+import {
+  passportKeysNotInCatalog,
+  summarizeUnifiedCatalog,
+  unifyFibersWithPassportRegistry,
+  type UnifiedCatalogSummary,
+} from "../../data/unify-atlas-profiles";
 
 // ── Types ──
 
@@ -16,12 +23,15 @@ export interface CensusReport {
     imageCountBuckets: Record<string, number>;
     totalImages: number;
   };
+  /** Material passport registry (knowledge layer); count can differ from published fiber catalog cards. */
   passports: {
     total: number;
     byStatus: Record<ContentStatus, number>;
     avgCompleteness: number;
     perProfile: Record<string, number>;
   };
+  /** Single merge of bundled catalog + passports — use for Admin vs public parity. */
+  unifiedCatalog: UnifiedCatalogSummary & { orphanPassportKeys: number };
   suppliers: {
     total: number;
     byVerification: Record<string, number>;
@@ -89,6 +99,13 @@ function passportCompleteness(p: Record<string, any>): number {
 
 export function runCensus(): CensusReport {
   const leafIds = collectLeafIds(atlasNavigation);
+
+  const bundledActive = getBundledActiveFibers();
+  const unifiedBundled = unifyFibersWithPassportRegistry(bundledActive);
+  const unifiedSummary = summarizeUnifiedCatalog(unifiedBundled);
+  const orphanPassportKeys = passportKeysNotInCatalog(
+    new Set(bundledActive.map((f) => f.id)),
+  ).length;
 
   // Profiles + images
   let withImages = 0;
@@ -158,6 +175,10 @@ export function runCensus(): CensusReport {
       byStatus,
       avgCompleteness: passports.length ? Math.round(completenessSum / passports.length) : 0,
       perProfile,
+    },
+    unifiedCatalog: {
+      ...unifiedSummary,
+      orphanPassportKeys,
     },
     suppliers: {
       total: suppliers.length,

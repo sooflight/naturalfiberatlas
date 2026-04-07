@@ -1,16 +1,25 @@
-import { useParams } from "react-router";
+import { Navigate, useParams } from "react-router";
+import { resolveCanonicalFiberId } from "../data/fiber-id-redirects";
 import { dataSource } from "../data/data-provider";
 import { NotFoundPage } from "./not-found";
-import { HomePage } from "./home";
 
 /**
- * Validates :fiberId against the atlas, then renders the main grid shell.
+ * Renders inside `<Outlet />` below the atlas shell when URL is `/fiber/:fiberId`.
+ * Invalid ids show a full-viewport not-found layer so the grid shell stays mounted.
  */
-export function FiberProfileRoute() {
+export function FiberRouteOutlet() {
   const { fiberId } = useParams<{ fiberId: string }>();
   const decoded = fiberId ? decodeURIComponent(fiberId) : "";
-  if (!decoded || !dataSource.getFiberById(decoded)) {
-    return <NotFoundPage />;
+  const canonical = decoded ? resolveCanonicalFiberId(decoded) : "";
+  if (decoded && canonical !== decoded) {
+    return <Navigate to={`/fiber/${encodeURIComponent(canonical)}`} replace />;
   }
-  return <HomePage />;
+  if (!decoded || !dataSource.getFiberById(decoded)) {
+    return (
+      <div className="fixed inset-0 z-[120] min-h-dvh bg-[#111111] overflow-auto">
+        <NotFoundPage />
+      </div>
+    );
+  }
+  return null;
 }

@@ -12,16 +12,16 @@
  *
  * text-white/[0.88] text-white/[0.68] text-white/[0.48] text-white/[0.28] text-white/[0.12]
  * border-white/[0.88] border-white/[0.68] border-white/[0.48] border-white/[0.28] border-white/[0.12]
- * text-[#6EE7A0]/90 text-[#4ADE80]/90 text-[#34D399]/90 text-[#C17F3E]/90 text-[#7AA2D4]/90 text-[#A78BDB]/90
- * text-[#6EE7A0]/20 text-[#6EE7A0]/70 text-[#6EE7A0]/60 text-[#6EE7A0]/40 text-[#6EE7A0]/30 text-[#6EE7A0]/25
- * text-[#34D399]/50
- * text-[#4ADE80]/40 text-[#4ADE80]/70 text-[#4ADE80]/25
- * bg-[#6EE7A0]/50 bg-[#6EE7A0]/30
- * bg-[#4ADE80]/60 bg-[#4ADE80]/50 bg-[#4ADE80]/30 bg-[#4ADE80]/10 bg-[#4ADE80]/25
- * border-[#6EE7A0]/40 border-[#6EE7A0]/30
- * border-[#4ADE80]/25
- * text-[#6EE7A0]/50 text-[#6EE7A0]/40
- * text-[#4ADE80]/60
+ * text-[#6FA882]/90 text-[#5D9A6D]/90 text-[#4F9270]/90 text-[#C17F3E]/90 text-[#7AA2D4]/90 text-[#A78BDB]/90
+ * text-[#6FA882]/20 text-[#6FA882]/70 text-[#6FA882]/60 text-[#6FA882]/40 text-[#6FA882]/30 text-[#6FA882]/25
+ * text-[#4F9270]/50
+ * text-[#5D9A6D]/40 text-[#5D9A6D]/70 text-[#5D9A6D]/25 text-[#5D9A6D]/80
+ * bg-[#6FA882]/50 bg-[#6FA882]/30
+ * bg-[#5D9A6D]/60 bg-[#5D9A6D]/50 bg-[#5D9A6D]/30 bg-[#5D9A6D]/10 bg-[#5D9A6D]/25
+ * border-[#6FA882]/40 border-[#6FA882]/30
+ * border-[#5D9A6D]/25
+ * text-[#6FA882]/50 text-[#6FA882]/40
+ * text-[#5D9A6D]/60
  * bg-white/[0.12]
  * gap-[clamp(5px,1.5cqi,8px)] gap-[clamp(7px,2.5cqi,12px)] gap-[clamp(12px,4cqi,18px)] gap-[clamp(14px,5.5cqi,24px)] gap-[clamp(20px,8cqi,32px)]
  * mb-[clamp(5px,1.5cqi,8px)] mb-[clamp(7px,2.5cqi,12px)] mb-[clamp(12px,4cqi,18px)]
@@ -36,16 +36,17 @@
 
 // Keep dynamic template-generated utility classes in production CSS output.
 const TAILWIND_DYNAMIC_SAFELIST = `
-text-[#6EE7A0]/20 text-[#6EE7A0]/25 text-[#6EE7A0]/30 text-[#6EE7A0]/40 text-[#6EE7A0]/50 text-[#6EE7A0]/60 text-[#6EE7A0]/70
-text-[#4ADE80]/40 text-[#4ADE80]/60 text-[#4ADE80]/70
-bg-[#4ADE80]/10 bg-[#4ADE80]/25 bg-[#4ADE80]/30 bg-[#4ADE80]/50 bg-[#4ADE80]/60
-border-[#6EE7A0]/30 border-[#6EE7A0]/40 border-[#4ADE80]/25
+text-[#6FA882]/20 text-[#6FA882]/25 text-[#6FA882]/30 text-[#6FA882]/40 text-[#6FA882]/50 text-[#6FA882]/60 text-[#6FA882]/70
+text-[#5D9A6D]/40 text-[#5D9A6D]/45 text-[#5D9A6D]/60 text-[#5D9A6D]/70 text-[#5D9A6D]/80
+bg-[#5D9A6D]/10 bg-[#5D9A6D]/25 bg-[#5D9A6D]/30 bg-[#5D9A6D]/50 bg-[#5D9A6D]/60
+border-[#6FA882]/30 border-[#6FA882]/40 border-[#5D9A6D]/20 border-[#5D9A6D]/25 border-[#5D9A6D]/30
 bg-white/[0.12]
 `;
 void TAILWIND_DYNAMIC_SAFELIST;
 
 import type { PlateType } from "../data/atlas-data";
-import type { ReactNode, ComponentType } from "react";
+import type { CSSProperties, ReactNode, ComponentType } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
 /* ══════════════════════════════════════════════════════════
    §1 — Semantic White Opacity Scale
@@ -86,19 +87,14 @@ export const B = {
    ══════════════════════════════════════════════════════════ */
 
 export const accent = {
-  warm:    "#6EE7A0",   // editorial plates (About, Insight, Quote)
-  neutral: "#4ADE80",   // discovery plates (Regions, World Names, Sustainability, Process, See Also)
-  cool:    "#34D399",   // data plates (Trade, Anatomy, Care)
+  warm:    "#6FA882",   // editorial plates (About, Insight, Quote)
+  neutral: "#5D9A6D",   // discovery + default UI green
+  cool:    "#4F9270",   // data plates (Trade, Anatomy, Care)
 } as const;
 
-/** Section-label icon color overrides per plate archetype */
+/** Top-left section header icons — single atlas green */
 export const plateIcon = {
-  editorial: `text-[#6EE7A0]/90`,
-  discovery: `text-[#4ADE80]/90`,
-  cool:      `text-[#34D399]/90`,
-  trade:     "text-[#C17F3E]/90",
-  anatomy:   "text-[#7AA2D4]/90",
-  care:      "text-[#A78BDB]/90",
+  card: `text-[${accent.neutral}]/90`,
 } as const;
 
 /* ══════════════════════════════════════════════════════════
@@ -127,6 +123,20 @@ export const heroFs = { fontSize: "clamp(13px, 4.5cqi, 18px)", fontWeight: 400, 
 export const valueFs = { fontSize: "clamp(14px, 5.5cqi, 24px)", fontWeight: 500 } as const;
 export const tagFs = { fontSize: "clamp(9px, 3cqi, 12px)", fontWeight: 500 } as const;
 
+/** Properties plate — tag chips and label/value cells share this surface */
+export const propertiesCellSurface =
+  "rounded-lg bg-white/[0.03] border border-white/[0.05]";
+
+/** Container-responsive type for Properties metadata rows and tag text */
+export const propertiesPlateLabelStyle = {
+  fontSize: "clamp(8px, 2.8cqi, 11px)",
+  fontWeight: 600,
+} as const;
+export const propertiesPlateValueStyle = {
+  fontSize: "clamp(11px, 3.8cqi, 16px)",
+  fontWeight: 500,
+} as const;
+
 /** Screen-plate overrides (slightly larger bounds for the expanded view) */
 export const screenBodyFs = { ...bodyFs, lineHeight: 1.65 } as const;
 export const screenHeroFs = { ...heroFs, fontSize: "clamp(12px, 4.5cqi, 20px)" } as const;
@@ -138,6 +148,7 @@ export const screenTagFs = { ...tagFs, fontSize: "clamp(8px, 3cqi, 13px)" } as c
 
 export const densityByPlate: Record<string, number> = {
   about: 0.8,
+  properties: 0.78,
   insight1: 0.75,
   insight2: 0.75,
   insight3: 0.75,
@@ -148,6 +159,7 @@ export const densityByPlate: Record<string, number> = {
   silkChiffon: 0.78,
   silkOrganza: 0.78,
   quote: 0.7,
+  youtubeEmbed: 0.35,
   trade: 0.85,
   worldNames: 0.4,
   regions: 0.65,
@@ -164,7 +176,8 @@ export const densityByPlate: Record<string, number> = {
    ══════════════════════════════════════════════════════════ */
 
 export const plateLabelMap: Partial<Record<PlateType, string>> = {
-  about: "About",
+  about: "Identity",
+  properties: "Properties",
   insight1: "Insight",
   insight2: "Insight",
   insight3: "Insight",
@@ -175,6 +188,7 @@ export const plateLabelMap: Partial<Record<PlateType, string>> = {
   silkChiffon: "Silk Type",
   silkOrganza: "Silk Type",
   quote: "Quote",
+  youtubeEmbed: "Video",
   trade: "Source & Trade",
   worldNames: "World Names",
   regions: "Regions",
@@ -188,6 +202,80 @@ export const plateLabelMap: Partial<Record<PlateType, string>> = {
 /* ══════════════════════════════════════════════════════════
    §7 — Shared components
    ══════════════════════════════════════════════════════════ */
+
+/** Bottom fade (alpha mask) when a detail plate scroll area has more content below the fold. */
+const DETAIL_SCROLL_BOTTOM_FADE =
+  "linear-gradient(to bottom, #000 0%, #000 calc(100% - 2.25rem), transparent 100%)";
+
+/**
+ * Scrollable region for detail (and screen) plates: soft mask at the bottom edge
+ * instead of a hard clip while more content sits below.
+ */
+export function DetailScrollRegion({
+  children,
+  wrapperClassName = "",
+  scrollClassName = "",
+  scrollStyle,
+  lang,
+}: {
+  children: ReactNode;
+  wrapperClassName?: string;
+  scrollClassName?: string;
+  scrollStyle?: CSSProperties;
+  lang?: string;
+}) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [fadeBottom, setFadeBottom] = useState(false);
+
+  const updateFade = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const overflowY = el.scrollHeight > el.clientHeight + 1;
+    const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+    setFadeBottom(overflowY && !atBottom);
+  }, []);
+
+  useLayoutEffect(() => {
+    updateFade();
+    const el = scrollRef.current;
+    if (!el) return undefined;
+
+    const RO = typeof ResizeObserver !== "undefined" ? ResizeObserver : null;
+    const ro = RO ? new RO(updateFade) : null;
+    ro?.observe(el);
+
+    let cancelled = false;
+    void document.fonts?.ready?.then(() => {
+      if (!cancelled) updateFade();
+    });
+
+    return () => {
+      cancelled = true;
+      ro?.disconnect();
+    };
+  }, [updateFade]);
+
+  const fadeStyle: CSSProperties | undefined = fadeBottom
+    ? {
+        maskImage: DETAIL_SCROLL_BOTTOM_FADE,
+        WebkitMaskImage: DETAIL_SCROLL_BOTTOM_FADE,
+      }
+    : undefined;
+
+  return (
+    <div className={`relative min-h-0 ${wrapperClassName}`.trim()}>
+      <div
+        ref={scrollRef}
+        lang={lang}
+        className={`h-full w-full min-h-0 overflow-y-auto overflow-x-hidden ${scrollClassName}`.trim()}
+        style={{ ...scrollStyle, ...fadeStyle }}
+        onScroll={updateFade}
+      >
+        {children}
+      </div>
+    </div>
+  );
+}
 
 /** Section label with optional leading icon. */
 export function SectionLabel({
@@ -206,8 +294,8 @@ export function SectionLabel({
   iconColor?: string;
 }) {
   return (
-    <div className={`flex items-center gap-[${sp.xs}] mb-[${sp.sm}]`}>
-      {Icon && <Icon size={iconSize} className={`${iconColor ?? plateIcon.discovery} flex-shrink-0`} />}
+    <div className={`flex shrink-0 items-center gap-[${sp.xs}] mb-[${sp.sm}]`}>
+      {Icon && <Icon size={iconSize} className={`${iconColor ?? plateIcon.card} flex-shrink-0`} />}
       <span
         className={`tracking-[0.2em] uppercase ${accentColor}`}
         style={{ ...labelFs, fontWeight: 400 }}
@@ -230,9 +318,9 @@ export function ScreenSectionLabel({
 }) {
   return (
     <div className="flex items-center gap-[clamp(4px,1.5cqi,8px)] mb-[clamp(10px,4cqi,18px)]">
-      {Icon && <Icon size={12} className={`${iconColor ?? plateIcon.discovery} flex-shrink-0`} />}
+      {Icon && <Icon size={12} className={`${iconColor ?? plateIcon.card} flex-shrink-0`} />}
       <span
-        className="tracking-[0.2em] uppercase text-[#4ADE80]"
+        className={`tracking-[0.2em] uppercase text-[${accent.neutral}]`}
         style={{ ...labelFs, fontWeight: 400 }}
       >
         {children}
@@ -256,13 +344,26 @@ export interface DataRowItem {
 export function StackedDataRows({
   rows,
   accentHex = accent.neutral,
+  wrapValues = false,
+  layout = "fill",
 }: {
   rows: DataRowItem[];
   /** Hex color for icon tinting (without opacity) */
   accentHex?: string;
+  /** When true, long values wrap instead of truncating (use inside scroll regions). */
+  wrapValues?: boolean;
+  /** `fill` = grow in a flex card; `flow` = stack only (inside DetailScrollRegion). */
+  layout?: "fill" | "flow";
 }) {
+  const rootClass =
+    layout === "fill"
+      ? `flex-1 flex flex-col justify-center gap-[${sp.sm}]`
+      : `flex flex-col gap-[${sp.sm}]`;
+  const valueClass = wrapValues
+    ? `${T.primary} [overflow-wrap:anywhere]`
+    : `${T.primary} truncate`;
   return (
-    <div className={`flex-1 flex flex-col justify-center gap-[${sp.sm}]`}>
+    <div className={rootClass}>
       {rows.map((r, i) => (
         <div key={r.label} className={`flex flex-col gap-[clamp(2px,0.8cqi,5px)]`}>
           {/* Hairline divider (skip first row) */}
@@ -273,7 +374,7 @@ export function StackedDataRows({
             <span className={`tracking-[0.15em] uppercase ${T.tertiary}`} style={{ fontSize: "clamp(8px, 2.8cqi, 10px)", fontWeight: 700 }}>{r.label}</span>
           </div>
           {/* Value */}
-          <span className={`${T.primary} truncate`} style={{ fontSize: "clamp(11px, 4.5cqi, 20px)", fontWeight: 500 }}>{r.value}</span>
+          <span className={valueClass} style={{ fontSize: "clamp(11px, 4.5cqi, 20px)", fontWeight: 500 }}>{r.value}</span>
         </div>
       ))}
     </div>

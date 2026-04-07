@@ -10,6 +10,7 @@
 
 import { createBrowserRouter, Navigate, useParams, type RouteObject } from "react-router";
 import { createElement, lazy, Suspense } from "react";
+import { FiberRouteOutlet } from "./pages/fiber-profile-route";
 import { RootLayout } from "./layouts/root-layout";
 import { NotFoundPage } from "./pages/not-found";
 import { RouteErrorPage } from "./pages/route-error";
@@ -17,6 +18,7 @@ import { AdminRedirectPage } from "./pages/admin-redirect";
 import { preloadHomeRoute, preloadAboutRoute } from "./route-preload";
 import { isAdminEnabled } from "./config/admin-access";
 import { getAdminFeatureFlags, type AdminFeatureFlags } from "./config/admin-feature-flags";
+import { resolveCanonicalFiberId } from "./data/fiber-id-redirects";
 
 const LazyAtlasWorkbenchShell = lazy(() =>
   import("./components/admin/AtlasWorkbenchShell"),
@@ -58,24 +60,25 @@ function isAdminCanonicalExternal(baseUrl: string): boolean {
 
 function WorkbenchFiberRedirect() {
   const { fiberId } = useParams<{ fiberId: string }>();
-  const to = fiberId ? `/admin/${encodeURIComponent(fiberId)}` : "/admin";
+  const raw = fiberId ? decodeURIComponent(fiberId) : "";
+  const canonical = raw ? resolveCanonicalFiberId(raw) : "";
+  const to = canonical ? `/admin/${encodeURIComponent(canonical)}` : "/admin";
   return createElement(Navigate, { to, replace: true });
+}
+
+/** Index leaf under atlas layout — content lives in parent `HomeAtlasLayout`; this satisfies RR7 leaf route contract */
+function AtlasIndexLeaf() {
+  return null;
 }
 
 async function loadHomeRoute() {
   const mod = await preloadHomeRoute();
-  return { Component: mod.HomePage };
+  return { Component: mod.HomeAtlasLayout };
 }
 
 async function loadAboutRoute() {
   const mod = await preloadAboutRoute();
   return { Component: mod.AboutPage };
-}
-
-async function loadFiberProfileRoute() {
-  await preloadHomeRoute();
-  const mod = await import("./pages/fiber-profile-route");
-  return { Component: mod.FiberProfileRoute };
 }
 
 /** Shown during initial hydration while lazy public routes load (silences Router HydrateFallback warning). */
@@ -139,20 +142,21 @@ export function buildAppRoutes(
       errorElement: createElement(RouteErrorPage),
       children: [
         {
-          index: true,
           lazy: loadHomeRoute,
           hydrateFallbackElement: publicRouteHydrateFallback,
           errorElement: createElement(RouteErrorPage),
+          children: [
+            { index: true, Component: AtlasIndexLeaf },
+            {
+              path: "fiber/:fiberId",
+              Component: FiberRouteOutlet,
+              errorElement: createElement(RouteErrorPage),
+            },
+          ],
         },
         {
           path: "about",
           lazy: loadAboutRoute,
-          hydrateFallbackElement: publicRouteHydrateFallback,
-          errorElement: createElement(RouteErrorPage),
-        },
-        {
-          path: "fiber/:fiberId",
-          lazy: loadFiberProfileRoute,
           hydrateFallbackElement: publicRouteHydrateFallback,
           errorElement: createElement(RouteErrorPage),
         },

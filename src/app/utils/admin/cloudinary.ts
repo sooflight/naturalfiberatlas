@@ -59,6 +59,12 @@ function getCloudinaryErrorMessage(status: number, body: unknown, fallbackPrefix
 export const isCloudinaryUrl = isCloudinaryUrlBase;
 export const stripCropTransform = stripCloudinaryTransformBase;
 
+/** True when we can splice a c_crop into the delivery URL (upload or fetch). */
+export function canApplyCloudinaryCrop(url: string): boolean {
+  if (!isCloudinaryUrl(url)) return false;
+  return url.includes("/image/upload/") || url.includes("/image/fetch/");
+}
+
 export function buildCropUrl(url: string, opts: CropOptions): string {
   if (!isCloudinaryUrl(url)) return url;
   const transform = [
@@ -70,7 +76,14 @@ export function buildCropUrl(url: string, opts: CropOptions): string {
   ]
     .filter(Boolean)
     .join(",");
-  return url.replace("/upload/", `/upload/${transform}/`);
+  if (!transform) return url;
+  if (url.includes("/image/upload/")) {
+    return url.replace("/image/upload/", `/image/upload/${transform}/`);
+  }
+  if (url.includes("/image/fetch/")) {
+    return url.replace("/image/fetch/", `/image/fetch/${transform}/`);
+  }
+  return url;
 }
 
 // Optimization transforms for auto-quality and auto-format

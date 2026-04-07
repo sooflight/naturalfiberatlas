@@ -1,6 +1,7 @@
 import { type ReactNode, useMemo, useRef, useEffect } from "react";
 import { useImageBrightness } from "../hooks/use-image-brightness";
 import { useImagePipeline } from "../context/image-pipeline";
+import { GLASS_SPECULAR_SWEEP_MS } from "../utils/detail-motion";
 import { ProgressiveImage } from "./progressive-image";
 
 interface GlassCardProps {
@@ -24,6 +25,13 @@ interface GlassCardProps {
   tabIndex?: number;
   /** Profile grid: return focus after closing detail view */
   dataAtlasFiberId?: string;
+  /**
+   * When the parent already enforces exact dimensions (e.g. ScreenPlate morph box),
+   * use h-full instead of aspect-[3/4] so the shell matches the box pixel-for-pixel.
+   * Otherwise aspect-ratio height from width can round shorter than the parent and
+   * leave a transparent gap (dark scrim visible) along the bottom edge on mobile.
+   */
+  fillContainer?: boolean;
 }
 
 /**
@@ -51,6 +59,7 @@ export function GlassCard({
   ariaLabel,
   tabIndex,
   dataAtlasFiberId,
+  fillContainer = false,
 }: GlassCardProps) {
   const Tag = as;
   const pipeline = useImagePipeline();
@@ -77,7 +86,7 @@ export function GlassCard({
       const timer = setTimeout(() => {
         el.style.opacity = "";
         el.style.animation = "";
-      }, 2400);
+      }, GLASS_SPECULAR_SWEEP_MS);
       prevSelected.current = isSelected;
       return () => clearTimeout(timer);
     }
@@ -146,7 +155,8 @@ export function GlassCard({
         {...(dataAtlasFiberId ? { "data-atlas-fiber-id": dataAtlasFiberId } : {})}
         {...(as === "button" ? { type: "button" as const } : {})}
         className={`
-          relative aspect-[3/4] w-full overflow-hidden rounded-xl p-0 pointer-events-auto
+          relative w-full overflow-hidden rounded-xl p-0 pointer-events-auto
+          ${fillContainer ? "h-full min-h-0" : "aspect-[3/4]"}
           transition-[opacity] duration-400 ease-out
           ${isHoverable ? "cursor-pointer" : ""}
           ${onClick ? "focus:outline-none" : ""}

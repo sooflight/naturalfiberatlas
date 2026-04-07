@@ -2,9 +2,20 @@
  * ImageLightbox - Fullscreen image preview with zoom and cropping capabilities.
  */
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import type { ImageLightboxProps, RelationMap, StringMap } from './types';
-import { isCloudinaryUrl, stripCropTransform, buildCropUrl } from '@/utils/cloudinary';
+import React, { useState, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
+import type { ImageLightboxProps } from './types';
+import {
+  buildCropUrl,
+  canApplyCloudinaryCrop,
+  isCloudinaryUrl,
+  stripCropTransform,
+} from '@/utils/cloudinary';
+import {
+  clampRectToBox,
+  cropElementRectToSourcePixels,
+  getObjectContainContentRect,
+  getPointerInImageContentCoords,
+} from "@/utils/object-contain-crop";
 
 // Icons
 const XIcon = ({ className = 'w-4 h-4' }: { className?: string }) => (
@@ -33,6 +44,8 @@ export function ImageLightbox({
   label,
   entryKey,
   onClose,
+  startCropRef,
+  onCropFeedback,
   onCropImage,
   onContextMenuImage,
   onDownloadImage,
@@ -52,44 +65,126 @@ export function ImageLightbox({
   const [aspectRatio, setAspectRatio] = useState<number | null>(null);
   const [hoverCursor, setHoverCursor] = useState('crosshair');
   const imgRef = useRef<HTMLImageElement>(null);
-  const dragRef = useRef<any>(null);
+  const dragRef = useRef<{
+    zone: string;
+    sx: number;
+    sy: number;
+    sr: { x: number; y: number; w: number; h: number };
+    anchor: { x?: number; y?: number };
+    captureEl?: HTMLElement;
+    pointerId?: number;
+  } | null>(null);
+  const cropAwaitingDimensionsRef = useRef(false);
+  const croppingRef = useRef(false);
+  const cropRectRef = useRef<{ x: number; y: number; w: number; h: number } | null>(null);
+  const [sourceReady, setSourceReady] = useState(false);
 
   const currentUrl = urls[idx];
-  const canCrop = isCloudinaryUrl(currentUrl) && !!onCropImage;
+  const canCrop =
+    isCloudinaryUrl(currentUrl) && canApplyCloudinaryCrop(currentUrl) && !!onCropImage;
   const chromeVisible = cropping || isChromeActive;
 
   const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v));
 
-  const startCropping = () => {
+  useLayoutEffect(() => {
+    const el = imgRef.current;
+    setSourceReady(Boolean(el?.complete && el.naturalWidth > 0));
+  }, [currentUrl, idx]);
+
+  useEffect(() => {
+    croppingRef.current = cropping;
+  }, [cropping]);
+
+  useEffect(() => {
+    cropRectRef.current = cropRect;
+  }, [cropRect]);
+
+  useEffect(() => {
+    if (!cropping) return;
+    const onResize = () => {
+      const el = imgRef.current;
+      const r = cropRectRef.current;
+      if (!el || !r) return;
+      const box = getObjectContainContentRect(el);
+      setCropRect(clampRectToBox(r.x, r.y, r.w, r.h, box));
+    };
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, [cropping]);
+
+  const cropSourcePixels = useMemo(() => {
+    if (!cropping || !cropRect || !sourceReady) return null;
+    const el = imgRef.current;
+    if (!el?.naturalWidth) return null;
+    return cropElementRectToSourcePixels(cropRect, getObjectContainContentRect(el), el.naturalWidth, el.naturalHeight);
+  }, [cropping, cropRect, sourceReady, currentUrl, idx]);
+
+  const startCropping = useCallback(() => {
     setCropping(true);
     setAspectRatio(null);
+    cropAwaitingDimensionsRef.current = true;
     requestAnimationFrame(() => {
-      if (imgRef.current) {
-        const b = imgRef.current.getBoundingClientRect();
-        setCropRect({ x: 0, y: 0, w: b.width, h: b.height });
-      }
+      const el = imgRef.current;
+      if (!el) return;
+      const c = getObjectContainContentRect(el);
+      setCropRect({ x: c.offsetX, y: c.offsetY, w: c.width, h: c.height });
+      if (el.naturalWidth > 0) cropAwaitingDimensionsRef.current = false;
     });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!startCropRef) return;
+    if (!canCrop) {
+      startCropRef.current = null;
+      return () => {
+        startCropRef.current = null;
+      };
+    }
+    startCropRef.current = () => {
+      startCropping();
+    };
+    return () => {
+      startCropRef.current = null;
+    };
+  }, [startCropRef, canCrop, startCropping]);
+  const cancelCrop = () => {
+    cropAwaitingDimensionsRef.current = false;
+    setCropping(false);
+    setCropRect(null);
   };
-  const cancelCrop = () => { setCropping(false); setCropRect(null); };
 
   const applyCrop = useCallback(() => {
     if (!cropRect || !imgRef.current || cropRect.w < 5 || cropRect.h < 5) return;
     const img = imgRef.current;
-    const sx = img.naturalWidth / img.getBoundingClientRect().width;
-    const sy = img.naturalHeight / img.getBoundingClientRect().height;
+    if (!img.naturalWidth || !img.naturalHeight) return;
+    const content = getObjectContainContentRect(img);
+    const mapped = cropElementRectToSourcePixels(cropRect, content, img.naturalWidth, img.naturalHeight);
+    if (!mapped || mapped.width < 1 || mapped.height < 1) return;
     const baseUrl = stripCropTransform(urls[idx]);
+    if (!canApplyCloudinaryCrop(baseUrl)) {
+      onCropFeedback?.('This image URL does not support in-place cropping (needs Cloudinary upload or fetch delivery).');
+      return;
+    }
     const newUrl = buildCropUrl(baseUrl, {
-      x: cropRect.x * sx, y: cropRect.y * sy,
-      width: cropRect.w * sx, height: cropRect.h * sy,
+      x: mapped.x,
+      y: mapped.y,
+      width: mapped.width,
+      height: mapped.height,
     });
+    if (newUrl === baseUrl) {
+      onCropFeedback?.('Could not build a crop URL for this asset.');
+      return;
+    }
     onCropImage!(entryKey, idx, newUrl);
+    cropAwaitingDimensionsRef.current = false;
     setCropping(false);
     setCropRect(null);
-  }, [cropRect, urls, idx, entryKey, onCropImage]);
+  }, [cropRect, urls, idx, entryKey, onCropImage, onCropFeedback]);
 
   const resetCrop = () => {
     const baseUrl = stripCropTransform(currentUrl);
     if (baseUrl !== currentUrl) onCropImage!(entryKey, idx, baseUrl);
+    cropAwaitingDimensionsRef.current = false;
     setCropping(false);
     setCropRect(null);
   };
@@ -143,19 +238,18 @@ export function ImageLightbox({
 
   const onOverlayMove = (e: React.PointerEvent) => {
     if (dragRef.current || !imgRef.current) return;
-    const r = imgRef.current.getBoundingClientRect();
-    setHoverCursor(CURSORS[getZone(e.clientX - r.left, e.clientY - r.top)] || 'crosshair');
+    const { px, py } = getPointerInImageContentCoords(imgRef.current, e.clientX, e.clientY);
+    setHoverCursor(CURSORS[getZone(px, py)] || 'crosshair');
   };
 
   const onOverlayDown = (e: React.PointerEvent) => {
     if (!imgRef.current) return;
     e.preventDefault();
-    const ir = imgRef.current.getBoundingClientRect();
-    const px = clamp(e.clientX - ir.left, 0, ir.width);
-    const py = clamp(e.clientY - ir.top, 0, ir.height);
+    const el = imgRef.current;
+    const { px, py } = getPointerInImageContentCoords(el, e.clientX, e.clientY);
     const zone = getZone(px, py);
     const cr = cropRect || { x: px, y: py, w: 0, h: 0 };
-    let anchor: any;
+    let anchor: { x?: number; y?: number };
     if (zone === 'nw') anchor = { x: cr.x + cr.w, y: cr.y + cr.h };
     else if (zone === 'ne') anchor = { x: cr.x, y: cr.y + cr.h };
     else if (zone === 'sw') anchor = { x: cr.x + cr.w, y: cr.y };
@@ -165,50 +259,86 @@ export function ImageLightbox({
     else if (zone === 'w') anchor = { x: cr.x + cr.w };
     else if (zone === 'e') anchor = { x: cr.x };
     else if (zone === 'draw') anchor = { x: px, y: py };
-    else anchor = null;
+    else anchor = {};
 
     if (zone === 'draw') setCropRect({ x: px, y: py, w: 0, h: 0 });
 
-    dragRef.current = { zone, sx: px, sy: py, sr: { ...cr }, anchor, imgW: ir.width, imgH: ir.height, ir };
+    const captureEl = e.currentTarget as HTMLElement;
+    if (typeof captureEl.setPointerCapture === "function") {
+      try {
+        captureEl.setPointerCapture(e.pointerId);
+      } catch {
+        /* ignore */
+      }
+    }
+    dragRef.current = { zone, sx: px, sy: py, sr: { ...cr }, anchor, captureEl, pointerId: e.pointerId };
 
     const onMove = (ev: PointerEvent) => {
       const d = dragRef.current;
-      if (!d) return;
-      const cx = clamp(ev.clientX - d.ir.left, 0, d.imgW);
-      const cy = clamp(ev.clientY - d.ir.top, 0, d.imgH);
+      const elMove = imgRef.current;
+      if (!d || !elMove) return;
+      const box = getObjectContainContentRect(elMove);
+      const { px: cx, py: cy } = getPointerInImageContentCoords(elMove, ev.clientX, ev.clientY);
 
       if (d.zone === 'move') {
-        const nx = clamp(d.sr.x + (cx - d.sx), 0, d.imgW - d.sr.w);
-        const ny = clamp(d.sr.y + (cy - d.sy), 0, d.imgH - d.sr.h);
+        const nx = clamp(d.sr.x + (cx - d.sx), box.offsetX, box.offsetX + box.width - d.sr.w);
+        const ny = clamp(d.sr.y + (cy - d.sy), box.offsetY, box.offsetY + box.height - d.sr.h);
         setCropRect({ x: nx, y: ny, w: d.sr.w, h: d.sr.h });
         return;
       }
 
-      let nx: number, ny: number, nw: number, nh: number;
+      let nx: number;
+      let ny: number;
+      let nw: number;
+      let nh: number;
       const a = d.anchor;
 
       if (d.zone === 'n' || d.zone === 's') {
-        nx = d.sr.x; nw = d.sr.w;
-        ny = Math.min(a.y, cy); nh = Math.abs(cy - a.y);
-        if (aspectRatio) { nw = nh * aspectRatio; nx = d.sr.x + (d.sr.w - nw) / 2; }
+        nx = d.sr.x;
+        nw = d.sr.w;
+        ny = Math.min(a.y!, cy);
+        nh = Math.abs(cy - a.y!);
+        if (aspectRatio) {
+          nw = nh * aspectRatio;
+          nx = d.sr.x + (d.sr.w - nw) / 2;
+        }
       } else if (d.zone === 'w' || d.zone === 'e') {
-        ny = d.sr.y; nh = d.sr.h;
-        nx = Math.min(a.x, cx); nw = Math.abs(cx - a.x);
-        if (aspectRatio) { nh = nw / aspectRatio; ny = d.sr.y + (d.sr.h - nh) / 2; }
+        ny = d.sr.y;
+        nh = d.sr.h;
+        nx = Math.min(a.x!, cx);
+        nw = Math.abs(cx - a.x!);
+        if (aspectRatio) {
+          nh = nw / aspectRatio;
+          ny = d.sr.y + (d.sr.h - nh) / 2;
+        }
       } else {
-        nx = Math.min(a.x, cx); ny = Math.min(a.y, cy);
-        nw = Math.abs(cx - a.x); nh = Math.abs(cy - a.y);
-        if (aspectRatio) { nh = nw / aspectRatio; if (cy < a.y) ny = a.y - nh; }
+        nx = Math.min(a.x!, cx);
+        ny = Math.min(a.y!, cy);
+        nw = Math.abs(cx - a.x!);
+        nh = Math.abs(cy - a.y!);
+        if (aspectRatio) {
+          nh = nw / aspectRatio;
+          if (cy < a.y!) ny = a.y! - nh;
+        }
       }
 
-      nw = Math.max(10, Math.min(nw!, d.imgW));
-      nh = Math.max(10, Math.min(nh!, d.imgH));
-      nx = clamp(nx!, 0, d.imgW - nw);
-      ny = clamp(ny!, 0, d.imgH - nh);
-      setCropRect({ x: nx, y: ny, w: nw, h: nh });
+      const clamped = clampRectToBox(nx, ny, nw, nh, box);
+      setCropRect(clamped);
     };
 
-    const onUp = () => { dragRef.current = null; window.removeEventListener('pointermove', onMove); window.removeEventListener('pointerup', onUp); };
+    const onUp = () => {
+      const d = dragRef.current;
+      if (d?.captureEl != null && d.pointerId != null) {
+        try {
+          d.captureEl.releasePointerCapture(d.pointerId);
+        } catch {
+          /* ignore */
+        }
+      }
+      dragRef.current = null;
+      window.removeEventListener('pointermove', onMove);
+      window.removeEventListener('pointerup', onUp);
+    };
     window.addEventListener('pointermove', onMove);
     window.addEventListener('pointerup', onUp);
   };
@@ -217,12 +347,20 @@ export function ImageLightbox({
   const pickRatio = (v: number | null) => {
     setAspectRatio(v);
     if (v && cropRect && imgRef.current) {
-      const b = imgRef.current.getBoundingClientRect();
-      const cx = cropRect.x + cropRect.w / 2, cy = cropRect.y + cropRect.h / 2;
-      let nw = cropRect.w, nh = nw / v;
-      if (nh > b.height) { nh = b.height; nw = nh * v; }
-      if (nw > b.width) { nw = b.width; nh = nw / v; }
-      setCropRect({ x: clamp(cx - nw / 2, 0, b.width - nw), y: clamp(cy - nh / 2, 0, b.height - nh), w: nw, h: nh });
+      const b = getObjectContainContentRect(imgRef.current);
+      const cx = cropRect.x + cropRect.w / 2;
+      const cy = cropRect.y + cropRect.h / 2;
+      let nw = cropRect.w;
+      let nh = nw / v;
+      if (nh > b.height) {
+        nh = b.height;
+        nw = nh * v;
+      }
+      if (nw > b.width) {
+        nw = b.width;
+        nh = nw / v;
+      }
+      setCropRect(clampRectToBox(cx - nw / 2, cy - nh / 2, nw, nh, b));
     }
   };
 
@@ -240,7 +378,11 @@ export function ImageLightbox({
         data-testid="lightbox-top-cluster"
         className={`pointer-events-none absolute left-1/2 top-3 z-20 -translate-x-1/2 transition-opacity ${chromeVisible ? 'opacity-100' : 'opacity-20'}`}
       >
-        <div className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/10 bg-neutral-950/75 px-3 py-2 shadow-2xl">
+        <div
+          className="pointer-events-auto flex items-center gap-2 rounded-full border border-white/10 bg-neutral-950/75 px-3 py-2 shadow-2xl"
+          onClick={(e) => e.stopPropagation()}
+          onPointerDown={(e) => e.stopPropagation()}
+        >
           <div className="text-white/90 text-sm font-medium">
             {label} <span className="text-neutral-400 ml-2">{idx + 1}/{urls.length}</span>
             {(era || origin || scientific) && <span className="text-neutral-600 text-[11px] font-mono italic ml-3">{[era, origin, scientific].filter(Boolean).join(' · ')}</span>}
@@ -271,7 +413,18 @@ export function ImageLightbox({
                 <button key={r.l} onClick={() => pickRatio(r.v)} className={`px-2 py-0.5 rounded text-[11px] transition-colors ${aspectRatio === r.v ? 'bg-white text-black font-semibold' : 'text-neutral-500 hover:text-white'}`}>{r.l}</button>
               ))}
               <div className="w-px h-4 bg-neutral-700 mx-1" />
-              <button onClick={applyCrop} disabled={!cr || cr.w < 5} className="px-2.5 py-1 rounded-lg bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-colors disabled:opacity-30">Apply ⏎</button>
+              {cropSourcePixels && (
+                <span className="text-[11px] text-neutral-500 tabular-nums hidden sm:inline" aria-live="polite">
+                  {Math.round(cropSourcePixels.width)}×{Math.round(cropSourcePixels.height)} px
+                </span>
+              )}
+              <button
+                onClick={applyCrop}
+                disabled={!cr || cr.w < 5 || !sourceReady}
+                className="px-2.5 py-1 rounded-lg bg-white text-black text-xs font-semibold hover:bg-neutral-200 transition-colors disabled:opacity-30"
+              >
+                Apply ⏎
+              </button>
               <button onClick={resetCrop} className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-neutral-300 text-xs transition-colors">Reset</button>
               <button onClick={cancelCrop} className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-neutral-300 text-xs transition-colors">Cancel</button>
             </div>
@@ -305,7 +458,19 @@ export function ImageLightbox({
               if (cropping) return;
               onContextMenuImage?.(event, currentUrl, idx);
             }}
-            onError={e => { (e.target as HTMLImageElement).onerror = null; (e.target as HTMLImageElement).src = PLACEHOLDER; }}
+            onLoad={() => {
+              setSourceReady(true);
+              if (croppingRef.current && cropAwaitingDimensionsRef.current && imgRef.current) {
+                const c = getObjectContainContentRect(imgRef.current);
+                setCropRect({ x: c.offsetX, y: c.offsetY, w: c.width, h: c.height });
+                cropAwaitingDimensionsRef.current = false;
+              }
+            }}
+            onError={e => {
+              (e.target as HTMLImageElement).onerror = null;
+              (e.target as HTMLImageElement).src = PLACEHOLDER;
+              setSourceReady(false);
+            }}
           />
           {cropping && (
             <div

@@ -5,6 +5,31 @@
  * Duration is adaptive: 500ms–1100ms based on scroll distance.
  */
 
+/** Element center lies in this inset from viewport edges → already comfortable, skip scroll */
+const VIEW_INSET_RATIO = 0.12;
+
+/**
+ * Like `smoothScrollTo`, but no-ops when the element’s center is already
+ * within the middle band of the viewport (reduces layout jank when opening
+ * a profile that is already on-screen).
+ */
+export function smoothScrollToIfNeeded(el: HTMLElement, delay = 100): Promise<void> {
+  const rect = el.getBoundingClientRect();
+  if (rect.height <= 0 || rect.width <= 0) {
+    return smoothScrollTo(el, delay);
+  }
+  const vw = window.innerWidth;
+  const vh = window.innerHeight;
+  const cx = rect.left + rect.width / 2;
+  const cy = rect.top + rect.height / 2;
+  const mx = vw * VIEW_INSET_RATIO;
+  const my = vh * VIEW_INSET_RATIO;
+  if (cx >= mx && cx <= vw - mx && cy >= my && cy <= vh - my) {
+    return Promise.resolve();
+  }
+  return smoothScrollTo(el, delay);
+}
+
 export function smoothScrollTo(el: HTMLElement, delay = 300): Promise<void> {
   return new Promise<void>((resolve) => {
     setTimeout(() => {

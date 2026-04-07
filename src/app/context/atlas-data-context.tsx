@@ -161,6 +161,37 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
   const hasOverrides = useMemo(() => dataSource.hasOverrides(), [version]);
   const lastAutoSyncedDiffRef = useRef<string>("");
   const migratedLegacyStatusRef = useRef(false);
+  const promotedAutosyncTimerRef = useRef<number | null>(null);
+
+  const runPromotedOverridesDiskSync = useCallback(() => {
+    if (!import.meta.env.DEV || import.meta.env.MODE === "test") return;
+    const diff = dataSource.exportDiffJSON();
+    if (!hasPromotedOverridesContent(diff)) return;
+    if (diff === lastAutoSyncedDiffRef.current) return;
+    void fetch("/__admin/auto-sync-promoted-overrides", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: diff,
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error(`autosync failed (${res.status})`);
+        lastAutoSyncedDiffRef.current = diff;
+      })
+      .catch((err) => {
+        console.warn("[atlas:autosync] Failed to sync promoted overrides:", err);
+      });
+  }, []);
+
+  const schedulePromotedOverridesDiskSync = useCallback(() => {
+    if (!import.meta.env.DEV || import.meta.env.MODE === "test") return;
+    if (promotedAutosyncTimerRef.current !== null) {
+      window.clearTimeout(promotedAutosyncTimerRef.current);
+    }
+    promotedAutosyncTimerRef.current = window.setTimeout(() => {
+      promotedAutosyncTimerRef.current = null;
+      runPromotedOverridesDiskSync();
+    }, 250);
+  }, [runPromotedOverridesDiskSync]);
 
   useEffect(() => {
     if (!adminEnabled || !isBrowser || !adminMode) return;
@@ -182,26 +213,40 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     if (!adminEnabled || !isBrowser || !adminMode) return;
+    schedulePromotedOverridesDiskSync();
+    return () => {
+      if (promotedAutosyncTimerRef.current !== null) {
+        window.clearTimeout(promotedAutosyncTimerRef.current);
+        promotedAutosyncTimerRef.current = null;
+      }
+    };
+  }, [adminEnabled, adminMode, isBrowser, version, schedulePromotedOverridesDiskSync]);
+
+  useEffect(() => {
+    if (!adminEnabled || !isBrowser || !adminMode) return;
     if (!import.meta.env.DEV || import.meta.env.MODE === "test") return;
-    const timer = window.setTimeout(() => {
-      const diff = dataSource.exportDiffJSON();
-      if (!hasPromotedOverridesContent(diff)) return;
-      if (diff === lastAutoSyncedDiffRef.current) return;
-      void fetch("/__admin/auto-sync-promoted-overrides", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: diff,
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error(`autosync failed (${res.status})`);
-          lastAutoSyncedDiffRef.current = diff;
-        })
-        .catch((err) => {
-          console.warn("[atlas:autosync] Failed to sync promoted overrides:", err);
-        });
-    }, 700);
-    return () => window.clearTimeout(timer);
-  }, [adminEnabled, adminMode, isBrowser, version]);
+
+    const flushPendingTimerAndSync = () => {
+      if (promotedAutosyncTimerRef.current !== null) {
+        window.clearTimeout(promotedAutosyncTimerRef.current);
+        promotedAutosyncTimerRef.current = null;
+      }
+      runPromotedOverridesDiskSync();
+    };
+
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") flushPendingTimerAndSync();
+    };
+
+    window.addEventListener("pagehide", flushPendingTimerAndSync);
+    document.addEventListener("visibilitychange", onVisibility);
+    window.addEventListener("atlas:flush-promoted-sync", flushPendingTimerAndSync);
+    return () => {
+      window.removeEventListener("pagehide", flushPendingTimerAndSync);
+      document.removeEventListener("visibilitychange", onVisibility);
+      window.removeEventListener("atlas:flush-promoted-sync", flushPendingTimerAndSync);
+    };
+  }, [adminEnabled, adminMode, isBrowser, runPromotedOverridesDiskSync]);
 
   const value = useMemo<AtlasDataContextValue>(
     () => ({

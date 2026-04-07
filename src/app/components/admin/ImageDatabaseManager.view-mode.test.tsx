@@ -37,6 +37,7 @@ vi.mock("../../../../src/app/context/atlas-data-context", () => ({
     fibers: atlasFibersMock,
     updateFiber: updateFiberMock,
     getFiberById: getFiberByIdMock,
+    version: 0,
   }),
 }));
 
@@ -55,7 +56,15 @@ vi.mock("@/utils/cloudinary", () => ({
   requestCloudinaryUpscale: vi.fn(),
   uploadFromUrl: uploadFromUrlMock,
   uploadToCloudinary: uploadToCloudinaryMock,
-  isCloudinaryUrl: (url: string) => /cloudinary\.com\/.*\/image\/upload\//i.test(url),
+  isCloudinaryUrl: (url: string) => /res\.cloudinary\.com\//i.test(url),
+  canApplyCloudinaryCrop: (url: string) =>
+    url.includes("/image/upload/") || url.includes("/image/fetch/"),
+  stripCropTransform: (url: string) => url.replace(/\/c_crop,[^/]+\//g, "/"),
+  buildCropUrl: (url: string, opts: { x?: number; y?: number; width?: number; height?: number }) => {
+    if (!url.includes("/image/upload/")) return url;
+    const seg = `c_crop,w_${Math.round(opts.width ?? 0)},h_${Math.round(opts.height ?? 0)},x_${Math.round(opts.x ?? 0)},y_${Math.round(opts.y ?? 0)}`;
+    return url.replace("/image/upload/", `/image/upload/${seg}/`);
+  },
   buildOptimizedUrl: (url: string, opts?: { width?: number; height?: number; quality?: string; format?: string }) => {
     if (!/cloudinary\.com\/.*\/image\/upload\//i.test(url)) return url;
     const parts = [
@@ -133,29 +142,6 @@ describe("ImageDatabaseManager view mode layouts", () => {
       expect(screen.getByTestId("image-db-profile-mineral-regenerated")).toBeTruthy();
     });
   });
-
-  it("exports profile image links as a JSON download", () => {
-    const createObjectUrl = vi.fn(() => "blob:atlas-export");
-    const revokeObjectUrl = vi.fn();
-    const originalCreateObjectURL = globalThis.URL.createObjectURL;
-    const originalRevokeObjectURL = globalThis.URL.revokeObjectURL;
-    globalThis.URL.createObjectURL = createObjectUrl;
-    globalThis.URL.revokeObjectURL = revokeObjectUrl;
-    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(() => {});
-
-    try {
-      render(<ImageDatabaseManager viewMode="list" />);
-      fireEvent.click(screen.getByRole("button", { name: /export json/i }));
-
-      expect(createObjectUrl).toHaveBeenCalledTimes(1);
-      expect(clickSpy).toHaveBeenCalledTimes(1);
-      expect(revokeObjectUrl).toHaveBeenCalledWith("blob:atlas-export");
-    } finally {
-      clickSpy.mockRestore();
-      globalThis.URL.createObjectURL = originalCreateObjectURL;
-      globalThis.URL.revokeObjectURL = originalRevokeObjectURL;
-    }
-  }, 15000);
 
   it("applies distinct layout classes for list/cards/grid", () => {
     const { rerender } = render(<ImageDatabaseManager viewMode="list" />);
@@ -590,6 +576,28 @@ describe("ImageDatabaseManager view mode layouts", () => {
 
     const downloadButtons = screen.getAllByRole("button", { name: "Download Image" });
     expect(downloadButtons.length).toBeGreaterThan(0);
+  });
+
+  it("offers Crop from lightbox context menu for Cloudinary delivery URLs", () => {
+    atlasFibersMock = [
+      {
+        id: "hemp",
+        name: "hemp",
+        category: "fiber",
+        image: "https://res.cloudinary.com/demo/image/upload/v1/hemp.jpg",
+        galleryImages: [{ url: "https://res.cloudinary.com/demo/image/upload/v1/hemp.jpg" }],
+      },
+    ];
+    render(<ImageDatabaseManager viewMode="list" />);
+
+    fireEvent.click(screen.getAllByAltText(/ \d+$/)[0]);
+    const lightbox = screen.getByTestId("lightbox-root");
+    const lightboxImage = within(lightbox).getByAltText("hemp 1");
+    fireEvent.contextMenu(lightboxImage, { clientX: 100, clientY: 120 });
+
+    fireEvent.click(screen.getByRole("button", { name: "Crop in fullscreen" }));
+
+    expect(screen.getByRole("group", { name: /crop controls/i })).toBeTruthy();
   });
 
   it("shows a Download Image button directly in lightbox chrome", () => {

@@ -114,7 +114,13 @@ export function upgradeUnsplashResolution(url: string, width: number): string {
  */
 export function stripCloudinaryTransform(url: string): string {
   if (!url?.includes('cloudinary')) return url;
-  return url.replace(/\/c_crop,[^/]+\//, '/');
+  let prev = '';
+  let out = url;
+  while (out !== prev) {
+    prev = out;
+    out = out.replace(/\/c_crop,[^/]+\//, '/');
+  }
+  return out;
 }
 
 /**

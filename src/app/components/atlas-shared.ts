@@ -101,7 +101,8 @@ export const ATLAS_GRID_PROFILE_PILL_FS = {
   fontWeight: 600 as const,
 };
 
-export const ATLAS_GRID_CARD_NAME_FONT_SIZE = "clamp(12px, 4.2cqi, 16px)";
+/** Resolved in theme.css; mobile (<640px) uses a slightly smaller clamp. */
+export const ATLAS_GRID_CARD_NAME_FONT_SIZE = "var(--atlas-profile-card-name-size)";
 
 /** TopNav labels under portal thumbs, path segments, children strip (`--atlas-nav-thumb-label` in theme.css). */
 export const ATLAS_NAV_THUMB_LABEL_FONT_SIZE = "var(--atlas-nav-thumb-label)";

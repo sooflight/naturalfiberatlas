@@ -15,7 +15,7 @@
  * - Advanced context menu actions
  */
 
-import React, { useState, useCallback, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useEffect, useLayoutEffect, useMemo, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import {
   ATLAS_IMAGES,
@@ -26,16 +26,18 @@ import {
 } from '@/data/atlas-images';
 import { logActivity } from '@/utils/activityLog';
 import {
+  canApplyCloudinaryCrop,
+  isCloudinaryUrl,
   requestCloudinaryUpscale,
   uploadFromUrl,
   uploadToCloudinary,
 } from '@/utils/cloudinary';
 import { copyImageFromUrl } from '@/utils/clipboardImage';
-import ImportPanel from './ImportPanel';
 import { AdminProfileStoryboard } from './AdminProfileStoryboard';
 import { useAdminSettings } from '@/contexts/AdminSettingsContext';
 import { useAdminSave } from '@/contexts/AdminSaveContext';
-import { toUrlArray } from '@/utils/imageUrl';
+import { extractImageUrl, toEntryArray, toUrlArray } from '@/utils/imageUrl';
+import { syncImageCatalogToDisk } from '@/utils/imageCatalogDiskSync';
 import { extractFirstImageUrlFromClipboardText } from '@/utils/paste-image-urls';
 import { useDebounce } from '@/utils/debounce';
 import { MATERIAL_PASSPORTS } from '@/data/material-passports';
@@ -45,9 +47,11 @@ import {
   subscribePassportStatusOverrides,
   writePassportStatusOverride,
 } from '@/utils/passportStatusOverrides';
-import { Brain } from 'lucide-react';
+import { Brain, Crosshair } from 'lucide-react';
 import { cn } from '@/database-interface/lib/utils';
 import { useAtlasData } from '../../context/atlas-data-context';
+import { mergeFiberGalleryWithFallback, type FiberProfile } from '../../data/atlas-data';
+import type { GalleryImageEntry } from '../../data/fibers';
 import { dataSource } from '../../data/data-provider';
 import { atlasNavigation as runtimeAtlasNavigation, type NavNode } from '../../data/admin/atlas-navigation';
 import { buildNodeDraftProfiles, flattenNavigationNodes } from '../../data/admin/node-draft-profiles';
@@ -69,7 +73,9 @@ import {
   getPreviewSizes,
 } from "./image-preview-utils";
 import { ProfileStatusCircle } from "./ProfileStatusCircle";
+import { PreviewFocalEditor } from "./PreviewFocalEditor";
 import { SEEDED_TAG_PATHS } from "./image-tag-paths";
+import { clamp01, previewFocalToObjectPosition, type PreviewFocalPoint } from "../../utils/preview-focal";
 
 // ── Constants ────────────────────────────────────────────
 
@@ -77,6 +83,8 @@ const SEARCH_DEBOUNCE_MS = 150;
 const ZOOM_DEFAULT = 120;
 const INTERNAL_IMAGE_REORDER_MIME = 'application/x-atlas-image-reorder';
 const PRIORITY_PREVIEW_COUNT = 4;
+/** First N atlas images can store a custom grid preview focal point. */
+const PREVIEW_FOCAL_SLOT_COUNT = 3;
 const NAV_PARENT_IMAGES_KEY = "atlas:nav-parent-images";
 
 type UploadTaskSource =
@@ -210,6 +218,141 @@ function urlsEqual(a: string[], b: string[]): boolean {
   return true;
 }
 
+function galleryRowToImageEntry(e: GalleryImageEntry): ImageEntry {
+  const u = typeof e.url === "string" ? e.url.trim() : "";
+  if (!u) return "";
+  if (e.previewFocal && Number.isFinite(e.previewFocal.x) && Number.isFinite(e.previewFocal.y)) {
+    return { url: u, previewFocal: { x: clamp01(e.previewFocal.x), y: clamp01(e.previewFocal.y) } };
+  }
+  return u;
+}
+
+function coerceImageMapValue(entries: ImageEntry[]): ImageEntry | ImageEntry[] {
+  const clean = entries.filter((e) => extractImageUrl(e).trim().length > 0);
+  if (clean.length === 0) return [];
+  if (clean.length === 1) return clean[0];
+  return clean;
+}
+
+function gallerySyncSignature(value: ImageEntry | ImageEntry[] | undefined): string {
+  if (value === undefined) return "[]";
+  const arr = toEntryArray(value);
+  return JSON.stringify(
+    arr.map((e) => {
+      const u = extractImageUrl(e).trim();
+      if (typeof e === "string") return { u, f: null as null | { x: number; y: number } };
+      const p = (e as { previewFocal?: PreviewFocalPoint }).previewFocal;
+      const f =
+        p && Number.isFinite(p.x) && Number.isFinite(p.y)
+          ? { x: Math.round(clamp01(p.x) * 10000) / 10000, y: Math.round(clamp01(p.y) * 10000) / 10000 }
+          : null;
+      return { u, f };
+    }),
+  );
+}
+
+function imageMapsEqualForSync(a: ImageMap, b: ImageMap): boolean {
+  const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
+  for (const k of keys) {
+    if (gallerySyncSignature(a[k]) !== gallerySyncSignature(b[k])) return false;
+  }
+  return true;
+}
+
+function imageEntryToGalleryImageEntry(e: ImageEntry): GalleryImageEntry {
+  const url = extractImageUrl(e).trim();
+  const base: GalleryImageEntry = { url };
+  if (typeof e !== "string" && e && typeof e === "object" && "previewFocal" in e) {
+    const p = (e as { previewFocal?: PreviewFocalPoint }).previewFocal;
+    if (p && Number.isFinite(p.x) && Number.isFinite(p.y)) {
+      base.previewFocal = { x: clamp01(p.x), y: clamp01(p.y) };
+    }
+  }
+  return base;
+}
+
+function resolveImageEntries(
+  source: ImageMap,
+  key: string,
+  getFiberById: (id: string) => Pick<FiberProfile, "id" | "galleryImages"> | undefined,
+): ImageEntry[] {
+  const raw = source[key];
+  if (raw !== undefined) {
+    const arr = toEntryArray(raw);
+    if (!arr.some((e) => extractImageUrl(e).trim().length > 0)) {
+      return [];
+    }
+    return arr;
+  }
+  const fiber = getFiberById(key);
+  if (fiber && Array.isArray(fiber.galleryImages)) {
+    return mergeFiberGalleryWithFallback(key, fiber as FiberProfile).map(galleryRowToImageEntry);
+  }
+  return [];
+}
+
+/** Treat Shopify-style `file_600x.jpg` and `file.jpg` as one asset for dedupe / subset checks. */
+function galleryUrlDedupeKey(url: string): string {
+  const t = url.trim();
+  try {
+    const u = new URL(t);
+    const path = u.pathname.replace(/_600x(\.(?:jpg|jpeg|png|webp|gif))$/i, "$1");
+    return `${u.origin}${path}`;
+  } catch {
+    return t;
+  }
+}
+
+function dedupeImageEntriesPreserveOrder(entries: ImageEntry[]): ImageEntry[] {
+  const seen = new Set<string>();
+  const out: ImageEntry[] = [];
+  for (const e of entries) {
+    const u = extractImageUrl(e).trim();
+    if (!u) continue;
+    const k = galleryUrlDedupeKey(u);
+    if (seen.has(k)) continue;
+    seen.add(k);
+    out.push(e);
+  }
+  return out;
+}
+
+/**
+ * Resolve the gallery row Image Base should show / mutate for `key`.
+ * When the sidebar selection matches `key`, use merged fiber+catalog data only if local
+ * `atlas-images` is empty or clearly stale; otherwise trust local rows so deletes persist.
+ */
+export function resolveDisplayImageEntriesForKey(
+  source: ImageMap,
+  key: string,
+  activeNodeId: string | null,
+  getFiberById: (id: string) => Pick<FiberProfile, "id" | "galleryImages" | "image"> | undefined,
+): ImageEntry[] {
+  const raw = source[key];
+  if (raw !== undefined && !toEntryArray(raw).some((e) => extractImageUrl(e).trim().length > 0)) {
+    return [];
+  }
+  if (activeNodeId === key && isGalleryBackedFiberProfile(getFiberById(key))) {
+    const fiber = getFiberById(key)!;
+    const merged = mergeFiberGalleryWithFallback(key, fiber as FiberProfile)
+      .map(galleryRowToImageEntry)
+      .filter((e) => extractImageUrl(e).trim().length > 0);
+    const mergedUrls = merged.map((e) => extractImageUrl(e).trim());
+    const localEntries =
+      raw !== undefined
+        ? toEntryArray(raw).filter((e) => extractImageUrl(e).trim().length > 0)
+        : [];
+    const localUrls = localEntries.map((e) => extractImageUrl(e).trim());
+    if (merged.length === 0) return dedupeImageEntriesPreserveOrder(localEntries);
+    if (localUrls.length === 0) return dedupeImageEntriesPreserveOrder(merged);
+    if (shouldPreferLocalFiberImageRow(localUrls, mergedUrls)) {
+      return dedupeImageEntriesPreserveOrder(localEntries);
+    }
+    return dedupeImageEntriesPreserveOrder(merged);
+  }
+  return dedupeImageEntriesPreserveOrder(resolveImageEntries(source, key, getFiberById));
+}
+
 function getFiberImageUrls(fiber: { galleryImages?: Array<{ url?: string }>; image?: string }): string[] {
   const fromGallery = (fiber.galleryImages ?? [])
     .map((entry) => (typeof entry?.url === 'string' ? entry.url.trim() : ''))
@@ -221,13 +364,45 @@ function getFiberImageUrls(fiber: { galleryImages?: Array<{ url?: string }>; ima
 }
 
 function buildImageMapFromFibers(
-  fibers: Array<{ id: string; galleryImages?: Array<{ url?: string }>; image?: string }>
+  profiles: Array<{ id: string; galleryImages?: Array<{ url?: string }>; image?: string }>,
+  getFiberById?: (id: string) => Pick<FiberProfile, "id" | "galleryImages" | "image"> | undefined,
 ): ImageMap {
   const next: ImageMap = {};
-  fibers.forEach((fiber) => {
-    const urls = getFiberImageUrls(fiber);
-    next[fiber.id] = urls;
-  });
+  for (const fp of profiles) {
+    const full = getFiberById?.(fp.id);
+    if (
+      full &&
+      Object.hasOwn(full, "galleryImages") &&
+      Array.isArray(full.galleryImages)
+    ) {
+      const mergedEntries = mergeFiberGalleryWithFallback(fp.id, full as FiberProfile)
+        .map(galleryRowToImageEntry)
+        .filter((e) => extractImageUrl(e).trim().length > 0);
+      next[fp.id] = coerceImageMapValue(mergedEntries);
+      continue;
+    }
+    next[fp.id] = getFiberImageUrls(fp);
+  }
+  return next;
+}
+
+/** Catalog fibers (e.g. raffia) may be missing from the nav tree; still expose merged galleries in Imagebase. */
+function augmentAtlasImageMapWithCatalogFibers(
+  navMap: ImageMap,
+  catalogFibers: Array<Pick<FiberProfile, "id" | "galleryImages" | "image">>,
+): ImageMap {
+  const next: ImageMap = { ...navMap };
+  for (const f of catalogFibers) {
+    if (Object.prototype.hasOwnProperty.call(next, f.id)) continue;
+    if (Object.hasOwn(f, "galleryImages") && Array.isArray(f.galleryImages)) {
+      const mergedEntries = mergeFiberGalleryWithFallback(f.id, f as FiberProfile)
+        .map(galleryRowToImageEntry)
+        .filter((e) => extractImageUrl(e).trim().length > 0);
+      next[f.id] = coerceImageMapValue(mergedEntries);
+    } else {
+      next[f.id] = getFiberImageUrls(f);
+    }
+  }
   return next;
 }
 
@@ -262,6 +437,32 @@ function writeNavigationParentImagesToStorage(map: Record<string, string[]>): vo
   localStorage.setItem(NAV_PARENT_IMAGES_KEY, JSON.stringify(normalized));
 }
 
+function isGalleryBackedFiberProfile(
+  fiber: { id: string } | undefined,
+): fiber is Pick<FiberProfile, 'id' | 'galleryImages' | 'image'> {
+  return (
+    !!fiber &&
+    Object.hasOwn(fiber, 'galleryImages') &&
+    Array.isArray((fiber as { galleryImages?: unknown }).galleryImages)
+  );
+}
+
+/**
+ * Whether to keep a catalog fiber's `atlas-images` row over recomputed `atlasMap`.
+ * Uses `galleryUrlDedupeKey` so `_600x.jpg` vs `.jpg` variants count as the same asset.
+ */
+function shouldPreferLocalFiberImageRow(previousUrls: string[], canonicalUrls: string[]): boolean {
+  if (previousUrls.length === 0) return false;
+  const trimmedPrev = previousUrls.map((u) => u.trim()).filter((u) => u.length > 0);
+  const canonKeySet = new Set(
+    canonicalUrls.map((u) => u.trim()).filter((u) => u.length > 0).map(galleryUrlDedupeKey),
+  );
+  if (canonKeySet.size === 0) return true;
+  const allPrevAreOrphans = trimmedPrev.every((u) => !canonKeySet.has(galleryUrlDedupeKey(u)));
+  if (allPrevAreOrphans) return false;
+  return true;
+}
+
 function mergeAtlasImagesWithNavigationOverrides(
   atlasMap: ImageMap,
   previousMap: ImageMap,
@@ -269,29 +470,31 @@ function mergeAtlasImagesWithNavigationOverrides(
   getFiberById: (id: string) => { id: string } | undefined,
 ): ImageMap {
   const merged: ImageMap = { ...atlasMap };
+
+  Object.keys(previousMap).forEach((id) => {
+    if (!isGalleryBackedFiberProfile(getFiberById(id))) return;
+    const canonicalUrls = toUrlArray(atlasMap[id]);
+    const previousUrls = toUrlArray(previousMap[id]);
+    if (previousUrls.length === 0) {
+      // Explicit empty row (e.g. user removed last image): keep it so atlas re-merge
+      // cannot resurrect the gallery before fiber sync catches up.
+      merged[id] = previousMap[id];
+      return;
+    }
+    if (shouldPreferLocalFiberImageRow(previousUrls, canonicalUrls)) {
+      merged[id] = previousMap[id];
+    }
+  });
+
+  // Nav-only nodes (no catalog fiber): keep explicit admin overrides from previousMap.
   Object.keys(previousMap).forEach((id) => {
     if (!editableNavigationNodeIdSet.has(id)) return;
     if (getFiberById(id)) return;
     const previousUrls = toUrlArray(previousMap[id]);
-    // Keep explicit admin overrides, but allow empty stale caches to self-heal from atlasMap.
     if (previousUrls.length === 0) return;
     merged[id] = previousUrls;
   });
   return merged;
-}
-
-function imageMapsEqualByUrls(a: ImageMap, b: ImageMap): boolean {
-  const aKeys = Object.keys(a);
-  const bKeys = Object.keys(b);
-  if (aKeys.length !== bKeys.length) return false;
-
-  const keySet = new Set([...aKeys, ...bKeys]);
-  for (const key of keySet) {
-    if (!urlsEqual(toUrlArray(a[key]), toUrlArray(b[key]))) {
-      return false;
-    }
-  }
-  return true;
 }
 
 function isLikelyImageUrl(url: string): boolean {
@@ -340,6 +543,15 @@ function createUploadTaskId(): string {
 function isInternalImageReorderDrag(dataTransfer: DataTransfer): boolean {
   if (typeof dataTransfer.getData !== 'function') return false;
   return dataTransfer.getData(INTERNAL_IMAGE_REORDER_MIME) === '1';
+}
+
+/** Stable across reorder when URLs are unique; disambiguates duplicate URLs in one profile. */
+function stableImageGridItemKey(urls: string[], index: number): string {
+  const url = urls[index];
+  if (!url) return `missing-${index}`;
+  if (urls.filter((u) => u === url).length === 1) return url;
+  const occurrence = urls.slice(0, index).filter((u) => u === url).length;
+  return `${url}#${occurrence}`;
 }
 
 function collectDescendantNodeIds(nodes: NavNode[], rootId: string): Set<string> {
@@ -463,6 +675,7 @@ const FrameIcon = ({ className = 'w-4 h-4', style }: { className?: string; style
 const Maximize2Icon = I('M4 4h6v6H4V4zm10 10h6v6h-6v-6zM4 14h6v6H4v-6zm10-10h6v6h-6V4z', 2);
 const CompressIcon = I('M4 8v-2a2 2 0 012-2h2M4 16v2a2 2 0 002 2h2M20 8v-2a2 2 0 00-2-2h-2M20 16v2a2 2 0 01-2 2h-2', 2);
 const ArrowUpDownIcon = I('M7 16V4m0 0L3 8m4-4l4 4m6 0v12m0 0l4-4m-4 4l-4-4', 2);
+const CropMenuIcon = I('M6 2v4m0 0H2m4 0h10a2 2 0 012 2v10m0 0v4m0-4h4M6 6v10a2 2 0 002 2h10');
 
 const ImageScoutPanel = React.lazy(() => import('./ImageScoutPanel'));
 
@@ -483,6 +696,7 @@ function LazyImage({
   loading = "lazy",
   fetchPriority = "auto",
   decoding = "async",
+  objectPosition,
 }: {
   src: string;
   alt: string;
@@ -493,6 +707,7 @@ function LazyImage({
   loading?: "eager" | "lazy";
   fetchPriority?: "high" | "low" | "auto";
   decoding?: "sync" | "async" | "auto";
+  objectPosition?: string;
 }) {
   const [loaded, setLoaded] = useState(false);
   return (
@@ -507,7 +722,11 @@ function LazyImage({
       {...({ fetchpriority: fetchPriority } as Record<string, string>)}
       onLoad={() => setLoaded(true)}
       onError={onError}
-      style={{ opacity: loaded ? 1 : 0.6, transition: 'opacity 200ms ease' }}
+      style={{
+        opacity: loaded ? 1 : 0.6,
+        transition: "opacity 200ms ease",
+        ...(objectPosition ? { objectPosition } : {}),
+      }}
     />
   );
 }
@@ -674,7 +893,8 @@ interface ProfileCardProps {
   onRemoveTag: (tag: string) => void;
   onContextMenu: (e: React.MouseEvent, url: string, idx: number) => void;
   onRename: (newKey: string) => void;
-  onPasteFromClipboard: () => void;
+  /** Return `true` when an image URL was added from the clipboard (enables success UI). */
+  onPasteFromClipboard: () => void | boolean | Promise<boolean | void>;
   onToggleStatus: () => void;
   statusSaving?: boolean;
   statusError?: string | null;
@@ -691,6 +911,8 @@ interface ProfileCardProps {
   onProfileDrop?: (e: React.DragEvent) => void;
   isProfileDragging?: boolean;
   prioritizePreview?: boolean;
+  /** First three images: set grid preview focal (object-position) for the public profile card. */
+  onSetPreviewFocal?: (imageIndex: number, focal: PreviewFocalPoint | null) => void;
 }
 
 interface TagTreeNode {
@@ -733,6 +955,7 @@ function CompactProfileTile({
   prioritizePreview = false,
 }: CompactProfileTileProps) {
   const urls = toUrlArray(value);
+  const entries = toEntryArray(value);
   const preview = urls[0];
   const previewPreset = getPreviewPreset(layoutMode);
   const previewSrc = preview ? buildPreviewImageSrc(preview, previewPreset) : undefined;
@@ -768,6 +991,11 @@ function CompactProfileTile({
               fetchPriority={prioritizePreview ? "high" : "auto"}
               alt={`${entryKey} preview`}
               className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+              objectPosition={previewFocalToObjectPosition(
+                typeof entries[0] === "object" && entries[0] && "previewFocal" in entries[0]
+                  ? (entries[0] as { previewFocal?: PreviewFocalPoint }).previewFocal
+                  : undefined,
+              )}
               onError={() => markBroken(preview)}
             />
           </button>
@@ -873,8 +1101,11 @@ export function ProfileCard({
   onProfileDrop,
   isProfileDragging,
   prioritizePreview = false,
+  onSetPreviewFocal,
 }: ProfileCardProps) {
   const urls = toUrlArray(value);
+  const entries = toEntryArray(value);
+  const [focalModalIndex, setFocalModalIndex] = useState<number | null>(null);
   const isCompactLayout = layoutMode !== 'list';
   const isGridLayout = layoutMode === 'grid';
   const isLive = isProfileLive(status);
@@ -889,12 +1120,25 @@ export function ProfileCard({
   const [showTagNavigator, setShowTagNavigator] = useState(false);
   const [activeTagSegments, setActiveTagSegments] = useState<string[]>([]);
   const [tagOverlayRect, setTagOverlayRect] = useState<{ top: number; left: number; width: number } | null>(null);
+  const [pasteSuccess, setPasteSuccess] = useState(false);
   const tagNavigatorRef = useRef<HTMLDivElement>(null);
   const tagOverlayRef = useRef<HTMLDivElement>(null);
+  const pasteSuccessClearRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const imgCount = urls.length;
   const expandedPreviewPreset = getPreviewPreset("list");
   const expandedPreviewSizes = getPreviewSizes("list", zoom);
+
+  const objectPositionForEntryIndex = (idx: number): string | undefined => {
+    const e = entries[idx];
+    if (typeof e === "object" && e && "previewFocal" in e) {
+      return previewFocalToObjectPosition((e as { previewFocal?: PreviewFocalPoint }).previewFocal);
+    }
+    return undefined;
+  };
+
   const onDragStart = (idx: number, event: React.DragEvent) => {
+    // Keep dragstart from bubbling to the profile card (also draggable for atlas reorder).
+    event.stopPropagation();
     if (event.dataTransfer && typeof event.dataTransfer.setData === 'function') {
       event.dataTransfer.setData(INTERNAL_IMAGE_REORDER_MIME, '1');
     }
@@ -1017,6 +1261,12 @@ export function ProfileCard({
     };
   }, [showTagNavigator]);
 
+  useEffect(() => {
+    return () => {
+      if (pasteSuccessClearRef.current) clearTimeout(pasteSuccessClearRef.current);
+    };
+  }, []);
+
   return (
     <div
       className={`group relative rounded-xl overflow-hidden transition-all ${
@@ -1120,19 +1370,6 @@ export function ProfileCard({
                 <Maximize2Icon className="w-4 h-4" />
               </button>
 
-              {/* Paste from clipboard */}
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onPasteFromClipboard();
-                }}
-                className="w-7 h-7 flex items-center justify-center text-neutral-300 hover:text-white transition-colors duration-150"
-                title="Paste image from clipboard"
-                aria-label="Paste image from clipboard"
-              >
-                <FrameIcon className="w-4 h-4 text-white" />
-              </button>
-
               {/* Draft/Live status */}
               <ProfileStatusCircle
                 status={status}
@@ -1175,6 +1412,7 @@ export function ProfileCard({
                 fetchPriority={prioritizePreview ? "high" : "auto"}
                 alt={`${entryKey} preview`}
                 className="w-full h-full object-cover"
+                objectPosition={objectPositionForEntryIndex(0)}
                 onError={() => markBroken(urls[0])}
               />
             ) : (
@@ -1211,7 +1449,7 @@ export function ProfileCard({
           >
             {urls.map((url, i) => (
               <div
-                key={`${url}-${i}`}
+                key={stableImageGridItemKey(urls, i)}
                 draggable
                 onDragStart={(e) => onDragStart(i, e)}
                 onDragOver={onDragOver}
@@ -1226,8 +1464,24 @@ export function ProfileCard({
                   sizes={expandedPreviewSizes}
                   alt={`${entryKey} ${i + 1}`}
                   className="w-full h-full object-cover"
+                  objectPosition={objectPositionForEntryIndex(i)}
                   onError={() => markBroken(url)}
                 />
+
+                {onSetPreviewFocal && i < PREVIEW_FOCAL_SLOT_COUNT ? (
+                  <button
+                    type="button"
+                    title="Set grid preview focal"
+                    aria-label={`Set focal point for preview image ${i + 1}`}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setFocalModalIndex(i);
+                    }}
+                    className="absolute bottom-1 left-1 flex h-7 w-7 items-center justify-center rounded-md border border-white/15 bg-black/55 text-neutral-200 opacity-0 backdrop-blur-sm transition-opacity hover:bg-black/70 hover:text-white group-hover/image:opacity-100"
+                  >
+                    <Crosshair className="h-3.5 w-3.5" />
+                  </button>
+                ) : null}
 
                 {/* Index number on hover */}
                 <div className="absolute top-1 right-1 p-0.5 opacity-0 group-hover/image:opacity-100 transition-opacity">
@@ -1413,6 +1667,68 @@ export function ProfileCard({
             document.body
           )
         : null}
+      {focalModalIndex !== null &&
+      onSetPreviewFocal &&
+      focalModalIndex >= 0 &&
+      focalModalIndex < urls.length &&
+      focalModalIndex < PREVIEW_FOCAL_SLOT_COUNT &&
+      typeof document !== "undefined"
+        ? createPortal(
+            <PreviewFocalEditor
+              imageSrc={
+                buildPreviewImageSrc(urls[focalModalIndex], expandedPreviewPreset) ||
+                urls[focalModalIndex]
+              }
+              initialFocal={(() => {
+                const rawEntry = entries[focalModalIndex];
+                const pf =
+                  rawEntry && typeof rawEntry === "object" && "previewFocal" in rawEntry
+                    ? (rawEntry as { previewFocal?: PreviewFocalPoint }).previewFocal
+                    : undefined;
+                if (pf && Number.isFinite(pf.x) && Number.isFinite(pf.y)) {
+                  return { x: clamp01(pf.x), y: clamp01(pf.y) };
+                }
+                return { x: 0.5, y: 0.5 };
+              })()}
+              onSave={(focal) => {
+                onSetPreviewFocal(focalModalIndex, focal);
+                setFocalModalIndex(null);
+              }}
+              onRemoveCustom={() => onSetPreviewFocal(focalModalIndex, null)}
+              onClose={() => setFocalModalIndex(null)}
+            />,
+            document.body,
+          )
+        : null}
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          void (async () => {
+            const ok = await Promise.resolve(onPasteFromClipboard());
+            if (ok === true) {
+              if (pasteSuccessClearRef.current) clearTimeout(pasteSuccessClearRef.current);
+              setPasteSuccess(true);
+              pasteSuccessClearRef.current = setTimeout(() => {
+                setPasteSuccess(false);
+                pasteSuccessClearRef.current = null;
+              }, 1200);
+            }
+          })();
+        }}
+        className="absolute bottom-2 right-2 z-20 flex h-11 w-11 origin-center items-center justify-center text-neutral-300 transition-[color,transform] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] hover:scale-110 hover:text-white"
+        title="Paste image from clipboard"
+        aria-label="Paste image from clipboard"
+      >
+        <FrameIcon
+          className={cn(
+            "h-6 w-6 shrink-0 transition-[color,filter] duration-500 ease-[cubic-bezier(0.22,1,0.36,1)]",
+            pasteSuccess
+              ? "text-emerald-400 drop-shadow-[0_0_12px_rgba(52,211,153,0.5)]"
+              : "text-white",
+          )}
+        />
+      </button>
     </div>
   );
 }
@@ -1442,7 +1758,7 @@ export default function ImageDatabaseManager({
   onNavigateToKnowledge,
 }: ImageDatabaseManagerProps) {
   const { settings } = useAdminSettings();
-  const { fibers, getFiberById, updateFiber } = useAtlasData();
+  const { fibers, getFiberById, updateFiber, version } = useAtlasData();
   useAdminSave();
   const cloudinaryReady = !!settings.cloudinary.cloudName && !!settings.cloudinary.uploadPreset;
   const editableNavigationNodeIds = useMemo(
@@ -1488,23 +1804,60 @@ export default function ImageDatabaseManager({
   const hasHydratedFiberSyncRef = useRef(false);
   const hydratingFromAtlasRef = useRef(false);
   const previousImagesRef = useRef<ImageMap>(images);
-  const atlasImageMap = useMemo(() => buildImageMapFromFibers(imageBaseProfiles), [imageBaseProfiles]);
+  const atlasImageMap = useMemo(() => {
+    const fromNav = buildImageMapFromFibers(imageBaseProfiles, getFiberById);
+    return augmentAtlasImageMapWithCatalogFibers(fromNav, fibers);
+  }, [imageBaseProfiles, getFiberById, version, fibers]);
 
-  useEffect(() => { localStorage.setItem('atlas-images', JSON.stringify(images)); }, [images]);
+  /* Persist before paint so a fast tab close is less likely to skip the write. */
+  useLayoutEffect(() => {
+    try {
+      localStorage.setItem('atlas-images', JSON.stringify(images));
+    } catch {
+      /* quota / private mode */
+    }
+  }, [images]);
+
+  const diskSyncTimerRef = useRef<ReturnType<typeof window.setTimeout> | null>(null);
+  const imagesForDiskSyncRef = useRef(images);
+  imagesForDiskSyncRef.current = images;
+
+  const flushImageCatalogDiskSync = useCallback(() => {
+    if (!import.meta.env.DEV || import.meta.env.MODE === 'test') return;
+    void syncImageCatalogToDisk(imagesForDiskSyncRef.current).then((r) => {
+      if (!r.ok) console.warn('[image-catalog:disk]', r.error);
+    });
+  }, []);
 
   useEffect(() => {
-    setImages((prev) => {
-      const mergedAtlasMap = mergeAtlasImagesWithNavigationOverrides(
-        atlasImageMap,
-        prev,
-        editableNavigationNodeIdSet,
-        getFiberById,
-      );
-      if (imageMapsEqualByUrls(prev, mergedAtlasMap)) return prev;
-      hydratingFromAtlasRef.current = true;
-      return mergedAtlasMap;
-    });
-  }, [atlasImageMap, editableNavigationNodeIdSet, getFiberById, setImages]);
+    if (!import.meta.env.DEV || import.meta.env.MODE === 'test') return;
+    if (diskSyncTimerRef.current !== null) {
+      window.clearTimeout(diskSyncTimerRef.current);
+    }
+    diskSyncTimerRef.current = window.setTimeout(() => {
+      diskSyncTimerRef.current = null;
+      flushImageCatalogDiskSync();
+    }, 2000);
+    return () => {
+      if (diskSyncTimerRef.current !== null) {
+        window.clearTimeout(diskSyncTimerRef.current);
+        diskSyncTimerRef.current = null;
+      }
+    };
+  }, [images, flushImageCatalogDiskSync]);
+
+  useEffect(() => {
+    if (!import.meta.env.DEV || import.meta.env.MODE === 'test') return;
+    const onPageHide = () => {
+      if (diskSyncTimerRef.current !== null) {
+        window.clearTimeout(diskSyncTimerRef.current);
+        diskSyncTimerRef.current = null;
+      }
+      flushImageCatalogDiskSync();
+    };
+    window.addEventListener('pagehide', onPageHide);
+    return () => window.removeEventListener('pagehide', onPageHide);
+  }, [flushImageCatalogDiskSync]);
 
   useEffect(() => {
     if (!hasHydratedFiberSyncRef.current) {
@@ -1521,22 +1874,53 @@ export default function ImageDatabaseManager({
 
     const previousImages = previousImagesRef.current;
     const keys = new Set([...Object.keys(previousImages), ...Object.keys(images)]);
+    let pushedGalleryOverride = false;
 
     keys.forEach((profileKey) => {
-      const previousUrls = toUrlArray(previousImages[profileKey]);
-      const nextUrls = toUrlArray(images[profileKey]);
-      if (urlsEqual(previousUrls, nextUrls)) return;
+      if (gallerySyncSignature(previousImages[profileKey]) === gallerySyncSignature(images[profileKey])) {
+        return;
+      }
 
       if (!getFiberById(profileKey)) return;
 
+      const nextEntries = toEntryArray(images[profileKey]);
+      const galleryImages = nextEntries.map(imageEntryToGalleryImageEntry).filter((g) => g.url.length > 0);
+      const image = galleryImages[0]?.url ?? "";
+
       updateFiber(profileKey, {
-        galleryImages: nextUrls.map((url) => ({ url })),
-        image: nextUrls[0] ?? '',
+        galleryImages,
+        image,
       });
+      pushedGalleryOverride = true;
     });
 
     previousImagesRef.current = images;
+
+    if (
+      pushedGalleryOverride &&
+      import.meta.env.DEV &&
+      import.meta.env.MODE !== "test" &&
+      typeof window !== "undefined"
+    ) {
+      queueMicrotask(() => {
+        window.dispatchEvent(new Event("atlas:flush-promoted-sync"));
+      });
+    }
   }, [getFiberById, images, updateFiber]);
+
+  useEffect(() => {
+    setImages((prev) => {
+      const mergedAtlasMap = mergeAtlasImagesWithNavigationOverrides(
+        atlasImageMap,
+        prev,
+        editableNavigationNodeIdSet,
+        getFiberById,
+      );
+      if (imageMapsEqualForSync(prev, mergedAtlasMap)) return prev;
+      hydratingFromAtlasRef.current = true;
+      return mergedAtlasMap;
+    });
+  }, [atlasImageMap, editableNavigationNodeIdSet, getFiberById, setImages]);
 
   useEffect(() => {
     const overrides: Record<string, string[]> = {};
@@ -1590,12 +1974,12 @@ export default function ImageDatabaseManager({
   const [zoom, setZoom] = useState(ZOOM_DEFAULT);
   const [flashMsg, setFlashMsg] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<LightboxData | null>(null);
-  const [showImport, setShowImport] = useState(false);
   const [showScout, setShowScout] = useState<{ profileKey: string; initialQuery?: string } | null>(null);
   const [showStoryboard, setShowStoryboard] = useState<{ entryKey: string; urls: string[] } | null>(null);
   const [showLinks, setShowLinks] = useState<{ entryKey: string; urls: string[] } | null>(null);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number; profileKey: string; imageUrl: string; index: number } | null>(null);
   const contextMenuRef = useRef<HTMLDivElement | null>(null);
+  const lightboxStartCropRef = useRef<(() => void) | null>(null);
   const profileItemRefs = useRef<Record<string, HTMLDivElement | null>>({});
   const canonicalProfileOrder = useMemo(() => {
     const allIds = imageBaseProfiles.map((fiber) => fiber.id);
@@ -1662,21 +2046,17 @@ export default function ImageDatabaseManager({
     return ids.size > 0 ? ids : null;
   }, [activeNodeId]);
 
-  // When a sidebar-selected profile (archived/draft) is not in the normal ImageBase set,
-  // merge it in temporarily so it displays when clicked.
-  // When activeNodeId is set, prefer canonical fiber data for that profile so the
-  // storyboard/lightbox get the full image set (avoids stale single-image from localStorage).
+  // Align display with remove/reorder/add: `resolveDisplayImageEntriesForKey` so the active
+  // profile does not ignore `atlas-images` edits (merged-only display resurrected duplicates).
   const displayImages = useMemo(() => {
-    const base = { ...images };
-    if (activeNodeId && getFiberById(activeNodeId)) {
-      const fiber = getFiberById(activeNodeId);
-      if (fiber) {
-        const canonicalUrls = getFiberImageUrls(fiber);
-        base[activeNodeId] =
-          canonicalUrls.length > 0 ? canonicalUrls : toUrlArray(base[activeNodeId]);
-      }
+    const keys = new Set<string>(Object.keys(images));
+    if (activeNodeId) keys.add(activeNodeId);
+    const out: ImageMap = {};
+    for (const k of keys) {
+      const entries = resolveDisplayImageEntriesForKey(images, k, activeNodeId, getFiberById);
+      out[k] = coerceImageMapValue(entries);
     }
-    return base;
+    return out;
   }, [images, activeNodeId, getFiberById]);
 
   // Filtered keys with node scope + search + atlas order
@@ -1833,21 +2213,21 @@ export default function ImageDatabaseManager({
 
   const resolveProfileUrls = useCallback(
     (source: ImageMap, key: string): string[] => {
-      const fromMap = toUrlArray(source[key]);
-      if (fromMap.length > 0) return fromMap;
-      const fallbackFiber = getFiberById(key);
-      return fallbackFiber ? getFiberImageUrls(fallbackFiber) : [];
+      return resolveDisplayImageEntriesForKey(source, key, activeNodeId, getFiberById)
+        .map((e) => extractImageUrl(e).trim())
+        .filter((u) => u.length > 0);
     },
-    [getFiberById]
+    [getFiberById, activeNodeId],
   );
 
   const addImage = useCallback(
     (key: string, url: string) => {
       setImages((prev) => {
-        const baseUrls = resolveProfileUrls(prev, key);
-        if (baseUrls.includes(url)) return prev;
-        const nextUrls = [...baseUrls, url];
-        return { ...prev, [key]: nextUrls.length === 1 ? nextUrls[0] : nextUrls };
+        const entries = [...resolveDisplayImageEntriesForKey(prev, key, activeNodeId, getFiberById)];
+        const urls = entries.map((e) => extractImageUrl(e).trim());
+        if (urls.includes(url.trim())) return prev;
+        const nextEntries = [...entries, url.trim()];
+        return { ...prev, [key]: coerceImageMapValue(nextEntries) };
       });
       flash(`Added image to ${key}`);
       logActivity({
@@ -1859,18 +2239,21 @@ export default function ImageDatabaseManager({
         detail: { url },
       });
     },
-    [setImages, flash, resolveProfileUrls]
+    [setImages, flash, activeNodeId, getFiberById]
   );
 
   const removeImage = useCallback(
     (key: string, idx: number) => {
       setImages((prev) => {
-        const arr = resolveProfileUrls(prev, key);
-        if (arr.length === 0 || idx < 0 || idx >= arr.length) return prev;
-        const updated = arr.length <= 1 ? undefined : arr.filter((_, i) => i !== idx);
+        const entries = [...resolveDisplayImageEntriesForKey(prev, key, activeNodeId, getFiberById)];
+        if (entries.length === 0 || idx < 0 || idx >= entries.length) return prev;
+        const updated = entries.length <= 1 ? undefined : entries.filter((_, i) => i !== idx);
         const next = { ...prev };
-        if (updated === undefined) delete next[key];
-        else next[key] = updated.length === 1 ? updated[0] : updated;
+        if (updated === undefined) {
+          next[key] = [];
+        } else {
+          next[key] = coerceImageMapValue(updated);
+        }
         return next;
       });
       flash(`Removed image from ${key}`);
@@ -1883,13 +2266,13 @@ export default function ImageDatabaseManager({
         detail: { index: idx },
       });
     },
-    [setImages, flash, resolveProfileUrls]
+    [setImages, flash, getFiberById, activeNodeId]
   );
 
   const reorderImages = useCallback(
     (key: string, from: number, to: number) => {
       setImages((prev) => {
-        const arr = [...resolveProfileUrls(prev, key)];
+        const arr = [...resolveDisplayImageEntriesForKey(prev, key, activeNodeId, getFiberById)];
         if (
           arr.length === 0 ||
           from < 0 ||
@@ -1902,23 +2285,24 @@ export default function ImageDatabaseManager({
         }
         const [moved] = arr.splice(from, 1);
         arr.splice(to, 0, moved);
-        return { ...prev, [key]: arr.length === 1 ? arr[0] : arr };
+        return { ...prev, [key]: coerceImageMapValue(arr) };
       });
     },
-    [setImages, resolveProfileUrls]
+    [setImages, getFiberById, activeNodeId]
   );
 
   const cropImage = useCallback(
     (key: string, idx: number, url: string) => {
       setImages((prev) => {
-        const arr = resolveProfileUrls(prev, key);
+        const arr = [...resolveDisplayImageEntriesForKey(prev, key, activeNodeId, getFiberById)];
         if (arr.length === 0 || idx < 0 || idx >= arr.length) return prev;
-        const updated = arr.map((u, i) => (i === idx ? url : u));
-        return { ...prev, [key]: updated.length === 1 ? updated[0] : updated };
+        const trimmed = url.trim();
+        const updated = arr.map((e, i) => (i === idx ? trimmed : e));
+        return { ...prev, [key]: coerceImageMapValue(updated) };
       });
       flash(`Cropped image ${idx + 1} in ${key}`);
     },
-    [setImages, flash, resolveProfileUrls]
+    [setImages, flash, getFiberById, activeNodeId]
   );
 
   const getTags = useCallback((key: string) => tags[key] || [], [tags]);
@@ -2022,30 +2406,6 @@ export default function ImageDatabaseManager({
       detail: { url },
     });
   }, []);
-
-  const exportProfileImageLinks = useCallback(() => {
-    try {
-      const payload = buildProfileImageLinksExport(images);
-      const json = JSON.stringify(payload, null, 2);
-      const blob = new Blob([json], { type: 'application/json' });
-      const blobUrl = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = blobUrl;
-      link.download = `atlas-profile-image-links-${new Date().toISOString().slice(0, 10)}.json`;
-      link.click();
-      URL.revokeObjectURL(blobUrl);
-      flash(`Exported ${payload.imageLinkCount} image links from ${payload.profileCount} profiles`);
-      logActivity({
-        tab: 'images',
-        action: 'export',
-        entityType: 'settings',
-        entityId: 'profile-image-links',
-        summary: `Exported profile image links JSON (${payload.profileCount} profiles)`,
-      });
-    } catch {
-      flash('Export failed. Try again.');
-    }
-  }, [images, flash]);
 
   // Profile drag-and-drop reordering (syncs with Atlas order)
   const handleProfileDragStart = useCallback((key: string) => {
@@ -2159,11 +2519,11 @@ export default function ImageDatabaseManager({
 
     if (uploaded.length > 0) {
       setImages((prev) => {
-        const existing = toUrlArray(prev[profileKey]);
+        const existing = resolveProfileUrls(prev, profileKey);
         const deduped = uploaded.filter((url) => !existing.includes(url));
         if (deduped.length === 0) return prev;
-        const next = [...existing, ...deduped];
-        return { ...prev, [profileKey]: next.length === 1 ? next[0] : next };
+        const entries = [...resolveDisplayImageEntriesForKey(prev, profileKey, activeNodeId, getFiberById), ...deduped];
+        return { ...prev, [profileKey]: coerceImageMapValue(entries) };
       });
     }
 
@@ -2176,7 +2536,7 @@ export default function ImageDatabaseManager({
     }
 
     return true;
-  }, [cloudinaryReady, flash, runProfileUploadTask, setImages]);
+  }, [cloudinaryReady, flash, runProfileUploadTask, setImages, getFiberById, resolveProfileUrls, activeNodeId]);
 
   const retryProfileUploadTask = useCallback(async (taskId: string) => {
     const task = profileUploadQueue.find((entry) => entry.id === taskId);
@@ -2184,12 +2544,12 @@ export default function ImageDatabaseManager({
     const cloudUrl = await runProfileUploadTask(task);
     if (!cloudUrl) return;
     setImages((prev) => {
-      const existing = toUrlArray(prev[task.profileKey]);
+      const existing = resolveProfileUrls(prev, task.profileKey);
       if (existing.includes(cloudUrl)) return prev;
-      const next = [...existing, cloudUrl];
-      return { ...prev, [task.profileKey]: next.length === 1 ? next[0] : next };
+      const entries = [...resolveDisplayImageEntriesForKey(prev, task.profileKey, activeNodeId, getFiberById), cloudUrl];
+      return { ...prev, [task.profileKey]: coerceImageMapValue(entries) };
     });
-  }, [profileUploadQueue, runProfileUploadTask, setImages]);
+  }, [profileUploadQueue, runProfileUploadTask, setImages, getFiberById, resolveProfileUrls, activeNodeId]);
 
   const dismissProfileUploadTask = useCallback((taskId: string) => {
     setProfileUploadQueue((prev) => prev.filter((task) => task.id !== taskId));
@@ -2223,50 +2583,74 @@ export default function ImageDatabaseManager({
     [images, setImages, flash]
   );
 
-  const pasteFromClipboard = useCallback(async (key: string) => {
+  const pasteFromClipboard = useCallback(async (key: string): Promise<boolean> => {
     try {
       const text = await navigator.clipboard.readText();
       const url = extractFirstImageUrlFromClipboardText(text);
       if (!url) {
         flash('Clipboard does not contain a valid URL');
-        return;
+        return false;
       }
       addImage(key, url);
+      return true;
     } catch (err: any) {
       flash('Failed to read clipboard: ' + err.message);
+      return false;
     }
   }, [addImage, flash]);
 
   const promoteToHero = useCallback((key: string, idx: number) => {
     setImages((prev) => {
-      const arr = [...resolveProfileUrls(prev, key)];
+      const arr = [...resolveDisplayImageEntriesForKey(prev, key, activeNodeId, getFiberById)];
       if (arr.length === 0 || idx <= 0 || idx >= arr.length) return prev;
       const [hero] = arr.splice(idx, 1);
       arr.unshift(hero);
-      return { ...prev, [key]: arr.length === 1 ? arr[0] : arr };
+      return { ...prev, [key]: coerceImageMapValue(arr) };
     });
     flash('Image promoted to hero position');
-  }, [setImages, flash, resolveProfileUrls]);
+  }, [setImages, flash, getFiberById, activeNodeId]);
 
   const sendToFront = useCallback((key: string, idx: number) => {
     setImages((prev) => {
-      const arr = [...resolveProfileUrls(prev, key)];
+      const arr = [...resolveDisplayImageEntriesForKey(prev, key, activeNodeId, getFiberById)];
       if (arr.length === 0 || idx <= 0 || idx >= arr.length) return prev;
       const [img] = arr.splice(idx, 1);
       arr.unshift(img);
-      return { ...prev, [key]: arr.length === 1 ? arr[0] : arr };
+      return { ...prev, [key]: coerceImageMapValue(arr) };
     });
-  }, [setImages, resolveProfileUrls]);
+  }, [setImages, getFiberById, activeNodeId]);
 
   const sendToBack = useCallback((key: string, idx: number) => {
     setImages((prev) => {
-      const arr = [...resolveProfileUrls(prev, key)];
+      const arr = [...resolveDisplayImageEntriesForKey(prev, key, activeNodeId, getFiberById)];
       if (arr.length === 0 || idx < 0 || idx >= arr.length - 1) return prev;
       const [img] = arr.splice(idx, 1);
       arr.push(img);
-      return { ...prev, [key]: arr.length === 1 ? arr[0] : arr };
+      return { ...prev, [key]: coerceImageMapValue(arr) };
     });
-  }, [setImages, resolveProfileUrls]);
+  }, [setImages, getFiberById, activeNodeId]);
+
+  const setPreviewFocal = useCallback(
+    (profileKey: string, imageIndex: number, focal: PreviewFocalPoint | null) => {
+      setImages((prev) => {
+        const arr = [...resolveDisplayImageEntriesForKey(prev, profileKey, activeNodeId, getFiberById)];
+        if (
+          imageIndex < 0 ||
+          imageIndex >= arr.length ||
+          imageIndex >= PREVIEW_FOCAL_SLOT_COUNT
+        ) {
+          return prev;
+        }
+        const url = extractImageUrl(arr[imageIndex]).trim();
+        const next = [...arr];
+        next[imageIndex] = focal
+          ? { url, previewFocal: { x: clamp01(focal.x), y: clamp01(focal.y) } }
+          : url;
+        return { ...prev, [profileKey]: coerceImageMapValue(next) };
+      });
+    },
+    [getFiberById, setImages, activeNodeId],
+  );
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -2426,24 +2810,6 @@ export default function ImageDatabaseManager({
             <ZoomInIcon className="w-4 h-4" />
           </button>
         </div>
-
-        <div className="w-px h-6 bg-white/[0.08]" />
-
-        <button
-          onClick={exportProfileImageLinks}
-          className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.05] hover:bg-white/[0.1] text-white rounded-lg text-sm font-medium transition-colors border border-white/[0.06]"
-          title="Export profile image links as JSON"
-        >
-          <DownloadIcon className="w-4 h-4" /> Export JSON
-        </button>
-
-        {/* Import */}
-        <button
-          onClick={() => setShowImport(true)}
-          className="flex items-center gap-1.5 px-3 py-2 bg-white/[0.08] hover:bg-white/[0.12] text-white rounded-lg text-sm font-medium transition-colors border border-white/[0.06]"
-        >
-          <PlusIcon className="w-4 h-4" /> Import
-        </button>
       </div>
 
       {/* Bulk Operations Bar */}
@@ -2576,6 +2942,7 @@ export default function ImageDatabaseManager({
                     }}
                     isProfileDragging={draggedProfileKey === key}
                     prioritizePreview={prioritizePreview}
+                    onSetPreviewFocal={(idx, focal) => setPreviewFocal(key, idx, focal)}
                   />
                 </div>
               );
@@ -2603,6 +2970,8 @@ export default function ImageDatabaseManager({
           startIndex={lightbox.index}
           label={lightbox.label}
           entryKey={lightbox.entryKey}
+          startCropRef={lightboxStartCropRef}
+          onCropFeedback={flash}
           onCropImage={(key, idx, url) => cropImage(key, idx, url)}
           onContextMenuImage={(event, imageUrl, index) => {
             event.preventDefault();
@@ -2676,20 +3045,6 @@ export default function ImageDatabaseManager({
         </React.Suspense>
       )}
 
-      {/* Import Panel */}
-      {showImport && (
-        <ImportPanel
-          currentState={{ images, tags, era: CANONICAL_ERA, origins: CANONICAL_ORIGINS, scientific: CANONICAL_SCIENTIFIC, videos: {} }}
-          onApply={(merged) => {
-            setImages(merged.images);
-            setShowImport(false);
-            flash('Import completed');
-          }}
-          onClose={() => setShowImport(false)}
-          onFlash={flash}
-        />
-      )}
-
       {/* Right-Click Context Menu */}
       {contextMenu && (
         <div
@@ -2730,6 +3085,22 @@ export default function ImageDatabaseManager({
           >
             <DownloadIcon className="w-4 h-4 text-neutral-500" /> Download Image
           </button>
+
+          {lightbox &&
+            isCloudinaryUrl(contextMenu.imageUrl) &&
+            canApplyCloudinaryCrop(contextMenu.imageUrl) && (
+              <button
+                type="button"
+                aria-label="Crop in fullscreen"
+                onClick={() => {
+                  setContextMenu(null);
+                  lightboxStartCropRef.current?.();
+                }}
+                className="w-full text-left px-3 py-2 text-sm text-white/90 hover:bg-white/[0.08] flex items-center gap-2 transition-colors"
+              >
+                <CropMenuIcon className="w-4 h-4 text-neutral-500" /> Crop…
+              </button>
+            )}
 
           <button
             onClick={() => {

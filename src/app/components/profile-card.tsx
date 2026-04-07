@@ -3,7 +3,12 @@ import { useImagePipeline } from "../context/image-pipeline";
 import { useCrossfade } from "../hooks/use-crossfade";
 import { useHasRealHover } from "../hooks/use-has-real-hover";
 import { useImageBrightness } from "../hooks/use-image-brightness";
-import { buildProfileCardCrossfadeImages } from "../utils/profile-card-images";
+import { usePrefersReducedMotion } from "../hooks/use-prefers-reduced-motion";
+import type { GalleryImageEntry } from "../data/fibers";
+import {
+  buildProfileCardCrossfadeLayers,
+  type GalleryPreviewLine,
+} from "../utils/profile-card-images";
 import { GlassCard } from "./glass-card";
 import {
   ATLAS_GRID_CARD_NAME_FONT_SIZE,
@@ -24,13 +29,23 @@ interface ProfileCardProps {
   name: string;
   image: string;
   galleryImages?: string[];
+  /**
+   * When set (e.g. from merged fiber gallery), drives crossfade layers and optional
+   * `previewFocal` → `object-position` for grid crop. If omitted, `galleryImages` URLs are used.
+   */
+  galleryPreviewEntries?: GalleryPreviewLine[] | GalleryImageEntry[];
   crossfadePaused?: boolean;
   category: string;
   isSelected?: boolean;
   onClick: () => void;
   profilePills?: ProfilePills;
-  /** Above-the-fold cards get fetchpriority="high" and loading="eager" for faster LCP */
+  /** Earlier grid indices: loading="eager" on the hero layer for better scheduling */
   priority?: boolean;
+  /**
+   * Subset of priority cells get fetchpriority="high" on layer 0 so the first rows
+   * win without marking the whole eager band as high priority.
+   */
+  fetchPriorityHigh?: boolean;
 }
 
 /* ── Color-coded pill palette ──
@@ -81,15 +96,19 @@ export function ProfileCard({
   name,
   image,
   galleryImages,
+  galleryPreviewEntries,
   crossfadePaused = false,
   isSelected,
   onClick,
   profilePills,
   priority = false,
+  fetchPriorityHigh = true,
 }: ProfileCardProps) {
   const pipeline = useImagePipeline();
   const revealed = isSelected ? "is-revealed" : "";
   const [hovered, setHovered] = useState(false);
+  const [imageStackRevealed, setImageStackRevealed] = useState(false);
+  const primaryImgRef = useRef<HTMLImageElement | null>(null);
   const hasRealHover = useHasRealHover();
   const hoverLogRef = useRef(false);
   const brightness = useImageBrightness(pipeline.transform(image, "glow"));
@@ -97,17 +116,104 @@ export function ProfileCard({
     const b = brightness ?? 0.4;
     const spread = 4 + b * 10;
     const opacity = 0.35 + b * 0.45;
-    return `0 1px ${spread}px rgba(0,0,0,${opacity.toFixed(2)}), 0 0 2px rgba(0,0,0,${(opacity * 0.6).toFixed(2)})`;
+    const outerOpacity = opacity * 0.48;
+    return `0 1px ${spread}px rgba(0,0,0,${outerOpacity.toFixed(2)}), 0 0 2px rgba(0,0,0,${(opacity * 0.6).toFixed(2)})`;
   }, [brightness]);
-  const crossfadeImages = useMemo(
-    () => buildProfileCardCrossfadeImages(image, galleryImages, pipeline.transform),
-    [image, galleryImages, pipeline],
+  const galleryLines = useMemo((): GalleryPreviewLine[] => {
+    if (galleryPreviewEntries !== undefined) return galleryPreviewEntries;
+    return (galleryImages ?? []).map((url) => ({ url }));
+  }, [galleryPreviewEntries, galleryImages]);
+
+  const crossfadeLayers = useMemo(
+    () => buildProfileCardCrossfadeLayers(image, galleryLines, pipeline.transform),
+    [image, galleryLines, pipeline],
   );
   const { activeIndex, previousIndex } = useCrossfade({
     id,
-    imageCount: crossfadeImages.length,
+    imageCount: crossfadeLayers.length,
     paused: (hasRealHover && hovered) || crossfadePaused,
   });
+  const primarySrc = crossfadeLayers[0]?.url;
+  const useHighFetch = priority && fetchPriorityHigh;
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const revealMs = prefersReducedMotion ? 0 : 500;
+  const revealTransition =
+    revealMs === 0 ? "none" : `opacity ${revealMs}ms ease-out`;
+
+  useEffect(() => {
+    if (!primarySrc) {
+      setImageStackRevealed(true);
+      return;
+    }
+    setImageStackRevealed(false);
+    const el = primaryImgRef.current;
+    if (!el) return;
+
+    let cancelled = false;
+    const reveal = () => {
+      if (!cancelled) {
+        requestAnimationFrame(() => setImageStackRevealed(true));
+      }
+    };
+    const runAfterDecoded = () => {
+      if (typeof el.decode === "function") {
+        el.decode().then(reveal).catch(reveal);
+      } else {
+        reveal();
+      }
+    };
+
+    if (el.complete && el.naturalWidth > 0) {
+      runAfterDecoded();
+    } else {
+      el.addEventListener("load", runAfterDecoded, { once: true });
+      el.addEventListener("error", reveal, { once: true });
+    }
+
+    return () => {
+      cancelled = true;
+    };
+  }, [primarySrc, id]);
+
+  useEffect(() => {
+    if (!imageStackRevealed || crossfadeLayers.length <= 1) return;
+
+    const urls = crossfadeLayers.slice(1).map((l) => l.url);
+    let cancelled = false;
+
+    const work = () => {
+      if (cancelled) return;
+      for (const url of urls) {
+        const pre = new Image();
+        pre.src = url;
+        if (typeof pre.decode === "function") {
+          pre.decode().catch(() => {});
+        }
+      }
+    };
+
+    if (fetchPriorityHigh) {
+      queueMicrotask(work);
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    if (typeof requestIdleCallback !== "undefined") {
+      const idleId = requestIdleCallback(work, { timeout: 2500 });
+      return () => {
+        cancelled = true;
+        cancelIdleCallback(idleId);
+      };
+    }
+
+    const timeoutId = window.setTimeout(work, 200);
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timeoutId);
+    };
+  }, [fetchPriorityHigh, imageStackRevealed, crossfadeLayers]);
+
   const debugProfileCycle =
     import.meta.env.DEV
     && import.meta.env.VITE_ATLAS_DEBUG_PROFILE_CYCLE === "1";
@@ -121,9 +227,9 @@ export function ProfileCard({
         name,
         activeIndex,
         previousIndex,
-        imageCount: crossfadeImages.length,
+        imageCount: crossfadeLayers.length,
         crossfadePaused,
-        images: crossfadeImages,
+        images: crossfadeLayers.map((l) => l.url),
       });
       hoverLogRef.current = true;
       return;
@@ -134,7 +240,7 @@ export function ProfileCard({
     }
   }, [
     activeIndex,
-    crossfadeImages,
+    crossfadeLayers,
     crossfadePaused,
     debugProfileCycle,
     hovered,
@@ -154,27 +260,47 @@ export function ProfileCard({
       dataAtlasFiberId={id}
       className="focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-0"
     >
+      {/* Neutral plate until the hero bitmap is fully decoded (avoids progressive strip-in) */}
+      <div
+        className="absolute inset-0 -z-20 bg-gradient-to-b from-[#0e0e0e] via-[#0a0a0a] to-[#0c0c0c] pointer-events-none"
+        style={{
+          opacity: imageStackRevealed ? 0 : 1,
+          transition: revealTransition,
+        }}
+        aria-hidden
+      />
+
       {/* Background image stack: active fades on top of previous image */}
-      <div className="absolute inset-0 -z-10">
-        {crossfadeImages.map((src, layerIndex) => {
+      <div
+        className="absolute inset-0 -z-10 overflow-hidden"
+        style={{
+          opacity: imageStackRevealed ? 1 : 0,
+          transition: revealTransition,
+        }}
+      >
+        {crossfadeLayers.map((layer, layerIndex) => {
           const isActive = layerIndex === activeIndex;
           const isPrevious = layerIndex === previousIndex && layerIndex !== activeIndex;
           const style: React.CSSProperties = {
             opacity: isActive || isPrevious ? 1 : 0,
             zIndex: isActive ? 2 : isPrevious ? 1 : 0,
             transition: isActive ? "opacity 3s ease" : "none",
+            ...(layer.objectPosition ? { objectPosition: layer.objectPosition } : {}),
           };
+          const eagerLayer =
+            priority && (layerIndex === 0 || fetchPriorityHigh);
           return (
             <img
-              key={`${src}-${layerIndex}`}
-              src={src}
+              key={`${layer.url}-${layerIndex}`}
+              ref={layerIndex === 0 ? primaryImgRef : undefined}
+              src={layer.url}
               alt={name}
               className="absolute inset-0 h-full w-full object-cover"
               style={style}
-              loading={priority ? "eager" : "lazy"}
+              loading={eagerLayer ? "eager" : "lazy"}
               decoding="async"
               draggable={false}
-              {...(priority && layerIndex === 0
+              {...(useHighFetch && layerIndex === 0
                 ? ({ fetchpriority: "high" } as Record<string, string>)
                 : {})}
             />
@@ -258,12 +384,12 @@ export function ProfileCard({
       {/* Name — vertically centered */}
       <div className="absolute inset-0 flex items-center justify-start p-[clamp(10px,5cqi,20px)]">
         <h3
-          className="text-white tracking-[0.3em] uppercase text-left"
+          className="text-white tracking-[0.28em] uppercase text-left"
           style={{
+            fontFamily: "var(--font-atlas-profile-card-name)",
             fontSize: ATLAS_GRID_CARD_NAME_FONT_SIZE,
             fontWeight: 500,
             lineHeight: 1.3,
-            WebkitTextStroke: "0.33px rgba(255,255,255,1)",
             paintOrder: "stroke fill",
             textShadow: nameShadow,
           }}

@@ -74,6 +74,7 @@ export const atlasNavigation: NavNode[] = [
       n("grass-fibers", "Grass Fiber", [
         n("bamboo", "Bamboo"),
         n("esparto", "Esparto"),
+        n("igusa", "Igusa"),
       ]),
 
       n("fruit-fibers", "Fruit Fiber", [
@@ -102,7 +103,6 @@ export const atlasNavigation: NavNode[] = [
       n("hair-fiber", "Hair", { description: "Animal hair fibers used in textiles." }, [
         n("mohair", "Mohair"),
         n("cashmere", "Cashmere"),
-        n("angora", "Angora"),
         n("llama", "Llama"),
         n("camel", "Camel"),
         n("yak", "Yak"),
@@ -114,7 +114,7 @@ export const atlasNavigation: NavNode[] = [
       n("silk-fiber", "Silk", { description: "Silk fibers and silkworm-derived variants." }, [
         n("silk", "Silk", { description: "The only natural continuous-filament fiber, produced by silkworms." }, [
           n("mulberry-silk", "Mulberry Silk"),
-          n("tussah", "Tussah"),
+          n("tussar", "Tussah"),
           n("eri", "Eri"),
           n("peace-silk", "Peace Silk"),
         ]),

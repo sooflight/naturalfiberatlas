@@ -73,7 +73,7 @@ export const galleryData: Record<string, GalleryImageEntry[]> = {
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619261/atlas/yksbwtxethsok4bxsoix.jpg", "Silk cocoons"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619269/atlas/e45iykbpuypcenlnxhfq.jpg", "Mulberry silk"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619272/atlas/bwyoiumzmx5d2kqhvsnz.jpg", "Peace silk"),
-    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619274/atlas/u54xnyn30xhvcs7pgqxq.jpg", "Tussah silk"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619274/atlas/u54xnyn30xhvcs7pgqxq.jpg", "Tussar silk"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619275/atlas/vhtctqa2blfnurmnuj6m.jpg", "Eri silk"),
   ],
 
@@ -233,6 +233,15 @@ export const galleryData: Record<string, GalleryImageEntry[]> = {
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741089/atlas/c9qnhcyy0eo09dy3lcw3.jpg", "Modern angora goat", "Public domain"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741092/atlas/iz21uvurpdk8vmo35huw.jpg", "Angora goats near Tuba City, ca.1900", "Openverse"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741095/atlas/k6yqklzbblggeolo6i8f.jpg", "Angora Goat capra hircus", "Drew Avery, CC BY 2.0"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741081/atlas/asaj547h6ukhwfxgc1h3.jpg", "Angora goat", "Openverse"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741088/atlas/gpj66qtu5c1c0knihpdw.jpg", "Angora goats near Berriedale", "sylvia duckworth, CC BY-SA 2.0"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741090/atlas/jdif7vqaeecmysf5fzep.jpg", "Angora goat in pasture", "Pexels"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741091/atlas/ijbwbmcfneyllujeymfs.jpg", "Angora goat close-up", "Pexels"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741092/atlas/wv0nvsdyelrpnrbcvgix.jpg", "Angora goat historical photo", "State Government Photographer, CC0"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741093/atlas/uvijnbspdzxem4dj26st.jpg", "Wild Angora goat", "Openverse"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741094/atlas/ddh3qaxxx2glluywcgmp.jpg", "Angora goat portrait", "Unsplash"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741096/atlas/r9lndx7trkc2flykvkth.jpg", "Angora goat", "Openverse"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741097/atlas/vsqvyzozjutb6yc5thrc.jpg", "Angora goat", "Openverse"),
   ],
 
   lyocell: [
@@ -375,8 +384,20 @@ export const galleryData: Record<string, GalleryImageEntry[]> = {
   ],
 
   raffia: [
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775506165/atlas/skpmybeuzezhj9yh9eor.jpg", "Raffia — Natural Fiber Atlas"),
+    img("https://helenkaminski.com/cdn/shop/files/process-647x1098_0007_20252506_MADAGASCAR_C3_2739.jpg?v=1765863926", "Raffia craft, Madagascar"),
+    img("https://helenkaminski.com/cdn/shop/files/process-647x1098_0006_20252506_MADAGASCAR_C3_2741.jpg?v=1765863926", "Raffia processing"),
+    img("https://helenkaminski.com/cdn/shop/files/process-647x1098_0004_20252506_MADAGASCAR_DAY3_2317.jpg?v=1765863927", "Raffia harvest"),
+    img("https://helenkaminski.com/cdn/shop/files/1680x1200_0001_20252506_MADAGASCAR_DAY7_5152.jpg?v=1765863927", "Raffia landscape"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619697/atlas/pkqfjcnypmzmnvvzf1fu.jpg", "Raffia fiber"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619703/atlas/ybqb9tetqo5iinmog0gd.jpg", "Raffia weaving"),
+    img("https://helenkaminski.com/cdn/shop/files/process-647x1098_0001_20252506_MADAGASCAR_DAY5_4165.jpg?v=1765863927", "Raffia workshop"),
+    img("https://helenkaminski.com/cdn/shop/files/stitches-1080x1350_0001_helen_kaminski_SS25_Kirana_crochet_stitch_612x.jpg?v=1765934435", "Kirana crochet stitch"),
+    img("https://helenkaminski.com/cdn/shop/files/stitches-1080x1350_0002_helen_kaminski_SS25_Mala_crochet_stitch_612x.jpg?v=1765934435", "Mala crochet stitch"),
+    img("https://helenkaminski.com/cdn/shop/articles/blog_tile_c868e9d0-06c8-42bd-8b54-4dc91737cc75_1080x.png", "Raffia heritage"),
+    img("https://helenkaminski.com/cdn/shop/files/double_image_0000_20252506_MADAGASCAR_C2_1558.jpg?v=1765863927", "Raffia in Madagascar"),
+    img("https://helenkaminski.com/cdn/shop/files/1680x1200_0000_20252506_MADAGASCAR_DAY7_5228.jpg?v=1765863927", "Madagascar raffia"),
+    img("https://helenkaminski.com/cdn/shop/files/artisans.png?v=1765863928", "Raffia artisans"),
   ],
 
   fique: [

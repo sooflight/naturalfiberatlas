@@ -1,10 +1,8 @@
-import { useRef } from "react";
-import { Download, FileDiff, Layers, Redo2, RotateCcw, Undo2, Upload } from "lucide-react";
+import { Download, FileDiff, Layers, Redo2, RotateCcw, Undo2 } from "lucide-react";
 import { useAtlasData } from "../../../context/atlas-data-context";
 
 export function KnowledgeHeaderControls() {
   const { canUndo, canRedo, undo, redo, source } = useAtlasData();
-  const importRef = useRef<HTMLInputElement | null>(null);
 
   const downloadJson = (payload: string, filename: string) => {
     const blob = new Blob([payload], { type: "application/json" });
@@ -28,12 +26,6 @@ export function KnowledgeHeaderControls() {
 
   const triggerExportDiff = () => {
     downloadJson(source.exportDiffJSON(), `atlas-diff-${Date.now()}.json`);
-  };
-
-  const triggerImport = async (file: File | null) => {
-    if (!file) return;
-    const text = await file.text();
-    source.importJSON(text);
   };
 
   const triggerReset = () => {
@@ -66,7 +58,7 @@ export function KnowledgeHeaderControls() {
         type="button"
         onClick={triggerExportStorage}
         className="rounded-md border border-white/[0.1] px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-neutral-300"
-        title="Export storage overrides only (round-trips with Import)"
+        title="Export storage overrides JSON"
       >
         <Download className="h-3 w-3" />
       </button>
@@ -82,17 +74,9 @@ export function KnowledgeHeaderControls() {
         type="button"
         onClick={triggerExportEffective}
         className="rounded-md border border-white/[0.1] px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-neutral-300"
-        title="Export merged catalog (bundle + overrides; not for Import — use for repo / tooling)"
+        title="Export merged catalog (bundle + overrides; for repo / tooling)"
       >
         <Layers className="h-3 w-3" />
-      </button>
-      <button
-        type="button"
-        onClick={() => importRef.current?.click()}
-        className="rounded-md border border-white/[0.1] px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-neutral-300"
-        title="Import JSON (storage override format only)"
-      >
-        <Upload className="h-3 w-3" />
       </button>
       <button
         type="button"
@@ -102,17 +86,6 @@ export function KnowledgeHeaderControls() {
       >
         <RotateCcw className="h-3 w-3" />
       </button>
-      <input
-        ref={importRef}
-        type="file"
-        accept="application/json"
-        className="hidden"
-        onChange={(event) => {
-          const file = event.target.files?.[0] ?? null;
-          void triggerImport(file);
-          event.currentTarget.value = "";
-        }}
-      />
     </div>
   );
 }

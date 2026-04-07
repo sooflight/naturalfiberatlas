@@ -18,6 +18,8 @@ export interface AtlasMedia {
   height?: number;
   upscaled?: boolean;
   originalDimensions?: { width: number; height: number };
+  /** Normalized 0–1 focal point for `object-position` in grid profile-card crop (first three cycle images). */
+  previewFocal?: { x: number; y: number };
 }
 
 export type ImageEntry = string | AtlasMedia;

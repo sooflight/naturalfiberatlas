@@ -72,7 +72,7 @@ describe("ProfileImageExperience", () => {
     }));
     rerender(<ProfileImageExperience fiberName="Hemp" images={fourteen} />);
     expect(screen.getByRole("list", { name: /hemp contact sheet grid/i })).toHaveStyle({
-      gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+      gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
     });
   });
 

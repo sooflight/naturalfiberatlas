@@ -8,10 +8,11 @@
  */
 
 import { useMemo, useCallback, useState } from "react";
-import type { FiberProfile, PlateType } from "../../data/atlas-data";
+import { type FiberProfile, type PlateType, withMergedGalleryImages } from "../../data/atlas-data";
 import { dataSource } from "../../data/data-provider";
 import {
   AboutPlate,
+  PropertiesPlate,
   InsightPlate,
   SilkVariantPlate,
   RegionsPlate,
@@ -23,6 +24,7 @@ import {
   ProcessPlate,
   AnatomyPlate,
   CarePlate,
+  YouTubeEmbedPlate,
 } from "../detail-plates";
 import {
   Pencil,
@@ -42,7 +44,10 @@ import {
   ChevronRight,
   Info,
   BookOpen,
+  LayoutGrid,
+  Youtube,
 } from "lucide-react";
+import { hasAnyValidYoutubeEmbed } from "../../utils/youtube-embed-urls";
 
 /* ── Plate metadata for display ── */
 const PLATE_META: Record<PlateType, {
@@ -51,10 +56,11 @@ const PLATE_META: Record<PlateType, {
   color: string;
   editorSection?: string;
 }> = {
-  about: { label: "About", icon: Layers, color: "text-blue-300/65", editorSection: "About" },
-  insight1: { label: "Insight — Origins", icon: Lightbulb, color: "text-blue-300/60", editorSection: "About" },
-  insight2: { label: "Insight — Depth", icon: BookOpen, color: "text-blue-300/60", editorSection: "About" },
-  insight3: { label: "Insight — Context", icon: BookOpen, color: "text-blue-300/60", editorSection: "About" },
+  about: { label: "Identity", icon: Layers, color: "text-blue-300/65", editorSection: "About" },
+  properties: { label: "Properties", icon: LayoutGrid, color: "text-blue-300/65", editorSection: "About" },
+  insight1: { label: "Insight — Origins", icon: Lightbulb, color: "text-[#5D9A6D]/70", editorSection: "About" },
+  insight2: { label: "Insight — Depth", icon: BookOpen, color: "text-[#5D9A6D]/70", editorSection: "About" },
+  insight3: { label: "Insight — Context", icon: BookOpen, color: "text-[#5D9A6D]/70", editorSection: "About" },
   silkCharmeuse: { label: "Silk Type — Charmeuse", icon: Layers, color: "text-blue-300/60", editorSection: "About" },
   silkHabotai: { label: "Silk Type — Habotai", icon: Layers, color: "text-blue-300/60", editorSection: "About" },
   silkDupioni: { label: "Silk Type — Dupioni", icon: Layers, color: "text-blue-300/60", editorSection: "About" },
@@ -62,6 +68,7 @@ const PLATE_META: Record<PlateType, {
   silkChiffon: { label: "Silk Type — Chiffon", icon: Layers, color: "text-blue-300/60", editorSection: "About" },
   silkOrganza: { label: "Silk Type — Organza", icon: Layers, color: "text-blue-300/60", editorSection: "About" },
   quote: { label: "Quote", icon: Quote, color: "text-blue-300/60", editorSection: "Quotes" },
+  youtubeEmbed: { label: "Video (YouTube)", icon: Youtube, color: "text-red-400/50", editorSection: "Video (YouTube)" },
   trade: { label: "Source & Trade", icon: DollarSign, color: "text-blue-400/60", editorSection: "Trade Details" },
   regions: { label: "Regions", icon: MapPin, color: "text-blue-400/65", editorSection: "Trade Details" },
   worldNames: { label: "World Names", icon: Globe2, color: "text-blue-300/60", editorSection: "World Names" },
@@ -75,6 +82,7 @@ const PLATE_META: Record<PlateType, {
 /* ── Full plate order ── */
 const ALL_PLATES: PlateType[] = [
   "about",
+  "properties",
   "insight1",
   "insight2",
   "insight3",
@@ -85,6 +93,7 @@ const ALL_PLATES: PlateType[] = [
   "silkChiffon",
   "silkOrganza",
   "quote",
+  "youtubeEmbed",
   "trade",
   "regions",
   "worldNames",
@@ -117,6 +126,8 @@ function getAvailablePlates(fiber: FiberProfile): PlateType[] {
         return !!careData[fiber.id];
       case "quote":
         return (quoteData[fiber.id] ?? []).length > 0;
+      case "youtubeEmbed":
+        return hasAnyValidYoutubeEmbed(fiber);
       case "insight1":
       case "insight2":
       case "insight3": {
@@ -152,6 +163,8 @@ function PlateRenderer({ fiber, plateType }: { fiber: FiberProfile; plateType: P
   switch (plateType) {
     case "about":
       return <AboutPlate fiber={fiber} />;
+    case "properties":
+      return <PropertiesPlate fiber={fiber} />;
     case "insight1":
       return <InsightPlate fiber={fiber} half={1} />;
     case "insight2":
@@ -167,6 +180,8 @@ function PlateRenderer({ fiber, plateType }: { fiber: FiberProfile; plateType: P
       return <SilkVariantPlate plateType={plateType} />;
     case "quote":
       return <QuotePlate fiber={fiber} />;
+    case "youtubeEmbed":
+      return <YouTubeEmbedPlate fiber={fiber} />;
     case "regions":
       return <RegionsPlate fiber={fiber} />;
     case "trade":
@@ -239,7 +254,7 @@ function PlatePreviewCard({
           <span
             className="px-1.5 py-0.5 rounded bg-blue-400/[0.07] border border-blue-400/15 text-blue-300/70"
             style={{ fontSize: "8px" }}
-            title="Insight cards are auto-generated from the About text. Edit the About field to change these."
+            title="Each Insight card shows a short pull-quote from a segment of About; the full narrative is on Identity."
           >
             auto
           </span>
@@ -307,8 +322,10 @@ interface PlatePreviewPanelProps {
 export function PlatePreviewPanel({ fiber, onScrollToEditorSection }: PlatePreviewPanelProps) {
   const [hiddenPlates, setHiddenPlates] = useState<Set<PlateType>>(new Set());
 
-  const availablePlates = useMemo(() => getAvailablePlates(fiber), [fiber]);
-  const missingPlates = useMemo(() => getMissingPlates(fiber), [fiber]);
+  const fiberForPlates = useMemo(() => withMergedGalleryImages(fiber), [fiber]);
+
+  const availablePlates = useMemo(() => getAvailablePlates(fiberForPlates), [fiberForPlates]);
+  const missingPlates = useMemo(() => getMissingPlates(fiberForPlates), [fiberForPlates]);
   const [showMissing, setShowMissing] = useState(false);
 
   const sentences = useMemo(
@@ -419,7 +436,7 @@ export function PlatePreviewPanel({ fiber, onScrollToEditorSection }: PlatePrevi
         {availablePlates.map((pt) => (
           <PlatePreviewCard
             key={pt}
-            fiber={fiber}
+            fiber={fiberForPlates}
             plateType={pt}
             isHidden={hiddenPlates.has(pt)}
             onToggleHide={() => toggleHide(pt)}
@@ -467,6 +484,9 @@ export function PlatePreviewPanel({ fiber, onScrollToEditorSection }: PlatePrevi
                       break;
                     case "quote":
                       reason = "No quotes defined";
+                      break;
+                    case "youtubeEmbed":
+                      reason = "No valid YouTube URL on the fiber profile";
                       break;
                     case "seeAlso":
                       reason = "No seeAlso references";

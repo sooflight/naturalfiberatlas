@@ -1,15 +1,31 @@
 import { describe, expect, it } from "vitest";
 import { buildAppRoutes } from "./routes";
 import type { AdminFeatureFlags } from "./config/admin-feature-flags";
+import type { RouteObject } from "react-router";
+
+function collectPathsDeep(routes: RouteObject[] | undefined): string[] {
+  if (!routes?.length) return [];
+  const out: string[] = [];
+  for (const route of routes) {
+    if ("path" in route && typeof route.path === "string" && route.path) {
+      out.push(route.path);
+    }
+    out.push(...collectPathsDeep(route.children));
+  }
+  return out;
+}
 
 function getChildPaths(adminEnabled: boolean): string[] {
   const routes = buildAppRoutes(adminEnabled);
   const root = routes[0];
   const children = root.children ?? [];
 
-  return children
-    .map((route) => ("path" in route ? route.path : undefined))
-    .filter((path): path is string => typeof path === "string");
+  return [
+    ...children
+      .map((route) => ("path" in route ? route.path : undefined))
+      .filter((path): path is string => typeof path === "string"),
+    ...collectPathsDeep(children),
+  ];
 }
 
 function makeFlags(overrides: Partial<AdminFeatureFlags> = {}): AdminFeatureFlags {
@@ -34,11 +50,16 @@ function getRouteByPath(adminEnabled: boolean, path: string, flags: AdminFeature
   return children.find((route) => "path" in route && route.path === path);
 }
 
-function getIndexRoute(adminEnabled: boolean, flags: AdminFeatureFlags) {
+function getAtlasShellRoute(adminEnabled: boolean, flags: AdminFeatureFlags) {
   const routes = buildAppRoutes(adminEnabled, flags);
   const root = routes[0];
   const children = root.children ?? [];
-  return children.find((route) => "index" in route && route.index);
+  return children.find(
+    (route) =>
+      "lazy" in route
+      && typeof route.lazy === "function"
+      && route.children?.some((c) => "index" in c && c.index === true),
+  );
 }
 
 describe("route access controls", () => {
@@ -92,15 +113,17 @@ describe("route access controls", () => {
     expect(paths).toContain("fiber/:fiberId");
   });
 
-  it("lazy-loads the index route home page", async () => {
-    const route = getIndexRoute(false, makeFlags());
+  it("lazy-loads the atlas shell (pathless layout wrapping index + fiber)", async () => {
+    const route = getAtlasShellRoute(false, makeFlags());
     expect(route).toBeDefined();
     expect(route && "Component" in route ? route.Component : undefined).toBeUndefined();
     if (!route || !("lazy" in route) || typeof route.lazy !== "function") {
-      throw new Error("expected index route to be lazy loaded");
+      throw new Error("expected atlas shell route to be lazy loaded");
     }
     const resolved = await route.lazy();
     expect(resolved).toHaveProperty("Component");
-    expect(resolved.Component?.name).toBe("HomePage");
+    expect(resolved.Component?.name).toBe("HomeAtlasLayout");
+    const fiberChild = route.children?.find((c) => "path" in c && c.path === "fiber/:fiberId");
+    expect(fiberChild).toBeDefined();
   });
 });

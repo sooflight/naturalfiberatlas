@@ -1,10 +1,12 @@
 /**
- * home.tsx — Index page wrapping the main GridView atlas experience.
+ * home.tsx — Atlas shell: TopNav + GridView, shared across `/` and `/fiber/:id`.
  *
- * Integration: TopNav provides navigation chrome + search, GridView handles content.
+ * A pathless layout route wraps an index + `fiber/:fiberId` so opening a profile
+ * does not unmount GridView (avoids full grid remount / scroll jump / CLS spikes).
  */
 
 import { useState, useMemo } from "react";
+import { Outlet } from "react-router";
 import { GridView } from "../components/grid-view";
 import { TopNav } from "../components/top-nav";
 import { useEffect } from "react";
@@ -65,10 +67,12 @@ export function mapNavToGridFilters(nodeId: string | null): {
   return { category: "all", fiberSubcategory: null };
 }
 
-export function HomePage() {
+export function HomeAtlasLayout() {
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [previewNodeId, setPreviewNodeId] = useState<string | null>(null);
   const [debouncedPreviewNodeId, setDebouncedPreviewNodeId] = useState<string | null>(null);
+  /** Bumps on every TopNav commit so GridView can close detail even when `activeNodeId` is unchanged (e.g. re-clicking Plant after hover preview). */
+  const [navInteractionEpoch, setNavInteractionEpoch] = useState(0);
   const [search, setSearch] = useState("");
   const [visibleProfileCount, setVisibleProfileCount] = useState(0);
 
@@ -95,34 +99,39 @@ export function HomePage() {
   return (
     <>
       <h1 className="sr-only">Natural Fiber Atlas</h1>
-    <TopNav
-      activeNodeId={activeNodeId}
-      onNavigate={(id) => {
-        setPreviewNodeId(null);
-        setDebouncedPreviewNodeId(null);
-        setActiveNodeId(id);
-      }}
-      onPreviewNavigate={setPreviewNodeId}
-      externalSearch={search}
-      onSearchChange={setSearch}
-      visibleProfileCount={visibleProfileCount}
-    >
-      <GridView
-        hideHeader
-        externalCategory={gridCategory}
-        externalFiberSubcategory={gridFiberSubcategory}
-        externalSearch={search}
-        onVisibleProfilesChange={setVisibleProfileCount}
-        onCategoryChange={(cat) => {
-          // GridView category change → update TopNav if needed
-          if (cat !== gridCategory) {
-            setPreviewNodeId(null);
-            setActiveNodeId(cat === "all" ? null : cat);
-          }
+      <TopNav
+        activeNodeId={activeNodeId}
+        onNavigate={(id) => {
+          setPreviewNodeId(null);
+          setDebouncedPreviewNodeId(null);
+          setActiveNodeId(id);
+          setNavInteractionEpoch((e) => e + 1);
         }}
+        onPreviewNavigate={setPreviewNodeId}
+        externalSearch={search}
         onSearchChange={setSearch}
-      />
-    </TopNav>
+        visibleProfileCount={visibleProfileCount}
+      >
+        <GridView
+          hideHeader
+          navInteractionEpoch={navInteractionEpoch}
+          externalCategory={gridCategory}
+          externalFiberSubcategory={gridFiberSubcategory}
+          externalSearch={search}
+          onVisibleProfilesChange={setVisibleProfileCount}
+          onCategoryChange={(cat) => {
+            if (cat !== gridCategory) {
+              setPreviewNodeId(null);
+              setActiveNodeId(cat === "all" ? null : cat);
+            }
+          }}
+          onSearchChange={setSearch}
+        />
+      </TopNav>
+      <Outlet />
     </>
   );
 }
+
+/** Alias for lazy route / tests that expect the historical name */
+export const HomePage = HomeAtlasLayout;

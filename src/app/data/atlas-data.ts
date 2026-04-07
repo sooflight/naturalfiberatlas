@@ -40,6 +40,7 @@ export interface FiberProfile extends FiberProfileBase {
 
 export type PlateType =
   | "about"
+  | "properties"
   | "insight1"
   | "insight2"
   | "insight3"
@@ -57,7 +58,8 @@ export type PlateType =
   | "process"
   | "anatomy"
   | "care"
-  | "contactSheet";
+  | "contactSheet"
+  | "youtubeEmbed";
 
 /** Slim browse-mode entry — only the fields ProfileCard and grid search need. */
 export interface FiberIndexEntry {
@@ -105,7 +107,7 @@ export const worldNames: Record<string, string[]> = {
   cashmere: ["Cashmere", "开司米 (Kāisīmǐ)", "カシミヤ (Kashimiya)", "캐시미어 (Kaesimie)", "Cachemire", "Kaschmir", "Кашемир (Kashmir)", "पश्मीना (Pashmeena)", "Cachemira", "开司米 (Kāisīmǐ)", "پشم بز (Pashm-e Boz)", "کشمیر (Kashmir)", "Millma", "صوف الكشمير (Ṣūf al-Kashmīr)", "山羊绒 (Shānyáng Róng)"],
   nettle: ["Nettle", "荨麻 (Qiánmá)", "Ortie", "Brennnessel", "Ortiga", "Крапива (Krapiva)", "イラクサ (Irakusa)", "Allo", "बिच्छू बूटी (Bichchū Būṭī)", "گزنه (Gazne)", "قراص (Qurrās)", "Chanvre", "Q'aytu"],
   abaca: ["Abacá", "蕉麻 (Jiāomá)", "アバカ (Abaka)", "마닐라삼 (Manillasam)", "Manila Hemp", "Chanvre de Manille", "Manilahanf", "अबाका (Abākā)", "کنف مانیل (Kanaf-e Mānil)", "Fibra de Abacá", "ليف الموز (Līf al-Mawz)", "Абака (Abaka)", "Q'aytu"],
-  mohair: ["Mohair", "马海毛 (Mǎhǎimáo)", "モヘア (Mohea)", "모헤어 (Mohe-eo)", "Мохер (Mokher)", "Angora Goat Fiber", "Mohair d'Angora", "马海毛 (Mǎhǎimáo)", "मोहयर (Mohayar)", "پشم موهر (Pashm-e Muhr)", "Mohair", "موهير (Mūhīr)", "Millma", "Fibra de Mohair", "安哥拉山羊毛 (Āngēlā Shānyáng Máo)"],
+  mohair: ["Mohair", "Angora", "马海毛 (Mǎhǎimáo)", "安哥拉 (Āngēlā)", "モヘア (Mohea)", "アンゴラ (Angora)", "모헤어 (Mohe-eo)", "앙고라 (Anggora)", "Мохер (Mokher)", "Ангора (Angora)", "Angora Goat Fiber", "Mohair d'Angora", "马海毛 (Mǎhǎimáo)", "मोहयर (Mohayar)", "پشم موهر (Pashm-e Muhr)", "Mohair", "موهير (Mūhīr)", "Millma", "Fibra de Mohair", "安哥拉山羊毛 (Āngēlā Shānyáng Máo)"],
   lyocell: ["Lyocell", "Tencel™", "莱赛尔 (Láisàiěr)", "リヨセル (Riyoseru)", "라이오셀 (Raiosel)", "Лиоцелл (Liotsell)", "Lyocell-Faser", "लायोसेल (Lāyoseal)", "لیوسل (Lyusel)", "Lyocell", "ليوسيل (Lyūsīl)", "Chanvre", "Q'aytu", "Fibra de Lyocell", "پارچه لیوسل (Parcha-ye Lyusel)"],
   modal: ["Modal", "莫代尔 (Mòdàiěr)", "モダール (Modāru)", "모달 (Modal)", "Модал (Modal)", "Modalfaser", "Fibre Modale", "莫代尔 (Mòdàiěr)", "मोडल (Modal)", "پارچه مودال (Parcha-ye Modāl)", "Modal", "مودال (Mūdāl)", "Q'aytu", "Fibra de Modal", "莫代尔纤维 (Mòdàiěr Xiānwéi)"],
   kenaf: ["Kenaf", "洋麻 (Yángmá)", "ケナフ (Kenafu)", "케나프 (Kenapeu)", "Кенаф (Kenaf)", "Chanvre de Deccan", "Hibiscus Cannabinus", "केनाफ (Kenāph)", "کنف (Kanaf)", "Kenaf", "كناف (Kanāf)", "Q'aytu", "Fibra de Kenaf"],
@@ -132,7 +134,6 @@ export const worldNames: Record<string, string[]> = {
   corriedale: ["Corriedale", "考力代 (Kǎolìdài)", "コリデール (Koridēru)", "코리데일 (Korideil)", "Corriedale-Wolle", "Laine Corriedale"],
   romney: ["Romney", "罗姆尼 (Luómǔní)", "ロムニー (Romunī)", "Romney Marsh", "Laine Romney", "Ромни (Romni)"],
   lincoln: ["Lincoln Longwool", "林肯长毛 (Línkěn Chángmáo)", "リンカーン (Rinkān)", "Lincoln Wolle", "Laine Lincoln", "Линкольн (Linkol'n)"],
-  angora: ["Angora", "安哥拉 (Āngēlā)", "アンゴラ (Angora)", "앙고라 (Anggora)", "Angora-Kaninchen", "Lapin Angora", "Ангора (Angora)"],
   ayate: ["Ayate", "Maguey Cloth", "Ixtle", "Tela de Maguey", "Fibra de Agave", "Tilma"],
   krajood: ["Krajood", "กระจูด (Krajut)", "Sedge Grass", "Lepironia", "จูด (Jut)"],
   seagrass: ["Seagrass", "海草 (Hǎicǎo)", "海草 (Umikusa)", "해초 (Haecho)", "Herbe Marine", "Seegras", "Hierba Marina", "Морская трава"],
@@ -140,16 +141,33 @@ export const worldNames: Record<string, string[]> = {
   palm: ["Palm Fiber", "棕榈纤维 (Zōnglǘ Xiānwéi)", "パーム (Pāmu)", "야자 (Yaja)", "Fibre de Palmier", "Palmfaser", "Fibra de Palma", "Crin Végétal"],
   rambouillet: ["Rambouillet", "兰布依 (Lánbùyī)", "ランブイエ (Ranbuie)", "Rambouillet-Wolle", "Laine Rambouillet", "Рамбулье (Rambul'ye)"],
   "water-lily": ["Water Lily Fiber", "睡莲丝 (Shuìlián Sī)", "スイレン (Suiren)", "수련 (Suryeon)", "Fibre de Nénuphar", "Seerosenfaser", "Kyar Chi"],
+  "water-hyacinth": ["Water Hyacinth", "凤眼莲 (Fèngyǎnlián)", "ホテイアオイ (Hotei Aoi)", "부세오이 (Buseoi)", "Jacinthe d'Eau", "Wasserhyazinthe", "Jacinto de Agua", "Водяной гиацинт", "Eichhornia", "Akasa Thamarai (Tamil)", "Kochuri Pana (Bengali)", "Lilac Devil", "Water Orchid"],
   sano: ["Sano", "Allo", "अल्लो (Allo)", "Himalayan Nettle", "ヒマラヤイラクサ (Himaraya Irakusa)", "Ortie de l'Himalaya", "Girardinia"],
   "river-reed": ["River Reed", "芦苇 (Lúwěi)", "アシ (Ashi)", "갈대 (Galdae)", "Roseau", "Schilf", "Caña", "Камыш (Kamysh)", "Phragmites"],
+  igusa: ["Igusa", "イ草 (Igusa)", "Soft Rush", "Tatami Rush", "藺草 (Lǐncǎo)", "Jonc Doux", "Juncus Rush", "いぐさ"],
   /* ── Expansion Batch — Missing Fibers ── */
   vicuna: ["Vicuña", "维库尼亚 (Wéikùníyà)", "विकुन्या (Vikunyā)", "ویکونیا (Vikūnyā)", "Vicugna", "ビクーニャ (Bikūnya)", "Вику́нья (Vikun'ya)", "فيكونيا (Fīkūnyā)", "Vicoigne", "Vicuñafaser", "Wik'uña"],
   harakeke: ["Harakeke", "New Zealand Flax", "Lin de Nouvelle-Zélande", "Neuseelandflachs", "ニュージーランドフラックス (Nyūjīrando Furakkusu)", "Phormium", "Flax Māori"],
   lokta: ["Lokta", "लोक्ता (Loktā)", "Daphne Bark Fiber", "Papier Lokta", "Lokta-Papier", "Himalayan Paper"],
   "fig-barkcloth": ["Fig Barkcloth", "Mutuba", "Olubugo", "Écorce de Figuier", "Feigenrindenstoff", "무투바 (Mutuba)"],
-  tapa: ["Tapa", "タパ (Tapa)", "Kapa", "Ngatu", "Siapo", "Tapa-Stoff", "Écorce Battue", "Kapa Wauke"],
+  tapa: ["Tapa", "タパ (Tapa)", "Kapa", "Ngatu", "Siapo", "Tapa-Stoff", "Écorce Battue", "Kapa Wauke", "Washi", "和紙 (Washi)", "Kozo", "紙繊維"],
   "sunn-hemp": ["Sunn Hemp", "Sun Hemp", "Crotalaria", "सन (San)", "サンヘンプ (Sanhenpu)", "Chanvre Sunn", "Sonnenhanf", "Shana"],
-  roselle: ["Roselle", "Hibiscus Fiber", "Java Jute", "Rozelle", "ローゼル (Rōzeru)", "Bissap Fiber", "Karkadé Fiber", "Sabdariffa"],
+  roselle: [
+    "Roselle",
+    "Zobo, Tsoborodo, or Isapa (Nigeria, West Africa)",
+    "Bissap (Senegal, Wolof)",
+    "Wonjo (Gambia, Mandinka)",
+    "Wegda (Burkina Faso, Mossi)",
+    "Kärkädē (Ethiopia, Amharic)",
+    "Gongura (India, Telugu)",
+    "Ambadi (India, Marathi)",
+    "Chin baung (Myanmar, Burmese)",
+    "Krachiap (Thailand, Thai)",
+    "Rosela (Indonesia)",
+    "Vinagreira, Caruru-azedo, or Rosela (Brazil, Portuguese)",
+    "Sorrel (Caribbean)",
+    "ローゼル (Rōzeru)",
+  ],
   piassava: ["Piassava", "Piassaba", "Piaçava", "Bahia Piassava", "Palmfaser Piassava", "파이아사바 (Piasaba)"],
   sansevieria: ["Sansevieria", "Bowstring Hemp", "Snake Plant Fiber", "サンセベリア (Sanseberia)", "Chanvre Arc", "Père en Cage", "Tigerfaser"],
   "sabai-grass": ["Sabai Grass", "Bhabar Grass", "सबई घास (Sabai Ghās)", "Eulaliopsis", "Sabai Gras", "Bib Grass"],
@@ -304,12 +322,12 @@ export const processData: Record<string, ProcessStep[]> = {
     { name: "Grading", detail: "Sorted by length, color, and strength; baled for export" },
   ],
   ramie: [
-    { name: "Harvesting", detail: "Stems cut 2-3 times per year from established perennial stands" },
-    { name: "Decortication", detail: "Bark stripped by hand or machine within hours of cutting" },
-    { name: "Degumming", detail: "Chemical treatment (NaOH) removes pectin and hemicellulose binders" },
-    { name: "Bleaching", detail: "Fibers whitened to remove residual color for dyeing" },
-    { name: "Softening", detail: "Fibers treated to improve hand and reduce brittleness" },
-    { name: "Spinning", detail: "Long fibers spun into lustrous yarn; often blended with cotton" },
+    { name: "Harvest & decorticate", detail: "Perennial stems cut several times yearly; bark stripped while still pliable. Japanese producers tune roller speed and pressure to local ramie varieties for long, even ribbons." },
+    { name: "Degumming", detail: "Alkali or enzyme baths dissolve pectins and gums binding the fiber. Enzyme-assisted routes run cooler with less harsh chemistry — common in Japanese premium lines and marketed as eco-degumming." },
+    { name: "Bleach & soften", detail: "Peroxide bleaching and softeners improve whiteness and pliability. Niigata jōfu traditions sometimes lay woven cloth on snow to brighten shade and soften the hand before final finishing." },
+    { name: "Spin", detail: "Long fibers drafted slightly damp to limit breakage; fine jōfu counts use careful twist control. Hand spinning survives where texture matters more than speed." },
+    { name: "Weave & dye", detail: "Plain or tight weaves control fraying; kasuri ties pattern yarns before dyeing. Plant indigo and resist methods bond well with ramie cellulose." },
+    { name: "Finish", detail: "Wash, stretch, and polish for even surface. Ojiya chijimi uses starch and controlled creasing for airy wrinkles; mills balance craft technique with volume for apparel and home textiles." },
   ],
   kapok: [
     { name: "Pod Collection", detail: "Mature seed pods hand-picked from trees (up to 70m tall)" },
@@ -400,12 +418,12 @@ export const processData: Record<string, ProcessStep[]> = {
     { name: "Lamination", detail: "Cork veneer bonded to fabric backing for flexibility and strength" },
   ],
   lotus: [
-    { name: "Stem Harvesting", detail: "Long stems hand-cut from lakes; must be processed within 24 hours" },
-    { name: "Fiber Extraction", detail: "Stems snapped and pulled apart to draw out 20-30 silk-fine threads" },
-    { name: "Rolling", detail: "Extracted filaments hand-rolled on the thigh into continuous yarn" },
-    { name: "Drying", detail: "Yarn air-dried; retains natural lotus fragrance" },
-    { name: "Warping", detail: "Dried yarn wound onto bobbins and set up on traditional loom" },
-    { name: "Weaving", detail: "Hand-woven on frame looms; one scarf requires ~9,000 stems" },
+    { name: "Harvest", detail: "Rainy-season cutting (~Jun–Nov) across lakes and ponds; Inle: offerings to Guardian Spirit, padonma kyar at full bloom, Lent peak — stems often gathered daily" },
+    { name: "Fibre Extraction", detail: "While stems stay wet (often within ~24h); shallow knife; 5–6 stems snapped together → ~20–30 white filaments drawn, dried in lengths, rolled into singles; sponge fibres may be twisted with water on a table; many thread-makers can supply one weaver" },
+    { name: "Yarn Preparation", detail: "Bamboo spinning frame and skeins; warping posts; threads kept ~40 m to limit tangles; coiled for storage; weft wound on bamboo bobbins" },
+    { name: "Weaving", detail: "Narrow traditional loom (~24 in); weft/warp misted with water to keep fibre cool; ~100-yard batches may take ~6 weeks; industry estimates cite ~32k stems ≈1 m cloth, ~120k stems for a full outfit" },
+    { name: "Natural Dyeing", detail: "Only natural dyes — bark, petals, leaves, fruit — yarn or fabric in skeins; sun-dried" },
+    { name: "Use of Remnants", detail: "Leftover yarn → pagoda lamp wicks; fabric scraps → tiny sequined robes for Buddha images; consecrated Inle looms & five precepts where tradition dictates" },
   ],
   llama: [
     { name: "Shearing", detail: "Fleece shorn annually; ~1.5 kg of usable fiber per animal" },
@@ -559,14 +577,6 @@ export const processData: Record<string, ProcessStep[]> = {
     { name: "Spinning", detail: "Worsted-spun on long-draft systems; produces strong, lustrous yarn" },
     { name: "Finishing", detail: "Yarn retains silk-like sheen; used for tapestry, doll hair, and blending" },
   ],
-  angora: [
-    { name: "Harvesting", detail: "Fiber hand-plucked or sheared every 3-4 months; ~250-450g per rabbit per year" },
-    { name: "Sorting", detail: "Graded by length and fineness; longest fibers (6-12cm) are prime grade" },
-    { name: "Dehairing", detail: "Guard hairs removed if present; pure down preferred for spinning" },
-    { name: "Blending", detail: "Typically blended 15-40% with wool, silk, or nylon for structure" },
-    { name: "Carding", detail: "Fibers carded gently to avoid breaking delicate filaments" },
-    { name: "Spinning", detail: "Spun with low twist to preserve loft and halo effect; often plied" },
-  ],
   ayate: [
     { name: "Leaf Harvesting", detail: "Mature maguey leaves (pencas) cut from the agave with a machete" },
     { name: "Retting", detail: "Leaves soaked or buried to soften and decompose non-fiber tissue" },
@@ -584,12 +594,12 @@ export const processData: Record<string, ProcessStep[]> = {
     { name: "Weaving", detail: "Woven on floor frames into mats, bags, hats, and decorative items" },
   ],
   seagrass: [
-    { name: "Harvesting", detail: "Blades hand-cut from shallow coastal waters or gathered after storms" },
-    { name: "Washing", detail: "Rinsed in fresh water to remove salt, sand, and marine organisms" },
-    { name: "Drying", detail: "Sun-dried on beaches or frames; turns from green to golden-tan" },
-    { name: "Twisting", detail: "Dried blades twisted into rope-like strands for weaving strength" },
-    { name: "Weaving", detail: "Twisted strands woven into baskets, mats, rugs, and furniture" },
-    { name: "Finishing", detail: "Products may be brushed or treated with natural oils for durability" },
+    { name: "Cultivation", detail: "Coastal paddies and brackish/salty flats (notably Vietnam); stem character differs by region, country, and province" },
+    { name: "Harvesting", detail: "Fields drained when mature; stems cut and bundled — herbaceous culms to ~2 m, ~5–7 mm triangular section" },
+    { name: "Splitting & drying", detail: "Stems split and sun-dried; green skin over spongy white pith yields soft, lightweight, pliable straw" },
+    { name: "Twisting", detail: "Well-dried fiber hand-plied into rope-like yarn; mills may wind onto tubes and load creels for carpet weaving" },
+    { name: "Weaving", detail: "Hand-woven sleeping mats, baskets, homewares; twisted goods for rugs, seats, and wall coverings" },
+    { name: "Patina", detail: "Natural greenish-beige deepens toward brown with light, age, and use" },
   ],
   pandan: [
     { name: "Leaf Harvesting", detail: "Long spiny-edged leaves cut from the pandanus plant base" },
@@ -597,7 +607,7 @@ export const processData: Record<string, ProcessStep[]> = {
     { name: "Boiling", detail: "Leaves boiled to soften and sterilize; may be colored with plant dyes" },
     { name: "Drying", detail: "Boiled leaves sun-dried until flat and pliable" },
     { name: "Splitting", detail: "Dried leaves split into uniform-width strips for fine weaving" },
-    { name: "Weaving", detail: "Strips woven into mats (ie toga), bags, hats, and ceremonial items" },
+    { name: "Weaving", detail: "Strips woven into mats ('ie toga), bags, hats, tissue boxes, sandals, and ceremonial items" },
   ],
   palm: [
     { name: "Collection", detail: "Leaf sheaths, fruit husks, or trunk fibers collected as byproduct" },
@@ -616,12 +626,21 @@ export const processData: Record<string, ProcessStep[]> = {
     { name: "Spinning", detail: "Worsted or semi-worsted spun; suitable for fine suiting and knitwear" },
   ],
   "water-lily": [
-    { name: "Stem Harvesting", detail: "Long stems cut from lakes and ponds; must be processed fresh" },
-    { name: "Snapping", detail: "Stems snapped at intervals and gently pulled to extract internal threads" },
-    { name: "Rolling", detail: "Delicate filaments hand-rolled on the thigh into continuous yarn" },
-    { name: "Drying", detail: "Yarn air-dried in shade; similar process to lotus silk" },
-    { name: "Warping", detail: "Dried yarn carefully wound onto bobbins for loom setup" },
-    { name: "Weaving", detail: "Hand-woven on frame looms; extremely labor-intensive and rare" },
+    { name: "Craft: stem harvest", detail: "Long stems cut from lakes and ponds; must be processed fresh for hand-drawn filament (Inle-style)" },
+    { name: "Craft: snap & draw", detail: "Stems snapped at intervals and gently pulled to extract internal micro-threads" },
+    { name: "Craft: roll & dry", detail: "Filaments hand-rolled on the thigh; yarn air-dried in shade like lotus silk" },
+    { name: "Craft: weave", detail: "Hand-woven on frame looms; extremely labor-intensive and rare" },
+    { name: "Research: peduncle selection", detail: "Nymphaea rubra peduncles from wetland (e.g. Ruppur, Narayanganj, Bangladesh): smooth, fresh, flaw-free; upper flowering section removed after cleaning" },
+    { name: "Research: biological extraction", detail: "Fibers biologically extracted from peduncle parenchyma beneath epidermis — distinct from snapping whole stems for artisan micro-filament" },
+    { name: "Research: characterization", detail: "Reported analyses include composition, XRD, TGA/DSC, FTIR, EDX, tensile (single/bundle), and FESEM morphology" },
+  ],
+  "water-hyacinth": [
+    { name: "Harvesting", detail: "Mature plants collected from ponds, lakes, or rivers (trials may use hundreds of plants per batch); stems typically tens of cm long" },
+    { name: "Separation & wash", detail: "Leaves and roots removed from the stem; stems washed thoroughly" },
+    { name: "Slit stems", detail: "Hollow petioles cut open lengthwise and flattened to expose inner fiber — key step in many lab and craft protocols" },
+    { name: "Dry retting (sun)", detail: "Slit stems sun-dried until equilibrium moisture; often ~15–18 days; fibers shrink and separate (sometimes called dry retting)" },
+    { name: "Optional pretreatment", detail: "Some trials use chemical treatment on stem fiber to raise absorbency before yarn formation" },
+    { name: "Spinning & fabric", detail: "Fiber spun to yarn (open-end / rotor or ring spinning in trials), then woven on hand or sample looms; or beaten for pulp, rope, and paper" },
   ],
   sano: [
     { name: "Bark Harvesting", detail: "Outer bark stripped from giant nettle stalks in autumn after flowering" },
@@ -638,6 +657,14 @@ export const processData: Record<string, ProcessStep[]> = {
     { name: "Soaking", detail: "Stems soaked before use to restore flexibility for weaving" },
     { name: "Splitting", detail: "Thick stems may be split lengthwise into flat strips for fine work" },
     { name: "Weaving", detail: "Woven into mats, screens, thatch, baskets, and chair seats" },
+  ],
+  igusa: [
+    { name: "Cultivation", detail: "Rush grown in flooded paddies on silty soils; cool flowing water improves stem length and pliability" },
+    { name: "Harvesting", detail: "Stems cut in summer at maturity before hardening; washed to remove mud and debris" },
+    { name: "Drying", detail: "Sun-dried in bundles; graded by thickness, straightness, and color" },
+    { name: "Splitting", detail: "Green rind split into fine strips for tatami omote weaving; core reserved for fill and cordage" },
+    { name: "Weaving", detail: "Hand-woven facing stitched to rice-straw or foam cores; also used for screens and crafts" },
+    { name: "Finishing", detail: "Edges bound; mats aired to stabilize moisture before installation" },
   ],
   /* ── DYE PROCESS DATA ── */
   indigo: [
@@ -1041,6 +1068,14 @@ export const processData: Record<string, ProcessStep[]> = {
     { name: "Repeat", detail: "Process repeated for each color using different blocks in sequence" },
     { name: "Fixing", detail: "Printed cloth steamed, washed, and sun-dried to fix colors" },
   ],
+  roselle: [
+    { name: "Cultivation", detail: "Warm, humid or dry-season suited; ~150–200 cm annual rainfall; ~25 cm soil moisture per month during growth. Adaptable with little care; reported stalk yields ~11 quintals/hectare." },
+    { name: "Harvesting", detail: "Annual erect Malvaceae shrub; bast from peeled outer bark while calyces are often the main commercial crop. Maturity often cited ~90–120 days; some trials report ~3–3.5 m height in ~130–150 days." },
+    { name: "Bacterial retting (BR)", detail: "Natural tank retting ~15–20 days at ~27 °C, pH ~6.5–7, fibre-to-liquid ~1:20 — slower but yields higher cellulose, better strength, modulus, and flexibility than chemical retting; light-gold colour." },
+    { name: "Chemical retting (CR)", detail: "Faster alkali route (e.g. NaOH-based boil, neutralize, wash) — darker, stiffer fibre with lower tenacity and lustre; higher reported fibre yield % than BR but quality tradeoff." },
+    { name: "Post-retting", detail: "Wash, sun- or air-dry, comb or card; optional mercerization (e.g. dilute NaOH) to boost strength, lustre, and dyeability." },
+    { name: "Spinning & products", detail: "Carded strands spun into yarn; experimental plain weaves and composites. R&D targets enzymatic + controlled chemical retting for shorter time with BR-like quality." },
+  ],
 };
 
 /* ═══ ANATOMY ═══ */
@@ -1075,7 +1110,7 @@ export const anatomyData: Record<string, AnatomyData> = {
   yak: { diameter: { raw: "16-20 \u00b5m" }, crossSection: "Round, partially medullated", surfaceTexture: "Smooth, fine scales", length: { raw: "30-50 mm (down staple)", minMm: 30.0, maxMm: 50.0 }, tensileStrength: { raw: "80-120 MPa", minMPa: 80.0, maxMPa: 120.0 }, moistureRegain: { raw: "15%", percentage: 15.0 } },
   banana: { diameter: { raw: "50-250 \u00b5m" }, crossSection: "Oval bundles with lumen", surfaceTexture: "Rough, striated surface", length: { raw: "1.5-4 mm (ultimate cell)", minMm: 1.5, maxMm: 4.0 }, tensileStrength: { raw: "529-914 MPa", minMPa: 529.0, maxMPa: 914.0 }, moistureRegain: { raw: "13%", percentage: 13.0 } },
   cork: { diameter: { raw: "30-40 \u00b5m (cell)" }, crossSection: "Hexagonal honeycomb cells", surfaceTexture: "Waxy suberin surface", length: { raw: "N/A (sheet material)" }, tensileStrength: { raw: "1-2 MPa (compression)", minMPa: 1.0, maxMPa: 2.0 }, moistureRegain: { raw: "6%", percentage: 6.0 } },
-  lotus: { diameter: { raw: "3-5 \u00b5m" }, crossSection: "Round, multi-filament bundle", surfaceTexture: "Ultra-smooth, silk-like", length: { raw: "Continuous (stem-length)" }, tensileStrength: { raw: "200-400 MPa", minMPa: 200.0, maxMPa: 400.0 }, moistureRegain: { raw: "12%", percentage: 12.0 } },
+  lotus: { diameter: { raw: "3-5 \u00b5m" }, crossSection: "Round, multi-filament bundle; cellulosic aquatic stem fibre", surfaceTexture: "Ultra-smooth, silk-like; cloth often cool, crisp, crease-resistant", length: { raw: "Continuous (stem-length)" }, tensileStrength: { raw: "200-400 MPa", minMPa: 200.0, maxMPa: 400.0 }, moistureRegain: { raw: "12%", percentage: 12.0 } },
   llama: { diameter: { raw: "20-40 \u00b5m" }, crossSection: "Round, medullated core", surfaceTexture: "Low-scale, matte", length: { raw: "80-150 mm (staple)", minMm: 80.0, maxMm: 150.0 }, tensileStrength: { raw: "50-70 MPa", minMPa: 50.0, maxMPa: 70.0 }, moistureRegain: { raw: "14%", percentage: 14.0 } },
   bison: { diameter: { raw: "10-18 \u00b5m (down)" }, crossSection: "Round, non-medullated", surfaceTexture: "Fine cuticle, low scales", length: { raw: "25-50 mm (down staple)", minMm: 25.0, maxMm: 50.0 }, tensileStrength: { raw: "80-120 MPa", minMPa: 80.0, maxMPa: 120.0 }, moistureRegain: { raw: "16%", percentage: 16.0 } },
   qiviut: { diameter: { raw: "11-13 \u00b5m" }, crossSection: "Round, non-medullated", surfaceTexture: "Ultra-fine smooth scales", length: { raw: "40-70 mm (staple)", minMm: 40.0, maxMm: 70.0 }, tensileStrength: { raw: "60-100 MPa", minMPa: 60.0, maxMPa: 100.0 }, moistureRegain: { raw: "17%", percentage: 17.0 } },
@@ -1095,16 +1130,31 @@ export const anatomyData: Record<string, AnatomyData> = {
   corriedale: { diameter: { raw: "25-31 \u00b5m" }, crossSection: "Round, non-medullated", surfaceTexture: "Medium scales; balanced crimp", length: { raw: "90-150 mm (staple)", minMm: 90.0, maxMm: 150.0 }, tensileStrength: { raw: "120-170 MPa", minMPa: 120.0, maxMPa: 170.0 }, moistureRegain: { raw: "15%", percentage: 15.0 } },
   romney: { diameter: { raw: "30-39 \u00b5m" }, crossSection: "Round, partially medullated", surfaceTexture: "Low-scale; high luster", length: { raw: "125-200 mm (staple)", minMm: 125.0, maxMm: 200.0 }, tensileStrength: { raw: "130-175 MPa", minMPa: 130.0, maxMPa: 175.0 }, moistureRegain: { raw: "14%", percentage: 14.0 } },
   lincoln: { diameter: { raw: "34-41 \u00b5m" }, crossSection: "Round, medullated", surfaceTexture: "Very low scales; silk-like luster", length: { raw: "200-380 mm (staple)", minMm: 200.0, maxMm: 380.0 }, tensileStrength: { raw: "140-190 MPa", minMPa: 140.0, maxMPa: 190.0 }, moistureRegain: { raw: "13%", percentage: 13.0 } },
-  angora: { diameter: { raw: "11-16 \u00b5m" }, crossSection: "Round, hollow core", surfaceTexture: "Ultra-smooth; minimal scales", length: { raw: "60-120 mm (staple)", minMm: 60.0, maxMm: 120.0 }, tensileStrength: { raw: "30-50 MPa", minMPa: 30.0, maxMPa: 50.0 }, moistureRegain: { raw: "18%", percentage: 18.0 } },
   ayate: { diameter: { raw: "100-400 \u00b5m" }, crossSection: "Crescent / polygonal bundles", surfaceTexture: "Coarse, stiff, fibrillar", length: { raw: "1-5 mm (ultimate cell)", minMm: 1.0, maxMm: 5.0 }, tensileStrength: { raw: "300-500 MPa", minMPa: 300.0, maxMPa: 500.0 }, moistureRegain: { raw: "10%", percentage: 10.0 } },
   krajood: { diameter: { raw: "200-500 \u00b5m (stem)" }, crossSection: "Round, hollow pith", surfaceTexture: "Smooth, waxy epidermis", length: { raw: "Full stem (500-1500 mm)" }, tensileStrength: { raw: "Low-moderate" }, moistureRegain: { raw: "12%", percentage: 12.0 } },
-  seagrass: { diameter: { raw: "100-300 \u00b5m (blade)" }, crossSection: "Flat, ribbon-like", surfaceTexture: "Smooth, slightly waxy", length: { raw: "Full blade (300-1000 mm)" }, tensileStrength: { raw: "Low-moderate" }, moistureRegain: { raw: "14%", percentage: 14.0 } },
+  seagrass: { diameter: { raw: "5–7 mm (stem)" }, crossSection: "Triangular culm; spongy white pith under green epidermis", surfaceTexture: "Smooth green rind; soft pith — elastic, hygroscopic", length: { raw: "Stem to ~2000 mm" }, tensileStrength: { raw: "Low-moderate (weaving structural)" }, moistureRegain: { raw: "14% (pith holds moisture)", percentage: 14.0 } },
   pandan: { diameter: { raw: "50-200 \u00b5m (strip)" }, crossSection: "Flat, fibrous layer", surfaceTexture: "Smooth upper / rough lower", length: { raw: "Full leaf (500-2000 mm)" }, tensileStrength: { raw: "Low-moderate" }, moistureRegain: { raw: "11%", percentage: 11.0 } },
   palm: { diameter: { raw: "100-500 \u00b5m" }, crossSection: "Round to oval, variable", surfaceTexture: "Rough, lignified", length: { raw: "50-300 mm (fiber)", minMm: 50.0, maxMm: 300.0 }, tensileStrength: { raw: "100-400 MPa", minMPa: 100.0, maxMPa: 400.0 }, moistureRegain: { raw: "10%", percentage: 10.0 } },
   rambouillet: { diameter: { raw: "18-24 \u00b5m" }, crossSection: "Round, non-medullated", surfaceTexture: "High-frequency scales; dense crimp", length: { raw: "65-100 mm (staple)", minMm: 65.0, maxMm: 100.0 }, tensileStrength: { raw: "120-175 MPa", minMPa: 120.0, maxMPa: 175.0 }, moistureRegain: { raw: "16%", percentage: 16.0 } },
-  "water-lily": { diameter: { raw: "3-8 \u00b5m" }, crossSection: "Round, multi-filament bundle", surfaceTexture: "Smooth, silk-like", length: { raw: "Continuous (stem-length)" }, tensileStrength: { raw: "150-350 MPa", minMPa: 150.0, maxMPa: 350.0 }, moistureRegain: { raw: "12%", percentage: 12.0 } },
+  "water-lily": { diameter: { raw: "~87 \u00b5m mean (\u00b130 \u00b5m, N. rubra peduncle ultimate); 3\u20138 \u00b5m hand-drawn stem filament", minUm: 57.0, maxUm: 117.0 }, crossSection: "Solid, no central lumen (FESEM, N. rubra peduncle); artisan path is round multi-filament bundle", surfaceTexture: "Hills-and-valley micro-relief (lab fiber); hand-drawn filament smooth, silk-like", length: { raw: ">12 mm staple (textile minimum, peduncle study); peduncle ~59 cm; artisan continuous stem draw", minMm: 12.0, maxMm: 600.0 }, tensileStrength: { raw: "~91 MPa (\u00b140 MPa, N. rubra single fiber)", minMPa: 51.0, maxMPa: 131.0 }, moistureRegain: { raw: "~14.6%", percentage: 14.58 } },
+  "water-hyacinth": { diameter: { raw: "15-35 \u00b5m" }, crossSection: "Oval to round, lignified bundles; hollow spongy petiole before processing", surfaceTexture: "Coarse, fibrillar; leaves waxy above water", length: { raw: "0.8-3 mm (ultimate cell); petiole segments to ~1 m plant height", minMm: 0.8, maxMm: 3.0 }, tensileStrength: { raw: "250-450 MPa", minMPa: 250.0, maxMPa: 450.0 }, moistureRegain: { raw: "11%", percentage: 11.0 } },
   sano: { diameter: { raw: "20-60 \u00b5m" }, crossSection: "Polygonal with lumen", surfaceTexture: "Rough, fibrillar", length: { raw: "15-50 mm (processed)", minMm: 15.0, maxMm: 50.0 }, tensileStrength: { raw: "500-1400 MPa", minMPa: 500.0, maxMPa: 1400.0 }, moistureRegain: { raw: "11%", percentage: 11.0 } },
   "river-reed": { diameter: { raw: "200-1000 \u00b5m (stem)" }, crossSection: "Round, hollow", surfaceTexture: "Smooth, siliceous epidermis", length: { raw: "Full stem (1000-4000 mm)" }, tensileStrength: { raw: "Low (structural)" }, moistureRegain: { raw: "12%", percentage: 12.0 } },
+  igusa: { diameter: { raw: "1-4 mm (stem)" }, crossSection: "Round, hollow pith; green epidermis", surfaceTexture: "Smooth, slightly waxy when dried", length: { raw: "Stem typically 600-1500 mm" }, tensileStrength: { raw: "Low-moderate (weaving structural)" }, moistureRegain: { raw: "13%", percentage: 13.0 } },
+  roselle: {
+    diameter: { raw: "16.07-20.2 \u00b5m (Nigeria BR/CR study)", minUm: 16.07, maxUm: 20.2 },
+    crossSection:
+      "Polygonal bast with lumen. Nigerian BR vs CR study: BR ~55.6–60.4% cellulose, ~27–33.7% hemicellulose, ~10.5–11.4% lignin; CR ~48.6–56.6% cellulose, ~31.9–38.1% hemicellulose, ~11.6–12.5% lignin; ash ~0.9–2.7%; density ~1.35–1.46 g/cm\u00b3.",
+    surfaceTexture:
+      "BR: light gold, more flexible, hairy; CR: dark gold, stiffer, less lustre. Bundle appearance can vary along the length of retted strands.",
+    length: { raw: "2.10-2.8 mm (ultimate, microscopy)", minMm: 2.1, maxMm: 2.8 },
+    tensileStrength: {
+      raw: "Single-fibre (ASTM-style): BR ~146-178 MPa, E ~21-25 GPa, \u03b5 0.5-0.7%; CR ~135-159 MPa, E ~20-24 GPa, \u03b5 0.4-0.6%",
+      minMPa: 135.15,
+      maxMPa: 177.55,
+    },
+    moistureRegain: { raw: "Moisture content ~9.5-11% (BR), ~13-14.5% (CR)", percentage: 10.27 },
+  },
 };
 
 /* ═══ CARE ═══ */
@@ -1137,7 +1187,7 @@ const rawCareData: Record<string, CareData> = {
   yak: { washTemp: "Cold hand wash (20\u00b0C)", dryMethod: "Flat dry on towel", ironTemp: "Low (110\u00b0C) with steam", specialNotes: "Warmer than merino; does not shrink easily; naturally odor-resistant" },
   banana: { washTemp: "Cold hand wash (20\u00b0C)", dryMethod: "Flat dry in shade", ironTemp: "Low (110\u00b0C) with cloth", specialNotes: "Naturally biodegradable; may stiffen after washing; handle gently when wet" },
   cork: { washTemp: "Wipe with damp cloth", dryMethod: "Air dry", ironTemp: "Do not iron", specialNotes: "Water-resistant, stain-resistant, antimicrobial; avoid sharp objects and prolonged sun" },
-  lotus: { washTemp: "Cold hand wash (15-20\u00b0C)", dryMethod: "Flat dry in shade", ironTemp: "Low (100\u00b0C) with cloth", specialNotes: "Extremely delicate and rare; natural lotus fragrance; handle minimally" },
+  lotus: { washTemp: "Cold hand wash (15-20\u00b0C)", dryMethod: "Flat dry in shade", ironTemp: "Low (100\u00b0C) with cloth", specialNotes: "Extremely delicate and rare; natural lotus fragrance; blends with cotton/silk common; producers keep fibre damp while weaving — finished cloth still needs gentle care" },
   llama: { washTemp: "Cold hand wash (20\u00b0C)", dryMethod: "Flat dry on towel", ironTemp: "Low (110\u00b0C) with steam", specialNotes: "Minimal lanolin; less prone to felting than wool; naturally flame-resistant" },
   bison: { washTemp: "Cold hand wash (20\u00b0C)", dryMethod: "Flat dry on towel", ironTemp: "Low (110\u00b0C) with steam", specialNotes: "Warmer than wool; non-allergenic; does not shrink; wind-resistant" },
   qiviut: { washTemp: "Cold hand wash (15-20\u00b0C)", dryMethod: "Flat dry on towel", ironTemp: "Do not iron", specialNotes: "8x warmer than wool by weight; does not shrink or felt; extremely rare" },
@@ -1157,16 +1207,18 @@ const rawCareData: Record<string, CareData> = {
   corriedale: { washTemp: "Cold hand wash (20\u00b0C)", dryMethod: "Flat dry on towel", ironTemp: "Medium (150\u00b0C) with steam", specialNotes: "Felts easily — avoid agitation in wash; excellent dye uptake; versatile for any craft" },
   romney: { washTemp: "Cold hand wash (20\u00b0C)", dryMethod: "Flat dry or line dry", ironTemp: "Medium (150\u00b0C) with steam", specialNotes: "Naturally water-resistant; long staple resists pilling; lustrous finish improves with wear" },
   lincoln: { washTemp: "Cold hand wash (20\u00b0C)", dryMethod: "Flat dry or line dry", ironTemp: "Medium (150\u00b0C) with steam", specialNotes: "Heavy yarn; hang with care to avoid stretching; silk-like luster increases after washing" },
-  angora: { washTemp: "Cold hand wash (15-20\u00b0C)", dryMethod: "Flat dry on towel", ironTemp: "Do not iron", specialNotes: "Fiber sheds (halo) when new; store in breathable bag; avoid friction" },
   ayate: { washTemp: "Hand wash cold", dryMethod: "Air dry flat", ironTemp: "Do not iron", specialNotes: "Softens with use and washing; open mesh allows airflow; traditionally used as carrying cloth" },
   krajood: { washTemp: "Wipe with damp cloth", dryMethod: "Air dry", ironTemp: "Do not iron", specialNotes: "Naturally water-resistant; avoid prolonged soaking; wipe with damp cloth to clean" },
-  seagrass: { washTemp: "Vacuum or wipe clean", dryMethod: "Air dry", ironTemp: "Do not iron", specialNotes: "Naturally stain-resistant; darkens with sunlight exposure; avoid excessive moisture" },
+  seagrass: { washTemp: "Vacuum or wipe clean", dryMethod: "Air dry", ironTemp: "Do not iron", specialNotes: "Naturally stain-resistant; greenish-beige shifts toward brown in light and age; spongy pith responds to humidity — avoid soaking" },
   pandan: { washTemp: "Wipe or brush clean", dryMethod: "Air dry", ironTemp: "Do not iron", specialNotes: "Store flat to prevent warping; avoid prolonged sun exposure; re-soak briefly to reshape" },
   palm: { washTemp: "Shake and brush clean", dryMethod: "Air dry", ironTemp: "Do not iron", specialNotes: "Highly rot-resistant; naturally antimicrobial; extremely durable in outdoor use" },
   rambouillet: { washTemp: "Cold hand wash (20\u00b0C)", dryMethod: "Flat dry on towel", ironTemp: "Low (120\u00b0C) with steam", specialNotes: "Similar care to merino; dense crimp provides excellent resilience and memory" },
-  "water-lily": { washTemp: "Cold hand wash (15-20\u00b0C)", dryMethod: "Flat dry in shade", ironTemp: "Low (100\u00b0C) with cloth", specialNotes: "Extremely rare and fragile; treat like finest silk; handle minimally" },
+  "water-lily": { washTemp: "Cold hand wash (15-20\u00b0C)", dryMethod: "Flat dry in shade", ironTemp: "Low (100\u00b0C) with cloth", specialNotes: "Hand-drawn stem fabric: extremely rare and fragile — treat like finest silk. Peduncle-extracted cellulosic fiber from research is a different stream with coarser staple and distinct processing." },
+  "water-hyacinth": { washTemp: "Spot clean or cold hand wash (20-30\u00b0C)", dryMethod: "Air dry flat or line dry", ironTemp: "Low (110\u00b0C) if needed", specialNotes: "Coarse, absorbent fiber — avoid prolonged soaking; mats and rope may shed; similar care to jute handicrafts" },
   sano: { washTemp: "Warm (30-40\u00b0C)", dryMethod: "Line dry", ironTemp: "High (200\u00b0C) while damp", specialNotes: "Similar care to linen/nettle; softens considerably with washing; very durable" },
   "river-reed": { washTemp: "Wipe or brush clean", dryMethod: "Air dry", ironTemp: "Do not iron", specialNotes: "Re-soak before re-shaping; naturally insect-resistant; may become brittle with age" },
+  igusa: { washTemp: "Vacuum or dry brush", dryMethod: "Air dry; avoid damp storage", ironTemp: "Do not iron", specialNotes: "Natural rush darkens and becomes brittle with age and UV; rotate tatami and limit direct sun; professional replacement when worn" },
+  roselle: { washTemp: "Warm (30-40\u00b0C) or spot clean for coarse goods", dryMethod: "Line dry flat", ironTemp: "Medium (150\u00b0C) if needed", specialNotes: "Coarse bast weakens when wet — handle like jute; for blends, follow dominant fiber; rope, nets, and geotextiles are seldom laundered" },
   /* ── TEXTILE CARE DATA ── */
   felt: { washTemp: "Cold hand wash (20°C) or dry clean", dryMethod: "Flat dry; reshape while damp", ironTemp: "Low (110°C) with steam and press cloth", specialNotes: "Do not agitate in water — felt cannot be un-felted; spot clean when possible" },
   denim: { washTemp: "Cold (20-30°C); turn inside-out", dryMethod: "Line dry or tumble low", ironTemp: "High (200°C) while slightly damp", specialNotes: "Wash infrequently to preserve fades; raw denim develops unique wear patterns over 6-12 months" },
@@ -1189,8 +1241,8 @@ export interface QuoteEntry {
 export const quoteData: Record<string, QuoteEntry[]> = {
   /* ── FIBER QUOTES ── */
   hemp: [
-    { text: "Make the most of the Indian hemp seed, and sow it everywhere.", attribution: "George Washington, 1794" },
-    { text: "Hemp is of first necessity to the wealth and protection of the country.", attribution: "Thomas Jefferson" },
+    { text: "Long ago when these ancient Grecian temples were new, hemp was already old in the service of mankind.", attribution: "Hemp for Victory (USDA), 1942" },
+    { text: "Even the ships that carried Columbus across the Atlantic were rigged with hemp.", attribution: "Hemp for Victory (USDA), 1942" },
     { text: "Why use up the forests which were centuries in the making when there is a substitute available — hemp?", attribution: "Henry Ford, 1941" },
   ],
   jute: [
@@ -1231,7 +1283,10 @@ export const quoteData: Record<string, QuoteEntry[]> = {
   ],
   ramie: [
     { text: "Ramie is the forgotten fiber — stronger than cotton, more lustrous than linen, and older than either.", attribution: "Irene Emery, The Primary Structures of Fabrics" },
+    { text: "By the pond east of the gate, one can ret ramie.", attribution: "Shijing (Book of Songs), Chen Feng" },
     { text: "Chinese grass-cloth is so fine it was once mistaken for silk by European traders.", attribution: "18th-Century Trade Accounts" },
+    { text: "The techniques of Echigo-jōfu and Ojiya-chijimi — ramie summer cloth shaped by snow, resist dyeing, and patient handwork — belong to humanity's living heritage.", attribution: "UNESCO Intangible Cultural Heritage" },
+    { text: "Southerners do not understand hemp harvest; northerners do not understand ramie processing.", attribution: "Wang Zhen, Agricultural Treatise (Yuan dynasty)" },
   ],
   kapok: [
     { text: "Kapok cannot be spun, but it can save your life — a single pound keeps a man afloat.", attribution: "US Navy Handbook, 1942" },
@@ -1267,10 +1322,6 @@ export const quoteData: Record<string, QuoteEntry[]> = {
     { text: "Mohair is the diamond fiber — it takes dye like no other natural material and reflects light with a living luster.", attribution: "Mohair South Africa" },
     { text: "An Angora goat's fleece grows one inch per month, and every inch is worth its weight in silver.", attribution: "Texas Hill Country Saying" },
   ],
-  angora: [
-    { text: "Angora rabbit fiber is eight times warmer than sheep's wool — the softest insulation nature has devised.", attribution: "Fiber Arts Magazine" },
-    { text: "To spin angora is to spin a cloud — it drifts and halos and refuses to behave like ordinary fiber.", attribution: "Hand Spinners' Wisdom" },
-  ],
   qiviut: [
     { text: "Qiviut is the rarest luxury fiber on Earth — shed once a year by muskoxen on the Arctic tundra.", attribution: "Oomingmak Cooperative, Alaska" },
     { text: "Eight times warmer than wool and finer than cashmere, qiviut does not shrink in water — it is born of the Arctic.", attribution: "Muskox Fiber Studies" },
@@ -1288,8 +1339,11 @@ export const quoteData: Record<string, QuoteEntry[]> = {
     { text: "We are only beginning to understand what the Plains peoples always knew: the buffalo provides everything, including the finest fiber.", attribution: "Indigenous Textile Revival" },
   ],
   lotus: [
-    { text: "Each lotus robe requires 120,000 stems, cut at dawn, their fibers drawn by hand beneath the water's surface.", attribution: "Samatoa Lotus Textiles, Cambodia" },
-    { text: "Lotus silk is not silk at all — it is the extracted vascular fiber of the sacred lotus, as fine as spider web.", attribution: "Myanmar Textile Tradition" },
+    { text: "From a single stem at Inle Lake, Daw Sa U wove the first Padonma Kyathingan and was blessed as Daw Kyar U — Madam Lotus Egg.", attribution: "Inle Lake lotus-robes tradition" },
+    { text: "Lotus silk is not silk at all — it is the extracted vascular fiber of the sacred lotus, as fine as spider web.", attribution: "Myanmar textile tradition" },
+    { text: "Extracting enough lotus silk for one scarf can take two months — the cloth can cost many times what ordinary mulberry silk commands.", attribution: "Lotus textile economics" },
+    { text: "Samatoa trains Cambodian women in lotus fabric as fair trade — taking the country's natural textiles toward a global audience.", attribution: "Samatoa, Cambodia" },
+    { text: "Near Loktak Lake, Bijiyashanti Tongbram named her workshop Sanajing Sana Thambal and taught neighbours to spin lotus thread on bamboo looms.", attribution: "Manipur, India" },
   ],
   seacell: [
     { text: "SeaCell embeds seaweed directly into cellulose fiber — the ocean's minerals become part of the cloth itself.", attribution: "Smartfiber AG" },
@@ -1362,6 +1416,12 @@ export const quoteData: Record<string, QuoteEntry[]> = {
   "water-lily": [
     { text: "Extracting fiber from water lily stems is like drawing silk from water — the stems must be processed within hours of cutting.", attribution: "Samatoa Lotus Textiles" },
     { text: "The rarest fiber is the one nobody thought to look for, hiding beneath the surface of a temple pond.", attribution: "Cambodian Artisan Tradition" },
+    { text: "A peduncle fiber without a hollow lumen still meets the textile length threshold — morphology and chemistry then argue for composites as much as cloth.", attribution: "Nymphaea rubra fiber characterization literature" },
+  ],
+  "water-hyacinth": [
+    { text: "From invasive to inventive — the same stems that choked the Volta become fiber for the weaver’s loom.", attribution: "Ghana Fair-Trade Cooperative Practice" },
+    { text: "They called it the poison flower when the nets came up empty; now the harvest feeds co-ops and craft, not just the weed.", attribution: "Volta River Livelihood Programs" },
+    { text: "Slit the hollow stalk, let the sun do the retting — two weeks from weed to spinnable line.", attribution: "South Asian Fiber Extraction Studies" },
   ],
   sano: [
     { text: "Sano fiber has carried fish from Himalayan streams for centuries — stronger wet than dry, like the mountains themselves.", attribution: "Nepali Highland Tradition" },
@@ -1370,6 +1430,12 @@ export const quoteData: Record<string, QuoteEntry[]> = {
   "river-reed": [
     { text: "Before timber framing, before brick, humanity sheltered under reed — the first architecture was woven.", attribution: "Vernacular Architecture Studies" },
     { text: "A thatched reed roof, properly laid, will outlast a generation — fifty years of rain sliding off bundled stems.", attribution: "Master Thatcher's Guild" },
+  ],
+  igusa: [
+    { text: "Tatami is not only a floor — it measures the room, the light, and the seasons; igusa is the living skin of that measure.", attribution: "Japanese Interior Craft Tradition" },
+    { text: "The best rush grows where the water runs clear and cold — the field and the fiber share the same discipline.", attribution: "Japanese Rush-Growing Regions" },
+    { text: "A new tatami room smells of summer fields — that is igusa speaking before the house settles into quiet.", attribution: "Japanese Domestic Craft" },
+    { text: "The tatami facing hides thousands of parallel decisions: each rush strip aligned so the foot reads smoothness as calm.", attribution: "Tatami Weaving Practice" },
   ],
   /* ── DYE QUOTES ── */
   indigo: [
@@ -1692,9 +1758,10 @@ export const quoteData: Record<string, QuoteEntry[]> = {
     { text: "A single mulberry silkworm cocoon contains up to 900 meters of continuous filament — nearly a kilometer of thread from one caterpillar.", attribution: "Sericulture Science" },
     { text: "Mulberry silk is stronger than steel by weight, yet it flows like water through your fingers.", attribution: "Materials Science" },
   ],
-  tussah: [
-    { text: "Tussah silk is wild silk — its golden color comes from the forest leaves the worm eats, and it cannot be bleached white.", attribution: "Indian Silk Board" },
-    { text: "The beauty of tussah is its imperfection — nubby, textured, and warm where mulberry is smooth and cool.", attribution: "Wild Silk Research" },
+  tussar: [
+    { text: "Tussar silk is wild silk — its golden color comes from the forest leaves the worm eats, and it cannot be bleached white.", attribution: "Indian Silk Board" },
+    { text: "The beauty of tussar is its imperfection — nubby, textured, and warm where mulberry is smooth and cool.", attribution: "Wild Silk Research" },
+    { text: "Tasar, eri, and muga are India’s vanya silks — non-mulberry wild silks with deep roots in tribal and rural sericulture.", attribution: "Indian Sericulture" },
   ],
   eri: [
     { text: "Eri is the only silk that never kills the worm — the open-ended cocoon lets the moth emerge before harvesting.", attribution: "Assamese Sericulture" },
@@ -1711,12 +1778,14 @@ export const quoteData: Record<string, QuoteEntry[]> = {
   seagrass: [
     { text: "Seagrass meadows capture carbon 35 times faster than tropical rainforests — every rug is a carbon sink.", attribution: "Marine Ecology Research" },
     { text: "A fiber that grows in saltwater, needs no fertilizer, and develops a golden patina with age — seagrass asks nothing.", attribution: "Sustainable Fiber Innovation" },
+    { text: "Thanh Hoa's coastal belt moves tens of thousands of tons a year — the grade the weaving trade measures others against.", attribution: "Vietnam Coastal Supply Chains" },
   ],
 };
 
 /** Ordered plate types for the detail-mode storytelling arc. */
 export const namedPlates: PlateType[] = [
   "about",
+  "properties",
   "insight1",
   "insight2",
   "insight3",
@@ -1727,6 +1796,7 @@ export const namedPlates: PlateType[] = [
   "silkChiffon",
   "silkOrganza",
   "quote",
+  "youtubeEmbed",
   "trade",
   "worldNames",
   "regions",
@@ -1825,7 +1895,7 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619261/atlas/yksbwtxethsok4bxsoix.jpg", "Silk cocoons"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619269/atlas/e45iykbpuypcenlnxhfq.jpg", "Mulberry silk"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619272/atlas/bwyoiumzmx5d2kqhvsnz.jpg", "Peace silk"),
-    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619274/atlas/u54xnyn30xhvcs7pgqxq.jpg", "Tussah silk"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619274/atlas/u54xnyn30xhvcs7pgqxq.jpg", "Tussar silk"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619275/atlas/vhtctqa2blfnurmnuj6m.jpg", "Eri silk"),
   ],
   bamboo: [
@@ -1973,6 +2043,15 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741089/atlas/c9qnhcyy0eo09dy3lcw3.jpg", "Modern angora goat", "Public domain"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741092/atlas/iz21uvurpdk8vmo35huw.jpg", "Angora goats near Tuba City, ca.1900", "Openverse"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741095/atlas/k6yqklzbblggeolo6i8f.jpg", "Angora Goat capra hircus", "Drew Avery, CC BY 2.0"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741081/atlas/asaj547h6ukhwfxgc1h3.jpg", "Angora goat", "Openverse"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741088/atlas/gpj66qtu5c1c0knihpdw.jpg", "Angora goats near Berriedale", "sylvia duckworth, CC BY-SA 2.0"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741090/atlas/jdif7vqaeecmysf5fzep.jpg", "Angora goat in pasture", "Pexels"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741091/atlas/ijbwbmcfneyllujeymfs.jpg", "Angora goat close-up", "Pexels"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741092/atlas/wv0nvsdyelrpnrbcvgix.jpg", "Angora goat historical photo", "State Government Photographer, CC0"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741093/atlas/uvijnbspdzxem4dj26st.jpg", "Wild Angora goat", "Openverse"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741094/atlas/ddh3qaxxx2glluywcgmp.jpg", "Angora goat portrait", "Unsplash"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741096/atlas/r9lndx7trkc2flykvkth.jpg", "Angora goat", "Openverse"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771741097/atlas/vsqvyzozjutb6yc5thrc.jpg", "Angora goat", "Openverse"),
   ],
   lyocell: [
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619283/atlas/poiednmozdgvjyebqe6h.jpg", "Lyocell fabric"),
@@ -2093,8 +2172,20 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619634/atlas/o04pyd78pdrlxnqlgvvf.jpg", "Sweetgrass basket"),
   ],
   raffia: [
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775506165/atlas/skpmybeuzezhj9yh9eor.jpg", "Raffia — Natural Fiber Atlas"),
+    img("https://helenkaminski.com/cdn/shop/files/process-647x1098_0007_20252506_MADAGASCAR_C3_2739.jpg?v=1765863926", "Raffia craft, Madagascar"),
+    img("https://helenkaminski.com/cdn/shop/files/process-647x1098_0006_20252506_MADAGASCAR_C3_2741.jpg?v=1765863926", "Raffia processing"),
+    img("https://helenkaminski.com/cdn/shop/files/process-647x1098_0004_20252506_MADAGASCAR_DAY3_2317.jpg?v=1765863927", "Raffia harvest"),
+    img("https://helenkaminski.com/cdn/shop/files/1680x1200_0001_20252506_MADAGASCAR_DAY7_5152.jpg?v=1765863927", "Raffia landscape"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619697/atlas/pkqfjcnypmzmnvvzf1fu.jpg", "Raffia fiber"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619703/atlas/ybqb9tetqo5iinmog0gd.jpg", "Raffia weaving"),
+    img("https://helenkaminski.com/cdn/shop/files/process-647x1098_0001_20252506_MADAGASCAR_DAY5_4165.jpg?v=1765863927", "Raffia workshop"),
+    img("https://helenkaminski.com/cdn/shop/files/stitches-1080x1350_0001_helen_kaminski_SS25_Kirana_crochet_stitch_612x.jpg?v=1765934435", "Kirana crochet stitch"),
+    img("https://helenkaminski.com/cdn/shop/files/stitches-1080x1350_0002_helen_kaminski_SS25_Mala_crochet_stitch_612x.jpg?v=1765934435", "Mala crochet stitch"),
+    img("https://helenkaminski.com/cdn/shop/articles/blog_tile_c868e9d0-06c8-42bd-8b54-4dc91737cc75_1080x.png", "Raffia heritage"),
+    img("https://helenkaminski.com/cdn/shop/files/double_image_0000_20252506_MADAGASCAR_C2_1558.jpg?v=1765863927", "Raffia in Madagascar"),
+    img("https://helenkaminski.com/cdn/shop/files/1680x1200_0000_20252506_MADAGASCAR_DAY7_5228.jpg?v=1765863927", "Madagascar raffia"),
+    img("https://helenkaminski.com/cdn/shop/files/artisans.png?v=1765863928", "Raffia artisans"),
   ],
   fique: [
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619742/atlas/d0bh8y4vwf0z96lhl2hk.jpg", "Fique fiber"),
@@ -2349,6 +2440,46 @@ export function getGalleryImages(fiberId: string): GalleryImageEntry[] {
   ensureBaseGalleryMap();
   void prefetchGalleryImagesForFiber(fiberId);
   return mergedGalleryMap[fiberId] ?? [];
+}
+
+/**
+ * Gallery shown in the product UI: fiber overrides (promoted / localStorage) first,
+ * then the baseline from curated atlas-data + new-images.json. Dedupes by URL so a
+ * partial galleryImages patch cannot hide the rest of the catalog (e.g. after a single
+ * upload is synced to promoted-overrides).
+ */
+export function mergeFiberGalleryWithFallback(
+  fiberId: string,
+  fiber: Pick<FiberProfile, "galleryImages">,
+): GalleryImageEntry[] {
+  const primary = fiber.galleryImages ?? [];
+  const fallback = getGalleryImages(fiberId);
+  if (primary.length === 0) return fallback;
+  const seen = new Set<string>();
+  const out: GalleryImageEntry[] = [];
+  for (const e of primary) {
+    const u = e.url?.trim();
+    if (u && !seen.has(u)) {
+      seen.add(u);
+      out.push(e);
+    }
+  }
+  for (const e of fallback) {
+    const u = e.url?.trim();
+    if (u && !seen.has(u)) {
+      seen.add(u);
+      out.push(e);
+    }
+  }
+  return out;
+}
+
+/** Fiber row with `galleryImages` matching the public grid (override URLs + catalog baseline). */
+export function withMergedGalleryImages(fiber: FiberProfile): FiberProfile {
+  return {
+    ...fiber,
+    galleryImages: mergeFiberGalleryWithFallback(fiber.id, fiber),
+  };
 }
 
 export async function prefetchGalleryImagesForFiber(fiberId: string): Promise<void> {

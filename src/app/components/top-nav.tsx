@@ -15,8 +15,10 @@ import {
   NAV_FONT_STYLE,
   NAV_FONT_STYLE_MOBILE,
 } from "./atlas-shared";
+import { AtlasScrollPortContext } from "../context/atlas-scroll-port-context";
 import { NavFilterProvider, useNavFilter } from "../context/nav-filter-context";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
+import { NfaMark } from "./nfa-mark";
 import { useIsMobile } from "./ui/use-mobile";
 
 function usePageFadeCSS() {
@@ -89,6 +91,14 @@ const CHILDREN_STRIP_HEIGHT = 88;
 const TRANSITION_EASE = "cubic-bezier(0.4, 0, 0.2, 1)";
 const TRANSITION_MS = 350;
 const PORTAL_FULL = { width: 72, borderRadius: 8, imgRadius: 7 };
+/** Min border-box height for the primary nav row on mobile so portal strip and breadcrumb share the same row size (no CLS). */
+const MOBILE_PRIMARY_NAV_STRIP_MIN_HEIGHT = Math.ceil(
+  16 + // row padding top + bottom
+  2 + // atlas-active-border vertical padding around thumb
+  ((PORTAL_FULL.width - 2) * 3) / 4 + // 4:3 thumb at inner width (full portal mode)
+  4 + // mt-1 above label
+  16, // single-line label
+);
 const PORTAL_PATH = { width: 52, borderRadius: 6, imgRadius: 5 };
 const PATH_SEG = { width: 52, borderRadius: 6, imgRadius: 5 };
 const STRIP_THUMB = { width: 72, borderRadius: 8, imgRadius: 7 };
@@ -347,6 +357,7 @@ function TopNavInner({
   const hoveredPortalIdRef = useRef<string | null>(null);
   const [l1Hovered, setL1Hovered] = useState(false);
   const [childrenOpenOnMobile, setChildrenOpenOnMobile] = useState(false);
+  const [atlasScrollPortEl, setAtlasScrollPortEl] = useState<HTMLDivElement | null>(null);
   const l1LeaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasPath = selectedPath.length > 0;
@@ -431,9 +442,17 @@ function TopNavInner({
     setChildrenOpenOnMobile(false);
   }, [clearFilter, onNavigate, onPreviewNavigate, onSearchChange]);
 
+  /* Scroll architecture (avoid nested-scroll / “stuck” gestures):
+     1) Layout — `h-dvh min-h-0` fixes shell height to the viewport so `flex-1` below is a
+        real scrollport (was `min-h-dvh`, which let the column grow with content and killed
+        inner overflow).
+     2) Single primary vertical scroller — only `data-testid="atlas-main-scroll"` uses
+        overflow-y-auto; nav strips use horizontal overflow inside fixed-height chrome.
+     3) Layering — children strip is `absolute` + z-50; when height is 0 it must not
+        intercept touches above the grid. */
   return (
     <div
-      className="flex min-h-dvh w-full flex-col overflow-hidden"
+      className="flex h-dvh min-h-0 w-full flex-col overflow-hidden"
       style={{ backgroundColor: ATLAS_AMBIENT_BG, transition: ATLAS_AMBIENT_TRANSITION }}
     >
       <div
@@ -441,21 +460,27 @@ function TopNavInner({
         style={{ backgroundColor: ATLAS_AMBIENT_BG, transition: ATLAS_AMBIENT_TRANSITION }}
       >
         <div
-          className={`flex min-h-14 items-center gap-3 px-4 sm:px-[3%] ${isMobile ? "py-2" : "justify-between"}`}
+          className={`flex px-4 sm:px-[3%] ${isMobile ? "flex-col items-stretch gap-2 py-2" : "min-h-14 items-center gap-3 justify-between"}`}
         >
           <div
-            className={`flex min-w-0 items-center gap-3 ${isMobile ? "atlas-topnav-wordmark-slot flex-1" : "shrink-0"}`}
+            className={`flex min-w-0 items-center gap-3 ${isMobile ? "atlas-topnav-wordmark-slot w-full" : "shrink-0"}`}
           >
             <button
+              type="button"
               onClick={resetToAll}
-              className={`cursor-pointer text-left whitespace-nowrap text-[#e8e0d0] ${isMobile ? "atlas-wordmark-fluid min-w-0 max-w-full" : ""}`}
-              style={
-                isMobile
-                  ? { ...NAV_FONT_STYLE, fontWeight: ATLAS_GRID_TITLE_STYLE.fontWeight }
-                  : { ...NAV_FONT_STYLE, ...ATLAS_GRID_TITLE_STYLE }
-              }
+              className={`atlas-wordmark-home flex min-w-0 cursor-pointer items-center gap-2.5 text-left ${isMobile ? "max-w-full" : ""}`}
             >
-              Natural Fiber Atlas
+              <NfaMark className="atlas-nfa-mark-target block h-9 w-9 shrink-0 text-[#e8e0d0]" />
+              <span
+                className={`min-w-0 whitespace-nowrap text-[#e8e0d0] ${isMobile ? "atlas-wordmark-fluid max-w-full" : ""}`}
+                style={
+                  isMobile
+                    ? { ...NAV_FONT_STYLE, fontWeight: ATLAS_GRID_TITLE_STYLE.fontWeight }
+                    : { ...NAV_FONT_STYLE, ...ATLAS_GRID_TITLE_STYLE }
+                }
+              >
+                Natural Fiber Atlas
+              </span>
             </button>
             {!isMobile && (
               <span className="whitespace-nowrap text-[#8e8678]" style={{ ...NAV_FONT_STYLE, ...ATLAS_GRID_SUBHEAD_MUTED_STYLE }}>
@@ -466,11 +491,18 @@ function TopNavInner({
           <div
             className={
               isMobile
-                ? "atlas-topnav-search-slot relative min-w-0 flex-1"
+                ? "atlas-topnav-search-slot relative my-2.5 min-w-0 w-full"
                 : ATLAS_SEARCH_WRAPPER_CLASS
             }
           >
-            <Search size={13} className={ATLAS_SEARCH_ICON_CLASS} />
+            <Search
+              size={isMobile ? 11 : 13}
+              className={
+                isMobile
+                  ? "pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-white/20"
+                  : ATLAS_SEARCH_ICON_CLASS
+              }
+            />
             <input
               type="text"
               aria-label="Search fibers"
@@ -480,7 +512,7 @@ function TopNavInner({
                 const next = e.target.value;
                 setSearch(next);
               }}
-              className={`${ATLAS_SEARCH_INPUT_CLASS}${isMobile ? " atlas-search-input-fluid" : ""}`}
+              className={`${ATLAS_SEARCH_INPUT_CLASS}${isMobile ? " atlas-search-input-fluid py-1 pl-7 pr-7" : ""}`}
               style={isMobile ? { ...NAV_FONT_STYLE } : ATLAS_GRID_SEARCH_STYLE}
             />
             {visibleSearch && (
@@ -516,7 +548,17 @@ function TopNavInner({
         }}
         style={{ backgroundColor: ATLAS_AMBIENT_BG, transition: ATLAS_AMBIENT_TRANSITION }}
       >
-        <div className="flex items-center px-4 sm:px-[3%]" style={{ minHeight: 76, paddingTop: 8, paddingBottom: 8, gap: 12, justifyContent: "flex-start", transition: `gap ${TRANSITION_MS}ms ${TRANSITION_EASE}` }}>
+        <div
+          className="flex items-center px-4 sm:px-[3%]"
+          style={{
+            minHeight: isMobile ? MOBILE_PRIMARY_NAV_STRIP_MIN_HEIGHT : 76,
+            paddingTop: 8,
+            paddingBottom: 8,
+            gap: 12,
+            justifyContent: "flex-start",
+            transition: `gap ${TRANSITION_MS}ms ${TRANSITION_EASE}`,
+          }}
+        >
           {!hasPath &&
             atlasNavigation.map((node) => (
               <PortalThumb
@@ -576,6 +618,7 @@ function TopNavInner({
           style={{
             height: stripHeight,
             transition: `height 250ms ${TRANSITION_EASE}`,
+            pointerEvents: stripHeight === 0 ? "none" : "auto",
           }}
         >
           {level2Nodes.length > 0 && (
@@ -622,14 +665,21 @@ function TopNavInner({
         </div>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden">
-        {locationKey ? (
-          <div key={locationKey} className="atlas-page-fade" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-            {children}
-          </div>
-        ) : (
-          children
-        )}
+      <div
+        ref={setAtlasScrollPortEl}
+        className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden"
+        data-testid="atlas-main-scroll"
+        style={{ touchAction: "pan-y" }}
+      >
+        <AtlasScrollPortContext.Provider value={atlasScrollPortEl ?? undefined}>
+          {locationKey ? (
+            <div key={locationKey} className="atlas-page-fade" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
+              {children}
+            </div>
+          ) : (
+            children
+          )}
+        </AtlasScrollPortContext.Provider>
       </div>
     </div>
   );

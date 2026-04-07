@@ -1,6 +1,6 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { AnatomyPlate, CarePlate, WorldNamesPlate } from "./detail-plates";
+import { AnatomyPlate, CarePlate, WorldNamesPlate, getSupplementalProfileTags } from "./detail-plates";
 import { dataSource } from "../data/data-provider";
 import type { FiberProfile } from "../data/atlas-data";
 
@@ -59,7 +59,7 @@ describe("CarePlate", () => {
 });
 
 describe("AnatomyPlate", () => {
-  it("renders visible raw values and disclosure for overflow anatomy metrics", () => {
+  it("renders all anatomy metrics in a scrollable card", () => {
     const anatomySpy = vi.spyOn(dataSource, "getAnatomyData").mockReturnValue({
       hemp: {
         diameter: { raw: "16-50 μm" },
@@ -73,8 +73,63 @@ describe("AnatomyPlate", () => {
 
     expect(() => render(<AnatomyPlate fiber={baseFiber} />)).not.toThrow();
     expect(screen.getByText("550-900 MPa")).toBeInTheDocument();
-    expect(screen.getByText("+2 additional metrics")).toBeInTheDocument();
+    expect(screen.getByText("Moisture")).toBeInTheDocument();
+    expect(screen.getByText("Staple Len.")).toBeInTheDocument();
+    expect(screen.queryByText(/additional metrics/)).not.toBeInTheDocument();
     anatomySpy.mockRestore();
+  });
+});
+
+describe("getSupplementalProfileTags", () => {
+  it("drops tags that match a full property value (case-insensitive)", () => {
+    const fiber: FiberProfile = {
+      ...baseFiber,
+      category: "fiber",
+      tags: ["Fiber", "Industrial"],
+      profilePills: {
+        ...baseFiber.profilePills,
+        origin: "China",
+        plantPart: "Stalk",
+        handFeel: "Soft",
+        fiberType: "Bast Fiber",
+        era: "~1000 BCE",
+      },
+    };
+    expect(getSupplementalProfileTags(fiber)).toEqual(["Industrial"]);
+  });
+
+  it("drops single-word tags that appear as a word in a property value", () => {
+    const fiber: FiberProfile = {
+      ...baseFiber,
+      category: "fiber",
+      tags: ["Bast", "Sustainable"],
+      profilePills: {
+        ...baseFiber.profilePills,
+        origin: "Asia",
+        plantPart: "Stalk",
+        handFeel: "Coarse",
+        fiberType: "Bast Fiber",
+        era: "~8000 BCE",
+      },
+    };
+    expect(getSupplementalProfileTags(fiber)).toEqual(["Sustainable"]);
+  });
+
+  it("keeps multi-word tags even when one word appears in a property value", () => {
+    const fiber: FiberProfile = {
+      ...baseFiber,
+      category: "textile",
+      tags: ["Satin Weave", "Fluid"],
+      profilePills: {
+        ...baseFiber.profilePills,
+        origin: "France",
+        plantPart: "Filament",
+        handFeel: "Liquid-Smooth",
+        fiberType: "Woven Silk Textile",
+        era: "~1700s",
+      },
+    };
+    expect(getSupplementalProfileTags(fiber)).toEqual(["Satin Weave", "Fluid"]);
   });
 });
 

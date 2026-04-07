@@ -10,17 +10,26 @@
  * beyond what the caller passes in.
  */
 
-import { getGalleryImages, type GalleryImageEntry, type PlateType } from "../data/atlas-data";
-import type { FiberIndexEntry } from "../data/atlas-data";
+import {
+  getGalleryImages,
+  type FiberProfile,
+  type GalleryImageEntry,
+  type PlateType,
+  type FiberIndexEntry,
+} from "../data/atlas-data";
+import { dataSource } from "../data/data-provider";
+import { DETAIL_FADE, EXHALE_EASE } from "./detail-motion";
+import { hasAnyValidYoutubeEmbed } from "./youtube-embed-urls";
 
 /* ══════════════════════════════════════════════════════════
    Animation constants — shared between this module and grid-view.
-   Exported so grid-view can use them for settle timers, exhale refs, etc.
+   DETAIL_FADE / EXHALE_EASE: canonical values in detail-motion.ts
    ══════════════════════════════════════════════════════════ */
+
+export { DETAIL_FADE, EXHALE_EASE };
 
 export const INHALE_FADE = 0.06;       // profile cards snap to black — near-instant
 export const EXHALE_FADE = 0.15;       // profile cards fade-in duration
-export const DETAIL_FADE = 0.528;       // detail card opacity transition duration
 export const SETTLE_BUFFER = 60;       // ms buffer after max stagger + duration
 export const STAGGER_PER_UNIT = 0;     // no cascade for profile cards — snap together
 export const MAX_STAGGER = 0;          // no profile stagger cap needed
@@ -29,11 +38,10 @@ export const MAX_STAGGER = 0;          // no profile stagger cap needed
    Beat 1 — the 4 nearest detail plates (by Manhattan distance from hero)
    load sequentially, one domino at a time (120ms apart).
    The contactSheet card is force-appended as the last Beat 1 entry.
-   Beat 2 — after a deliberate 528ms breath from Beat 1 start, remaining
-   plates cascade in as dominos with a fixed 120ms gap between each. */
+   Beat 2 — after a breath from Beat 1 start, remaining plates cascade in. */
 export const FIRST_WAVE_SIZE = 4;              // # of distance-sorted plates in Beat 1 (before contactSheet)
 export const BEAT1_CARD_GAP = 0.08;             // 80ms between each Beat 1 card
-export const PRIORITY_CASCADE_GAP = 0.528;     // 528ms from Beat 1 start to Beat 2 start
+export const PRIORITY_CASCADE_GAP = DETAIL_FADE; // aligned with detail opacity fade duration
 export const BEAT2_CARD_GAP = 0.08;             // 80ms between each Beat 2 card
 
 /* Exhale reverse-stagger: farthest detail plates fade first,
@@ -44,7 +52,6 @@ export const EXHALE_MAX_STAGGER = 0.09;         // 90ms cap
 /* Cascade overlap ratios — maximised so phases are simultaneous */
 export const INHALE_OVERLAP = 1.0;     // Phase 2 starts immediately
 export const EXHALE_OVERLAP = 1.0;     // Exhale Phase 2 starts immediately
-export const EXHALE_EASE: [number, number, number, number] = [0.16, 1, 0.3, 1];
 
 /* ══════════════════════════════════════════════════════════
    Zone classification
@@ -81,6 +88,7 @@ export function classifyZone(
 const PLATE_ZONE_PREFS: [PlateType, Zone[]][] = [
   /* Ring 1 — Immediate context */
   ["about",          ["right", "left", "below-right", "below-left", "below", "above-right", "above-left", "above"]],
+  ["properties",     ["left", "right", "below", "below-right", "below-left", "above", "above-right", "above-left"]],
   ["insight1",       ["left", "above-left", "above", "above-right", "right", "below-left", "below", "below-right"]],
   ["insight2",       ["below", "below-right", "below-left", "right", "left", "above", "above-right", "above-left"]],
   ["insight3",       ["above", "above-right", "above-left", "right", "left", "below", "below-right", "below-left"]],
@@ -91,6 +99,7 @@ const PLATE_ZONE_PREFS: [PlateType, Zone[]][] = [
   ["silkChiffon",    ["below-right", "right", "below", "above-right", "left", "below-left", "above", "above-left"]],
   ["silkOrganza",    ["above-left", "left", "above", "below-left", "right", "above-right", "below", "below-right"]],
   ["quote",          ["left", "right", "above-left", "above-right", "above", "below-left", "below-right", "below"]],
+  ["youtubeEmbed",   ["below", "below-right", "below-left", "right", "left", "above", "above-right", "above-left"]],
 
   /* Ring 2 — Data & geography */
   ["trade",          ["above-left", "above", "left", "above-right", "right", "below-left", "below", "below-right"]],
@@ -109,9 +118,17 @@ const PLATE_ZONE_PREFS: [PlateType, Zone[]][] = [
 
 import { worldNames, processData, anatomyData, careData, quoteData, fibers } from "../data/atlas-data";
 
+/**
+ * Profile fields used for plate availability must match the merged runtime catalog
+ * (bundled + promoted-overrides + localStorage), not the raw `fibers.ts` re-export alone.
+ */
+function getFiberForPlateAvailability(fiberId: string): FiberProfile | undefined {
+  return dataSource.getFiberById(fiberId) ?? fibers.find((f) => f.id === fiberId);
+}
+
 /** Returns the subset of PLATE_ZONE_PREFS whose plate types have data for the given fiber. */
 function filterAvailablePlates(fiberId: string): [PlateType, Zone[]][] {
-  const fiber = fibers.find((f) => f.id === fiberId);
+  const fiber = getFiberForPlateAvailability(fiberId);
   return PLATE_ZONE_PREFS.filter(([pt]) => {
     switch (pt) {
       case "worldNames": {
@@ -126,6 +143,8 @@ function filterAvailablePlates(fiberId: string): [PlateType, Zone[]][] {
         return !!careData[fiberId];
       case "quote":
         return (quoteData[fiberId] ?? []).length > 0;
+      case "youtubeEmbed":
+        return fiber ? hasAnyValidYoutubeEmbed(fiber) : false;
       case "insight1":
       case "insight2":
       case "insight3": {
@@ -143,7 +162,7 @@ function filterAvailablePlates(fiberId: string): [PlateType, Zone[]][] {
       case "seeAlso":
         return fiber ? fiber.seeAlso.length > 0 : false;
       default:
-        return true; // about, trade, regions always have data
+        return true; // about, properties, trade, regions always have data
     }
   });
 }
@@ -152,17 +171,33 @@ function filterAvailablePlates(fiberId: string): [PlateType, Zone[]][] {
    Gallery queue builder
    ══════════════════════════════════════════════════════════ */
 
+/** Max thumbnails per contact-sheet detail card; overflow becomes additional cards. */
+export const CONTACT_SHEET_MAX_IMAGES_PER_CARD = 12;
+
 export interface GalleryCardDescriptor {
   type: "contactSheet";
   images: GalleryImageEntry[];
+  /** Index of `images[0]` in the fiber’s full merged gallery (lightbox / labels). */
+  startIndex: number;
+}
+
+export function chunkGalleryForContactSheets(all: GalleryImageEntry[]): GalleryCardDescriptor[] {
+  if (all.length === 0) return [];
+  const out: GalleryCardDescriptor[] = [];
+  const max = CONTACT_SHEET_MAX_IMAGES_PER_CARD;
+  for (let start = 0; start < all.length; start += max) {
+    out.push({
+      type: "contactSheet",
+      images: all.slice(start, start + max),
+      startIndex: start,
+    });
+  }
+  return out;
 }
 
 export function buildGalleryQueue(fiberId: string, galleryOverride?: GalleryImageEntry[]): GalleryCardDescriptor[] {
   const all = galleryOverride ?? getGalleryImages(fiberId);
-  if (all.length === 0) return [];
-  /* Single contact-sheet card replaces the old double-width film strip.
-     All images go into one 1×1 grid cell. */
-  return [{ type: "contactSheet", images: [...all] }];
+  return chunkGalleryForContactSheets(all);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -188,6 +223,8 @@ export interface PlateLayoutResult {
   profileExhaleDelays: Map<number, number>;
   detailExhaleDelays: Map<number, number>;
   gallerySlotImages: Map<number, GalleryImageEntry[]>;
+  /** Global gallery index of `gallerySlotImages.get(cell)[0]` for each contact-sheet cell. */
+  gallerySlotStartIndex: Map<number, number>;
   plateExitOffsets: Map<number, { x: number; y: number }>;
 }
 
@@ -198,6 +235,7 @@ const EMPTY_RESULT: PlateLayoutResult = {
   profileExhaleDelays: new Map(),
   detailExhaleDelays: new Map(),
   gallerySlotImages: new Map(),
+  gallerySlotStartIndex: new Map(),
   plateExitOffsets: new Map(),
 };
 
@@ -227,6 +265,7 @@ export function computePlateLayout(
   const profExhale = new Map<number, number>();
   const detExhale = new Map<number, number>();
   const galleryImages = new Map<number, GalleryImageEntry[]>();
+  const galleryStartIndex = new Map<number, number>();
   const exitOffsets = new Map<number, { x: number; y: number }>();
   const consumed = new Set<number>();
 
@@ -239,18 +278,18 @@ export function computePlateLayout(
      Placed via zone preference alongside named plates below.
      No pair reservation needed — contact sheet fits one cell. */
   const galleryQueue = buildGalleryQueue(selectedId, galleryOverride);
-  const galleryDesc = galleryQueue.length > 0 ? galleryQueue[0] : null;
 
   /* ── Step 0b: Compute required pool size from data-available plates ── */
   const availablePlates = filterAvailablePlates(selectedId);
-  const fiber = fibers.find((f) => f.id === selectedId);
+  const fiber = getFiberForPlateAvailability(selectedId);
   const hasSeeAlso = fiber && fiber.seeAlso.length > 0;
   const requiredPoolSize =
-    availablePlates.length + (hasSeeAlso ? 1 : 0) + (galleryDesc ? 1 : 0);
+    availablePlates.length + (hasSeeAlso ? 1 : 0) + galleryQueue.length;
 
-  /* ── Step 1: Build contiguous pool (BFS-order closest cells) ──
-     Include virtual indices beyond filtered.length when we need more slots
-     than visible profile cards. */
+  /* ── Step 1: Build pool in row-major order (fill each row L→R before the next) ──
+     Eligible real cells: same row as hero or below, plus one row above (selRow−1),
+     excluding the hero. Virtual indices continue in index order when more slots
+     are needed than visible profile cards. */
   const realCandidates = filtered
     .map((_, i) => i)
     .filter((i) => {
@@ -259,6 +298,7 @@ export function computePlateLayout(
       if (row < selRow - 1) return false;
       return true;
     });
+  realCandidates.sort((a, b) => a - b);
 
   const virtualStart = filtered.length;
   const virtualCandidates: number[] = [];
@@ -271,8 +311,7 @@ export function computePlateLayout(
     nextVirtual += 1;
   }
 
-  const allCandidates = [...realCandidates, ...virtualCandidates]
-    .sort((a, b) => mDist(a) - mDist(b));
+  const allCandidates = [...realCandidates, ...virtualCandidates].sort((a, b) => a - b);
   const pool = new Set(allCandidates.slice(0, requiredPoolSize));
 
   /* ── Step 1b: Place contact sheet in the pool via zone scoring ── */
@@ -281,7 +320,7 @@ export function computePlateLayout(
     "above", "above-right", "above-left",
   ];
 
-  if (galleryDesc) {
+  for (const galleryDesc of galleryQueue) {
     let bestCell: number | null = null;
     let bestScore = Infinity;
 
@@ -290,7 +329,7 @@ export function computePlateLayout(
       const zone = classifyZone(cellIdx, selectedIndex, cols);
       const score = CONTACT_SHEET_ZONE_PREFS.indexOf(zone);
       if (score < 0) continue;
-      if (score < bestScore || (score === bestScore && bestCell !== null && mDist(cellIdx) < mDist(bestCell))) {
+      if (score < bestScore || (score === bestScore && bestCell !== null && cellIdx < bestCell)) {
         bestScore = score;
         bestCell = cellIdx;
       }
@@ -299,6 +338,7 @@ export function computePlateLayout(
     if (bestCell !== null) {
       assignments.set(bestCell, "contactSheet");
       galleryImages.set(bestCell, galleryDesc.images);
+      galleryStartIndex.set(bestCell, galleryDesc.startIndex);
       consumed.add(bestCell);
       pool.delete(bestCell);
     }
@@ -314,7 +354,7 @@ export function computePlateLayout(
       const zone = classifyZone(cellIdx, selectedIndex, cols);
       const score = prefs.indexOf(zone);
       if (score < 0) continue;
-      if (score < bestScore || (score === bestScore && bestCell !== null && mDist(cellIdx) < mDist(bestCell))) {
+      if (score < bestScore || (score === bestScore && bestCell !== null && cellIdx < bestCell)) {
         bestScore = score;
         bestCell = cellIdx;
       }
@@ -391,15 +431,15 @@ export function computePlateLayout(
   const assignedByDist = [...assignments.entries()]
     .sort((a, b) => mDist(a[0]) - mDist(b[0]));
 
-  // Separate contactSheet from distance-sorted entries
-  const contactSheetEntry = assignedByDist.find(([, pt]) => pt === "contactSheet");
+  // Separate contactSheet from distance-sorted entries (all sheets append after Beat 1 plates)
+  const contactSheetEntries = assignedByDist.filter(([, pt]) => pt === "contactSheet");
   const nonContactByDist = assignedByDist.filter(([, pt]) => pt !== "contactSheet");
 
-  // Beat 1: first N distance-sorted (non-contactSheet) + contactSheet at the end
   const firstWaveDistEntries = nonContactByDist.slice(0, FIRST_WAVE_SIZE);
-  const firstWaveEntries = contactSheetEntry
-    ? [...firstWaveDistEntries, contactSheetEntry]
-    : firstWaveDistEntries;
+  const firstWaveEntries =
+    contactSheetEntries.length > 0
+      ? [...firstWaveDistEntries, ...contactSheetEntries]
+      : firstWaveDistEntries;
   const firstWave = new Set(firstWaveEntries.map(([idx]) => idx));
 
   firstWaveEntries.forEach(([idx], i) => {
@@ -447,6 +487,7 @@ export function computePlateLayout(
     profileExhaleDelays: profExhale,
     detailExhaleDelays: detExhale,
     gallerySlotImages: galleryImages,
+    gallerySlotStartIndex: galleryStartIndex,
     plateExitOffsets: exitOffsets,
   };
 }

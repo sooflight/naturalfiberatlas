@@ -1,8 +1,10 @@
 import { type FiberProfile, type PlateType, worldNames } from "../data/atlas-data";
 import { dataSource } from "../data/data-provider";
+import { hasAnyValidYoutubeEmbed } from "../utils/youtube-embed-urls";
 
 const MOBILE_PLATE_ORDER: PlateType[] = [
   "about",
+  "properties",
   "insight1",
   "insight2",
   "insight3",
@@ -13,6 +15,7 @@ const MOBILE_PLATE_ORDER: PlateType[] = [
   "silkChiffon",
   "silkOrganza",
   "quote",
+  "youtubeEmbed",
   "trade",
   "regions",
   "worldNames",
@@ -42,6 +45,8 @@ export function getAvailablePlates(fiber: FiberProfile): PlateType[] {
         return !!careData[fiber.id];
       case "quote":
         return (quoteData[fiber.id] ?? []).length > 0;
+      case "youtubeEmbed":
+        return hasAnyValidYoutubeEmbed(fiber);
       case "insight1":
       case "insight2":
       case "insight3": {

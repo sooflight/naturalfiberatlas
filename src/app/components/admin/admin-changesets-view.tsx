@@ -5,14 +5,9 @@
  * merge conflict resolution, and full history.
  */
 
-import { useState, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { useAtlasData, useAdminMode } from "../../context/atlas-data-context";
-import {
-  dataSource,
-  type ChangesetEnvelope,
-  type MergeConflict,
-  type MergeStrategy,
-} from "../../data/data-provider";
+import { dataSource, type ChangesetEnvelope } from "../../data/data-provider";
 import { toast } from "sonner";
 import {
   normalizeAdminSaveIntent,
@@ -24,7 +19,6 @@ import {
   Package,
   Plus,
   Download,
-  Upload,
   Trash2,
   ChevronDown,
   ChevronRight,
@@ -32,11 +26,6 @@ import {
   User,
   FileText,
   Layers,
-  GitMerge,
-  AlertTriangle,
-  Check,
-  X,
-  ArrowRight,
   Copy,
   BarChart3,
   RotateCcw,
@@ -248,114 +237,6 @@ function ChangesetCard({
   );
 }
 
-/* ── Merge conflict resolver ── */
-function ConflictResolver({
-  conflicts,
-  onResolve,
-  onCancel,
-}: {
-  conflicts: MergeConflict[];
-  onResolve: (resolutions: Map<number, "local" | "remote">) => void;
-  onCancel: () => void;
-}) {
-  const [resolutions, setResolutions] = useState<Map<number, "local" | "remote">>(
-    () => new Map(conflicts.map((_, i) => [i, "local"])),
-  );
-
-  const setResolution = (index: number, choice: "local" | "remote") => {
-    setResolutions((prev) => new Map(prev).set(index, choice));
-  };
-
-  return (
-    <div className="space-y-3">
-      <div className="flex items-center gap-2 px-3 py-2 bg-blue-400/[0.04] border border-blue-400/10 rounded-lg">
-        <AlertTriangle size={14} className="text-blue-400/60 shrink-0" />
-        <span className="text-blue-400/70" style={{ fontSize: "11px" }}>
-          {conflicts.length} conflict{conflicts.length !== 1 ? "s" : ""} found — resolve each before merging
-        </span>
-      </div>
-
-      {conflicts.map((c, i) => (
-        <div key={i} className="rounded-lg border border-white/[0.06] overflow-hidden bg-white/[0.015] p-3">
-          <div className="flex items-center gap-2 mb-2">
-            <GitMerge size={10} className="text-blue-400/50" />
-            <span className="text-white/60" style={{ fontSize: "11px" }}>
-              {c.fiberId}
-              {c.field && <span className="text-white/30">.{c.field}</span>}
-            </span>
-            <span className="text-white/20 ml-auto" style={{ fontSize: "9px" }}>
-              {c.table}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            {/* Local */}
-            <button
-              onClick={() => setResolution(i, "local")}
-              className={`p-2 rounded border cursor-pointer transition-all ${
-                resolutions.get(i) === "local"
-                  ? "bg-blue-400/10 border-blue-400/20"
-                  : "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.1]"
-              }`}
-            >
-              <span
-                className={`block mb-1 uppercase tracking-wider ${
-                  resolutions.get(i) === "local" ? "text-blue-400/60" : "text-white/30"
-                }`}
-                style={{ fontSize: "8px", fontWeight: 700 }}
-              >
-                Keep Mine
-              </span>
-              <span className="text-white/40 block truncate" style={{ fontSize: "10px" }}>
-                {JSON.stringify(c.localValue)?.slice(0, 50)}
-              </span>
-            </button>
-
-            {/* Remote */}
-            <button
-              onClick={() => setResolution(i, "remote")}
-              className={`p-2 rounded border cursor-pointer transition-all ${
-                resolutions.get(i) === "remote"
-                  ? "bg-emerald-400/10 border-emerald-400/20"
-                  : "bg-white/[0.02] border-white/[0.06] hover:border-white/[0.1]"
-              }`}
-            >
-              <span
-                className={`block mb-1 uppercase tracking-wider ${
-                  resolutions.get(i) === "remote" ? "text-emerald-400/60" : "text-white/30"
-                }`}
-                style={{ fontSize: "8px", fontWeight: 700 }}
-              >
-                Take Theirs
-              </span>
-              <span className="text-white/40 block truncate" style={{ fontSize: "10px" }}>
-                {JSON.stringify(c.remoteValue)?.slice(0, 50)}
-              </span>
-            </button>
-          </div>
-        </div>
-      ))}
-
-      <div className="flex gap-2">
-        <button
-          onClick={() => onResolve(resolutions)}
-          className="flex-1 px-4 py-2 bg-emerald-400/10 border border-emerald-400/20 rounded-lg text-emerald-400/80 hover:text-emerald-400 transition-colors cursor-pointer"
-          style={{ fontSize: "11px", fontWeight: 600 }}
-        >
-          <Check size={12} className="inline mr-1" /> Apply Resolutions
-        </button>
-        <button
-          onClick={onCancel}
-          className="px-4 py-2 bg-white/[0.04] border border-white/[0.08] rounded-lg text-white/50 hover:text-white/80 transition-colors cursor-pointer"
-          style={{ fontSize: "11px" }}
-        >
-          Cancel
-        </button>
-      </div>
-    </div>
-  );
-}
-
 /* ═══════════════════════════════════════════════════════════
    Main Component
    ═══════════════════════════════════════════════════════════ */
@@ -363,8 +244,6 @@ function ConflictResolver({
 export function AdminChangesetsView() {
   const { version, hasOverrides, overriddenFiberIds } = useAtlasData();
   const { setAdminView } = useAdminMode();
-  const [conflicts, setConflicts] = useState<MergeConflict[] | null>(null);
-  const [importedJson, setImportedJson] = useState<string | null>(null);
 
   const changesets = useMemo(() => dataSource.getChangesets(), [version]);
 
@@ -398,58 +277,6 @@ export function AdminChangesetsView() {
     URL.revokeObjectURL(url);
     toast.success("Changeset exported");
   };
-
-  /* Import changeset */
-  const handleImport = () => {
-    const input = document.createElement("input");
-    input.type = "file";
-    input.accept = ".json";
-    input.onchange = () => {
-      const file = input.files?.[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const json = reader.result as string;
-        try {
-          // First try manual merge to detect conflicts
-          const changeset = JSON.parse(json) as ChangesetEnvelope;
-          const testConflicts = dataSource.merge(changeset.data, "manual");
-          if (testConflicts.length > 0) {
-            setConflicts(testConflicts);
-            setImportedJson(json);
-          } else {
-            // No conflicts — merge directly
-            dataSource.importChangeset(json, "remote-wins");
-            toast.success(`Changeset "${changeset.name}" imported successfully`);
-          }
-        } catch (e) {
-          toast.error("Invalid changeset file");
-        }
-      };
-      reader.readAsText(file);
-    };
-    input.click();
-  };
-
-  /* Resolve conflicts */
-  const handleResolveConflicts = useCallback(
-    (resolutions: Map<number, "local" | "remote">) => {
-      if (!importedJson || !conflicts) return;
-
-      // Apply the imported changeset with appropriate strategy per conflict
-      // For simplicity, we determine the dominant strategy
-      const remoteCount = [...resolutions.values()].filter((v) => v === "remote").length;
-      const strategy: MergeStrategy = remoteCount > conflicts.length / 2 ? "remote-wins" : "local-wins";
-
-      const changeset = JSON.parse(importedJson) as ChangesetEnvelope;
-      dataSource.merge(changeset.data, strategy);
-
-      toast.success("Conflicts resolved and changeset merged");
-      setConflicts(null);
-      setImportedJson(null);
-    },
-    [conflicts, importedJson],
-  );
 
   const handleDelete = (id: string) => {
     if (!window.confirm("Delete this changeset? This cannot be undone.")) return;
@@ -487,29 +314,12 @@ export function AdminChangesetsView() {
               <Plus size={10} /> New
             </button>
           )}
-          <button
-            onClick={handleImport}
-            className="flex items-center gap-1 px-2 py-1 bg-white/[0.04] border border-white/[0.08] rounded text-white/40 hover:text-white/70 transition-colors cursor-pointer"
-            style={{ fontSize: "10px" }}
-          >
-            <Upload size={10} /> Import
-          </button>
         </div>
       </div>
 
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
-        {/* Conflict resolution */}
-        {conflicts && (
-          <ConflictResolver
-            conflicts={conflicts}
-            onResolve={handleResolveConflicts}
-            onCancel={() => { setConflicts(null); setImportedJson(null); }}
-          />
-        )}
-
-        {/* Changeset list */}
-        {changesets.length === 0 && !conflicts ? (
+        {changesets.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <Package size={24} className="text-white/10 mb-2" />
             <span className="text-white/30" style={{ fontSize: "12px" }}>

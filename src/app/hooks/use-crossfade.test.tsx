@@ -18,7 +18,7 @@ describe("useCrossfade", () => {
     vi.useFakeTimers();
     const id = "hemp";
     const hold = 6000 + seededFloat(id) * 3000;
-    const initialDelay = seededFloat(`${id}:delay`) * 8000;
+    const initialDelay = seededFloat(`${id}:delay`) * 2500;
     const firstAdvanceAt = Math.floor(initialDelay + hold);
     const nextAdvanceAfter = Math.floor(hold + 3000);
 
@@ -47,7 +47,7 @@ describe("useCrossfade", () => {
     vi.useFakeTimers();
     const id = "silk";
     const hold = 6000 + seededFloat(id) * 3000;
-    const initialDelay = seededFloat(`${id}:delay`) * 8000;
+    const initialDelay = seededFloat(`${id}:delay`) * 2500;
     const firstAdvanceAt = Math.floor(initialDelay + hold);
     const nextAdvanceAfter = Math.floor(hold + 3000);
 

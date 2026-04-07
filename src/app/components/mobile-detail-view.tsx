@@ -20,7 +20,7 @@ import {
   type FiberProfile,
   type PlateType,
   type GalleryImageEntry,
-  getGalleryImages,
+  mergeFiberGalleryWithFallback,
 } from "../data/atlas-data";
 import { useSwipe } from "../hooks/use-swipe";
 import { useImagePipeline } from "../context/image-pipeline";
@@ -28,6 +28,7 @@ import { ProgressiveImage } from "./progressive-image";
 import { getAvailablePlates } from "./plate-availability";
 import {
   AboutPlate,
+  PropertiesPlate,
   InsightPlate,
   SilkVariantPlate,
   RegionsPlate,
@@ -38,6 +39,7 @@ import {
   ProcessPlate,
   AnatomyPlate,
   CarePlate,
+  YouTubeEmbedPlate,
 } from "./detail-plates";
 import {
   plateLabelMap,
@@ -157,7 +159,7 @@ function useCascadeReveal(
 }
 
 /** Plates that should NOT trigger the ScreenPlate on click (matches detail-card.tsx). */
-const NON_SCREEN_PLATES: PlateType[] = ["contactSheet", "seeAlso"];
+const NON_SCREEN_PLATES: PlateType[] = ["contactSheet", "seeAlso", "youtubeEmbed"];
 
 interface MobileDetailViewProps {
   fiber: FiberProfile;
@@ -185,12 +187,10 @@ export function MobileDetailView({
   const plates = useMemo(() => getAvailablePlates(fiber), [fiber]);
 
   /* ── Gallery images ── */
-  const galleryImages = useMemo(() => {
-    const fromFiber = fiber.galleryImages?.length
-      ? fiber.galleryImages
-      : getGalleryImages(fiber.id);
-    return fromFiber;
-  }, [fiber]);
+  const galleryImages = useMemo(
+    () => mergeFiberGalleryWithFallback(fiber.id, fiber),
+    [fiber],
+  );
   const hasGallery = galleryImages.length > 0;
 
   /* ── Cascade reveal — wave-aware stagger ── */
@@ -281,6 +281,8 @@ export function MobileDetailView({
     switch (plateType) {
       case "about":
         return <AboutPlate fiber={fiber} />;
+      case "properties":
+        return <PropertiesPlate fiber={fiber} />;
       case "insight1":
         return <InsightPlate fiber={fiber} half={1} />;
       case "insight2":
@@ -296,6 +298,8 @@ export function MobileDetailView({
         return <SilkVariantPlate plateType={plateType} />;
       case "quote":
         return <QuotePlate fiber={fiber} />;
+      case "youtubeEmbed":
+        return <YouTubeEmbedPlate fiber={fiber} />;
       case "trade":
         return <TradePlate fiber={fiber} />;
       case "regions":
@@ -722,7 +726,7 @@ function GalleryRail({ images, fiberName, onOpenLightbox }: GalleryRailProps) {
             }}
           >
             <img
-              src={pipeline.transform(img.url, "thumb")}
+              src={pipeline.transform(img.url, "filmstrip")}
               alt={img.title || `${fiberName} gallery ${i + 1}`}
               loading="lazy"
               className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"

@@ -7,6 +7,7 @@ import fiberOrderFile from "./fiber-order.json";
 const FIBERS_KEY = "atlas:fibers";
 const WORLD_NAMES_KEY = "atlas:worldNames";
 const CARE_DATA_KEY = "atlas:careData";
+const DELETED_FIBERS_KEY = "atlas:deletedFiberIds";
 
 describe("LocalStorageSource critical flows", () => {
   const sampleFiber = bundledFibers[0];
@@ -131,6 +132,15 @@ describe("LocalStorageSource critical flows", () => {
     const bundled = source.getBundledFiber(sampleFiber.id);
     expect(fiber?.galleryImages.length).toBeGreaterThan(0);
     expect(fiber?.galleryImages[0]?.url).toBe(bundled?.galleryImages?.[0]?.url ?? bundled?.image);
+  });
+
+  it("ignores stale local soft-delete for catalog-restored profiles when admin is enabled", () => {
+    vi.stubEnv("VITE_ENABLE_ADMIN", "true");
+    localStorage.setItem(DELETED_FIBERS_KEY, JSON.stringify(["roselle"]));
+    const source = new LocalStorageSource();
+    expect(source.isFiberDeleted("roselle")).toBe(false);
+    expect(source.getFiberById("roselle")?.id).toBe("roselle");
+    vi.unstubAllEnvs();
   });
 
   it("ignores localStorage catalog overrides when admin is disabled (public site)", () => {

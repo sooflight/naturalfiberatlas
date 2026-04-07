@@ -835,7 +835,7 @@ export default function Library({ forcedMode }: LibraryProps) {
                   </div>
                 )}
                 {viewMode === 'grid' && (
-                  <div className="h-full overflow-auto p-6 custom-scrollbar">
+                  <div className="h-full overflow-auto p-6">
                     <GridView
                       items={viewItems}
                       selectedId={selectedId}

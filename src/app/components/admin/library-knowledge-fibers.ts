@@ -5,6 +5,7 @@ import {
   getCategoryForNavNode,
 } from "../../data/admin/atlas-navigation";
 import { classifyProfileCategory } from "../../data/profile-sequencing";
+import { resolveCanonicalFiberId } from "../../data/fiber-id-redirects";
 
 type KnowledgeFiber = { id: string; name: string; category: string; image?: string };
 
@@ -52,9 +53,18 @@ export function buildKnowledgeFibers(
     navOnlyIds.push(id);
   });
 
-  const orderedIds = [...canonicalIds, ...contentOnlyIds, ...navOnlyIds].filter(
+  const mergedRaw = [...canonicalIds, ...contentOnlyIds, ...navOnlyIds].filter(
     (id) => !dataSource.isFiberDeleted(id),
   );
+  /* One sidebar row per catalog profile: legacy ids (e.g. tussah → tussar) must not duplicate Live. */
+  const seenCanonical = new Set<string>();
+  const orderedIds: string[] = [];
+  for (const id of mergedRaw) {
+    const canon = resolveCanonicalFiberId(id);
+    if (seenCanonical.has(canon)) continue;
+    seenCanonical.add(canon);
+    orderedIds.push(canon);
+  }
   return orderedIds.map((id) => {
     const match = byId.get(id);
     if (match) {

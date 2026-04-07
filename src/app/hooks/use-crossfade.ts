@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from "react";
 
 const BASE_HOLD_MS = 6000;
 const HOLD_SPREAD_MS = 3000;
-const INITIAL_DELAY_SPREAD_MS = 8000;
+/** Extra wait before the *first* advance only; keeps per-card hold/crossfade cadence unchanged after that. */
+const INITIAL_DELAY_SPREAD_MS = 2500;
 const CROSSFADE_MS = 3000;
 
 interface UseCrossfadeOptions {

@@ -1049,6 +1049,17 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "endUse": {},
     "status": "published"
   },
+  "roselle": {
+    "materialId": "roselle",
+    "lastUpdated": "2026-04-06",
+    "performance": {},
+    "process": {},
+    "dyeing": {},
+    "sustainability": {},
+    "sourcing": {},
+    "endUse": {},
+    "status": "published"
+  },
   "sisal": {
     "materialId": "sisal",
     "lastUpdated": "2026-02-28",
@@ -1236,17 +1247,6 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "endUse": {},
     "status": "published"
   },
-  "angora": {
-    "materialId": "angora",
-    "lastUpdated": "2026-02-28",
-    "performance": {},
-    "process": {},
-    "dyeing": {},
-    "sustainability": {},
-    "sourcing": {},
-    "endUse": {},
-    "status": "published"
-  },
   "llama": {
     "materialId": "llama",
     "lastUpdated": "2026-02-28",
@@ -1313,8 +1313,8 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "endUse": {},
     "status": "published"
   },
-  "tussah": {
-    "materialId": "tussah",
+  "tussar": {
+    "materialId": "tussar",
     "lastUpdated": "2026-02-28",
     "performance": {},
     "process": {},

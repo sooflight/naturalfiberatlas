@@ -27,8 +27,10 @@ const PRESET_TRANSFORMS: Record<GlassAtlasPreset, string> = {
   seeAlso:      "w_80,h_80,c_fill,f_auto,q_auto",
   solo:         "w_320,h_427,c_fill,f_auto,q_auto",
   duo:          "w_320,h_200,c_fill,f_auto,q_auto",
-  contactSheet: "w_160,h_160,c_fill,f_auto,q_auto",
+  /* ~320 square: sharp on 2× DPR for ~160px tiles; still tiny vs full originals */
+  contactSheet: "w_320,h_320,c_fill,f_auto,q_auto",
   lightbox:     "w_1400,f_auto,q_auto",
+  lightboxHi:   "w_2200,f_auto,q_auto",
 };
 
 function cloudName(): string {

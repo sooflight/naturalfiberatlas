@@ -66,7 +66,8 @@ const REGION_MAP: Record<string, RegionDot[]> = {
   "Netherlands":     [{ x: 186, y: 34, label: "Netherlands" }],
   "Austria":         [{ x: 194, y: 38, label: "Austria" }],
   "Portugal":        [{ x: 171, y: 48, label: "Portugal" }],
-  "Romania":         [{ x: 206, y: 41, label: "Romania" }],
+  /* ~geographic center 25°E, 46°N (Transylvania / central belt — avoids Black Sea edge) */
+  "Romania":         [{ x: 205, y: 40, label: "Romania" }],
   "Norway":          [{ x: 190, y: 22, label: "Norway" }],
   "Greenland":       [{ x: 138, y: 12, label: "Greenland" }],
 
@@ -82,7 +83,8 @@ const REGION_MAP: Record<string, RegionDot[]> = {
   "East Africa":     [{ x: 217, y: 90, label: "E. Africa" }],
   "West Africa":     [{ x: 178, y: 78, label: "W. Africa" }],
   "North Africa":    [{ x: 190, y: 57, label: "N. Africa" }],
-  "South Africa":    [{ x: 208, y: 120, label: "S. Africa" }],
+  /* ~Johannesburg 28°E, 26°S → x=lon+180, y=(84−lat)/151×160 */
+  "South Africa":    [{ x: 208, y: 117, label: "S. Africa" }],
   "Sub-Saharan Africa": [{ x: 202, y: 94, label: "Sub-Saharan" }],
   "Tanzania":        [{ x: 215, y: 95, label: "Tanzania" }],
   "Kenya":           [{ x: 218, y: 89, label: "Kenya" }],
@@ -92,7 +94,10 @@ const REGION_MAP: Record<string, RegionDot[]> = {
   "Morocco":         [{ x: 174, y: 55, label: "Morocco" }],
   "Algeria":         [{ x: 183, y: 55, label: "Algeria" }],
   "Tunisia":         [{ x: 190, y: 53, label: "Tunisia" }],
-  "Lesotho":         [{ x: 208, y: 121, label: "Lesotho" }],
+  /* ~Maseru 27.5°E, 29°S — enclave; offset W/S from SA centroid */
+  "Lesotho":         [{ x: 207, y: 120, label: "Lesotho" }],
+  /* ~Harare 31°E, 18°S */
+  "Zimbabwe":        [{ x: 211, y: 108, label: "Zimbabwe" }],
 
   /* ── Americas ── */
   "North America":   [{ x: 80, y: 47, label: "N. America" }],
@@ -144,37 +149,140 @@ const REGION_MAP: Record<string, RegionDot[]> = {
     { x: 190, y: 36,  label: "Europe" },
     { x: 280, y: 47,  label: "Asia" },
   ],
+
+  /* ── Asia (additional) ── */
+  "Asia":            [{ x: 280, y: 52, label: "Asia" }],
+  "Kazakhstan":      [{ x: 247, y: 38, label: "Kazakhstan" }],
+  "Lebanon":         [{ x: 216, y: 53, label: "Lebanon" }],
+  "Northeast India": [{ x: 273, y: 63, label: "NE India" }],
+
+  /* ── Europe (additional) ── */
+  "England":         [{ x: 179, y: 33, label: "England" }],
+  "Wales":           [{ x: 176, y: 34, label: "Wales" }],
+  "Scotland":        [{ x: 176, y: 28, label: "Scotland" }],
+  "Ireland":         [{ x: 172, y: 32, label: "Ireland" }],
+  "Crete":           [{ x: 205, y: 52, label: "Crete" }],
+  "Sweden":          [{ x: 198, y: 23, label: "Sweden" }],
+
+  /* ── Africa (additional) ── */
+  "Cameroon":        [{ x: 192, y: 81, label: "Cameroon" }],
+  "DR Congo":        [{ x: 202, y: 93, label: "DR Congo" }],
+  "DRC":             [{ x: 202, y: 93, label: "DRC" }],
+  "Mali":            [{ x: 176, y: 70, label: "Mali" }],
+  "Mozambique":      [{ x: 216, y: 106, label: "Mozambique" }],
+  "Nigeria":         [{ x: 189, y: 79, label: "Nigeria" }],
+  "Sudan":           [{ x: 210, y: 77, label: "Sudan" }],
+  "Libya":           [{ x: 197, y: 61, label: "Libya" }],
+
+  /* ── Americas — Caribbean & Central (additional) ── */
+  "Cuba":            [{ x: 102, y: 66, label: "Cuba" }],
+  "El Salvador":     [{ x: 91, y: 74, label: "El Salvador" }],
+  "Guatemala":       [{ x: 90, y: 73, label: "Guatemala" }],
+  "Honduras":        [{ x: 93, y: 74, label: "Honduras" }],
+  "Haiti":           [{ x: 108, y: 69, label: "Haiti" }],
+  "Jamaica":         [{ x: 103, y: 70, label: "Jamaica" }],
+  "Belize":          [{ x: 91, y: 71, label: "Belize" }],
+  "Guyana":          [{ x: 121, y: 84, label: "Guyana" }],
+  "Suriname":        [{ x: 125, y: 84, label: "Suriname" }],
+  "Venezuela":       [{ x: 113, y: 82, label: "Venezuela" }],
+
+  /* ── US regions & states (lon/lat → dot) ── */
+  "Eastern North America": [{ x: 102, y: 47, label: "E. N. America" }],
+  "Great Lakes":     [{ x: 95, y: 41, label: "Great Lakes" }],
+  "Great Plains":    [{ x: 80, y: 45, label: "Great Plains" }],
+  "Midwest":         [{ x: 87, y: 44, label: "Midwest" }],
+  "Southeast":       [{ x: 95, y: 54, label: "Southeast" }],
+  "Pacific Northwest": [{ x: 58, y: 39, label: "Pacific NW" }],
+  "Pacific Northwest USA": [{ x: 58, y: 39, label: "PNW USA" }],
+  "Idaho":           [{ x: 66, y: 42, label: "Idaho" }],
+  "Oregon":          [{ x: 60, y: 42, label: "Oregon" }],
+  "Montana":         [{ x: 70, y: 39, label: "Montana" }],
+  "Wyoming":         [{ x: 73, y: 43, label: "Wyoming" }],
+  "Hawai'i":         [{ x: 22, y: 67, label: "Hawai'i" }],
+  "Hawaii":          [{ x: 22, y: 67, label: "Hawaii" }],
+
+  /* ── Oceania & Pacific (additional) ── */
+  "Fiji":            [{ x: 358, y: 111, label: "Fiji" }],
+  "Samoa":           [{ x: 188, y: 104, label: "Samoa" }],
+  "Tonga":           [{ x: 5, y: 111, label: "Tonga" }],
+  "Papua New Guinea": [{ x: 324, y: 94, label: "PNG" }],
+  "Pacific Islands": [{ x: 200, y: 100, label: "Pacific" }],
+  "Norfolk Island":  [{ x: 348, y: 120, label: "Norfolk Is." }],
+
+  /* ── Atlantic / misc ── */
+  "Canary Islands":  [{ x: 164, y: 59, label: "Canaries" }],
+
+  /* ── Broad "global" labels (single centroid) ── */
+  "Global cultivation": [{ x: 182, y: 71, label: "Global" }],
+  "Global temperate": [{ x: 180, y: 50, label: "Global temp." }],
+  "Global temperate forests": [{ x: 180, y: 45, label: "Global forests" }],
 };
 
-export function resolveRegionDots(regionsStr: string): RegionDot[] {
-  const regions = regionsStr.split(", ").map((r) => r.trim());
+function lookupRegionMap(region: string): RegionDot[] | undefined {
+  let matched = REGION_MAP[region];
+  if (matched) return matched;
+  let r = region.trim();
+  for (let n = 0; n < 8 && r.length > 0; n++) {
+    const base = r.replace(/\s*\([^()]*(?:\([^()]*\)[^()]*)*\)\s*$/, "").trim();
+    if (base === r) break;
+    r = base;
+    matched = REGION_MAP[r];
+    if (matched) return matched;
+  }
+  return undefined;
+}
+
+/** Split on ", " only when not inside (...), so commas in qualifiers do not fragment tokens. */
+function splitJoinedRegionList(input: string): string[] {
+  const out: string[] = [];
+  let depth = 0;
+  let start = 0;
+  for (let i = 0; i < input.length; i++) {
+    const ch = input[i];
+    if (ch === "(") depth++;
+    else if (ch === ")") depth = Math.max(0, depth - 1);
+    if (ch === "," && depth === 0 && input[i + 1] === " ") {
+      out.push(input.slice(start, i).trim());
+      start = i + 2;
+      i++;
+    }
+  }
+  out.push(input.slice(start).trim());
+  return out.filter(Boolean);
+}
+
+/**
+ * Resolves geographic dots for the regions plate map.
+ * Prefer passing `string[]` (each entry is one label). A single string is split on ", "
+ * outside of parentheses (for legacy call sites).
+ */
+export function resolveRegionDots(regions: string | readonly string[]): RegionDot[] {
+  const list =
+    typeof regions === "string"
+      ? splitJoinedRegionList(regions)
+      : [...regions].map((r) => r.trim()).filter(Boolean);
+
   const dots: RegionDot[] = [];
   const seen = new Set<string>();
 
-  for (const region of regions) {
-    // Try exact match first
-    let matched = REGION_MAP[region];
-
-    // Fuzzy: strip parenthetical qualifiers — "USA (Texas)" → "USA"
-    if (!matched) {
-      const base = region.replace(/\s*\(.*?\)\s*$/, "").trim();
-      if (base !== region) matched = REGION_MAP[base];
-    }
+  for (const region of list) {
+    const matched = lookupRegionMap(region);
 
     if (matched) {
+      const displayLabel = region.replace(/\s*\([^()]*(?:\([^()]*\)[^()]*)*\)\s*/g, "").trim() || region;
       for (const dot of matched) {
         const key = `${dot.x}-${dot.y}`;
         if (!seen.has(key)) {
           seen.add(key);
-          dots.push({ ...dot, label: region.replace(/\s*\(.*?\)/, "").trim() });
+          dots.push({ ...dot, label: displayLabel });
         }
       }
     }
   }
 
-  // Fallback: if nothing matched, place a generic dot
   if (dots.length === 0) {
-    dots.push({ x: 180, y: 70, label: regionsStr });
+    const fallbackLabel = typeof regions === "string" ? regions : list.join(", ");
+    dots.push({ x: 180, y: 70, label: fallbackLabel });
   }
 
   return dots;
@@ -569,7 +677,7 @@ export function SustainabilityRadar({ values, showValues }: { values: RadarMetri
               transform: "translate(-50%, -50%)",
             }}
           >
-            <v.icon size={10} className="text-[#4ADE80]/70" />
+            <v.icon size={10} className="text-[#5D9A6D]/70" />
             <span
               className="text-white/40 mt-[1px] whitespace-nowrap"
               style={{ fontSize: "clamp(7px, 2.5cqi, 10px)" }}

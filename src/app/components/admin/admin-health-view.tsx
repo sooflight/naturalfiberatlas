@@ -14,7 +14,14 @@ import { useEffect, useMemo, useState } from "react";
 import { useAtlasData, useAdminMode } from "../../context/atlas-data-context";
 import { dataSource } from "../../data/data-provider";
 import type { FiberProfile } from "../../data/fibers";
+import { mergeFiberGalleryWithFallback } from "../../data/atlas-data";
 import { runCensus } from "../../utils/admin/dataCensus";
+import {
+  listPublishedIdsMissingPassport,
+  passportKeysNotInCatalog,
+  summarizeUnifiedCatalog,
+  unifyFibersWithPassportRegistry,
+} from "../../data/unify-atlas-profiles";
 import { apiBearerToken, getApiBaseUrl, getApiUrl } from "../../utils/admin/api/info";
 import { isRedisConfigured } from "../../lib/cache/upstash";
 import {
@@ -78,8 +85,8 @@ function runDiagnostics(fibers: FiberProfile[]): Diagnostic[] {
       add("info", "content", "Regions field is empty");
     }
 
-    /* ── Gallery ── */
-    const gallery = fiber.galleryImages ?? [];
+    /* ── Gallery (effective = overrides + catalog baseline, same as live site) ── */
+    const gallery = mergeFiberGalleryWithFallback(fiber.id, fiber);
     if (gallery.length === 0) {
       add("error", "images", "No gallery images — detail view will have no contact sheet");
     } else if (gallery.length < 3) {
@@ -176,7 +183,7 @@ function computeStats(fibers: FiberProfile[]): AtlasStats {
 
   for (const f of fibers) {
     categoryBreakdown[f.category] = (categoryBreakdown[f.category] || 0) + 1;
-    const gLen = f.galleryImages?.length ?? 0;
+    const gLen = mergeFiberGalleryWithFallback(f.id, f).length;
     totalGalleryImages += gLen;
     if (gLen > 0) fibersWithGallery++;
     if (f.about && f.about.trim().length >= 20) fibersWithAbout++;
@@ -352,6 +359,20 @@ type FilterSeverity = "all" | Severity;
 
 function DataFreshnessPanel({ dataVersion }: { dataVersion: number }) {
   const census = useMemo(() => runCensus(), [dataVersion]);
+  /** Single merge + gap lists for editors (runtime = current session including local overrides). */
+  const runtimeUnified = useMemo(() => {
+    const rows = unifyFibersWithPassportRegistry(dataSource.getFibers());
+    const summary = summarizeUnifiedCatalog(rows);
+    const catalogIds = new Set(rows.map((r) => r.id));
+    const orphanKeys = passportKeysNotInCatalog(catalogIds).sort((a, b) => a.localeCompare(b));
+    const publishedMissingPassportIds = listPublishedIdsMissingPassport(rows);
+    return {
+      ...summary,
+      orphanPassportKeys: orphanKeys.length,
+      orphanKeys,
+      publishedMissingPassportIds,
+    };
+  }, [dataVersion]);
   const apiBase = typeof window !== "undefined" ? getApiBaseUrl() : "";
   const redisOn = typeof window !== "undefined" && isRedisConfigured();
   const [remoteMaterials, setRemoteMaterials] = useState<number | null>(null);
@@ -432,9 +453,53 @@ function DataFreshnessPanel({ dataVersion }: { dataVersion: number }) {
         {remoteLine}
       </p>
       <p className="text-white/30" style={{ fontSize: "9px", lineHeight: 1.45 }}>
-        Bundle census — passports: {census.passports.total}, suppliers: {census.suppliers.total}, evidence:{" "}
-        {census.evidence.total}, supplier links: {census.relationships.totalLinks}
+        Unified catalog (runtime) — {runtimeUnified.totalCatalogRows} rows, {runtimeUnified.publishedLive} published
+        (public grid), {runtimeUnified.publishedWithPassport}/{runtimeUnified.publishedLive} published with passport
+        {runtimeUnified.orphanPassportKeys > 0
+          ? `, ${runtimeUnified.orphanPassportKeys} passport-only keys`
+          : ""}
+        . Bundle (Git) published: {census.unifiedCatalog.publishedLive}, passport registry rows:{" "}
+        {census.passports.total}. Suppliers: {census.suppliers.total}, evidence: {census.evidence.total}, links:{" "}
+        {census.relationships.totalLinks}
       </p>
+      {(runtimeUnified.publishedMissingPassportIds.length > 0 || runtimeUnified.orphanKeys.length > 0) && (
+        <details className="group rounded border border-white/[0.06] bg-black/20 px-2 py-1.5">
+          <summary
+            className="cursor-pointer text-white/45 hover:text-white/60 select-none"
+            style={{ fontSize: "9px", fontWeight: 600, letterSpacing: "0.04em" }}
+          >
+            Catalog ↔ passport gaps ({runtimeUnified.publishedMissingPassportIds.length} published missing passport
+            {runtimeUnified.orphanKeys.length > 0
+              ? ` · ${runtimeUnified.orphanKeys.length} orphan passport keys`
+              : ""}
+            )
+          </summary>
+          <div className="mt-2 space-y-2 text-white/35" style={{ fontSize: "9px", lineHeight: 1.5 }}>
+            {runtimeUnified.publishedMissingPassportIds.length > 0 && (
+              <div>
+                <div className="text-white/45 mb-0.5">Published on grid, no passport row</div>
+                <pre
+                  className="max-h-28 overflow-y-auto whitespace-pre-wrap break-all rounded bg-black/30 px-1.5 py-1 font-mono text-[8px] text-white/50"
+                  title="Copy IDs to add MATERIAL_PASSPORTS entries or demote status"
+                >
+                  {runtimeUnified.publishedMissingPassportIds.join(", ")}
+                </pre>
+              </div>
+            )}
+            {runtimeUnified.orphanKeys.length > 0 && (
+              <div>
+                <div className="text-white/45 mb-0.5">Passport keys with no catalog fiber</div>
+                <pre
+                  className="max-h-28 overflow-y-auto whitespace-pre-wrap break-all rounded bg-black/30 px-1.5 py-1 font-mono text-[8px] text-amber-200/50"
+                  title="Remove, rename to match fiber id, or add catalog row"
+                >
+                  {runtimeUnified.orphanKeys.join(", ")}
+                </pre>
+              </div>
+            )}
+          </div>
+        </details>
+      )}
     </div>
   );
 }

@@ -36,6 +36,20 @@ describe("CloudinaryPipeline", () => {
     );
   });
 
+  it("applies contactSheet as a square thumb for dense grids", () => {
+    const src = "https://res.cloudinary.com/demo/image/upload/v123/atlas/fiber.jpg";
+    expect(pipeline.transform(src, "contactSheet")).toBe(
+      "https://res.cloudinary.com/demo/image/upload/w_320,h_320,c_fill,f_auto,q_auto/v123/atlas/fiber.jpg",
+    );
+  });
+
+  it("applies lightboxHi for large fullscreen hero delivery", () => {
+    const src = "https://res.cloudinary.com/demo/image/upload/v123/atlas/fiber.jpg";
+    expect(pipeline.transform(src, "lightboxHi")).toBe(
+      "https://res.cloudinary.com/demo/image/upload/w_2200,f_auto,q_auto/v123/atlas/fiber.jpg",
+    );
+  });
+
   it("does not double-apply transforms", () => {
     const transformed =
       "https://res.cloudinary.com/demo/image/upload/w_320,h_427,c_fill,f_auto,q_auto/v123/atlas/fiber.jpg";

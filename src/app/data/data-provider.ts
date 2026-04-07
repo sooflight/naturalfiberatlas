@@ -17,6 +17,7 @@
 
 import type { FiberProfile, ProcessStep, AnatomyData, CareData, QuoteEntry } from "./atlas-data";
 import { isAdminEnabled } from "../config/admin-access";
+import { resolveCanonicalFiberId } from "./fiber-id-redirects";
 import { fibers as rawBundledFibers } from "./fibers";
 import fiberOrderFileRaw from "./fiber-order.json";
 import deletedFiberIdsFileRaw from "./deleted-fiber-ids.json";
@@ -300,6 +301,37 @@ const bundledFibers: FiberProfile[] = rawBundledFibers.map((fiber) =>
 const bundledFiberMap = new Map<string, FiberProfile>();
 for (const f of bundledFibers) bundledFiberMap.set(f.id, f);
 
+/**
+ * Profiles that ship active in Git but may still be listed in `atlas:deletedFiberIds`
+ * from older admin sessions (before removal from deleted-fiber-ids.json). Local
+ * soft-delete entries for these ids are ignored so Library / NodeSidebar match the bundle.
+ */
+const RESTORED_ACTIVE_CATALOG_IDS = new Set<string>(["roselle"]);
+
+function buildEffectiveDeletedFiberIdSet(localDeleted: string[] | null): Set<string> {
+  const out = new Set<string>(deletedFiberIdsBundled);
+  if (!isAdminEnabled() || localDeleted === null) return out;
+  for (const raw of localDeleted) {
+    if (typeof raw !== "string") continue;
+    const id = raw.trim();
+    if (!id) continue;
+    if (
+      RESTORED_ACTIVE_CATALOG_IDS.has(id) &&
+      bundledFiberMap.has(id) &&
+      !deletedFiberIdsBundled.has(id)
+    ) {
+      continue;
+    }
+    out.add(id);
+  }
+  return out;
+}
+
+/** Git + promoted catalog rows; excludes bundled deleted ids only (no localStorage). */
+export function getBundledActiveFibers(): FiberProfile[] {
+  return bundledFibers.filter((fiber) => !deletedFiberIdsBundled.has(fiber.id));
+}
+
 const bundledWorldNamesWithPromoted = promotedOverrides.worldNames
   ? { ...bundledWorldNames, ...promotedOverrides.worldNames }
   : bundledWorldNames;
@@ -411,13 +443,8 @@ export class LocalStorageSource implements AtlasDataSource {
 
   getFibers(): FiberProfile[] {
     if (this._fibers) return this._fibers;
-    const deletedFiberIds = new Set<string>(deletedFiberIdsBundled);
-    if (isAdminEnabled()) {
-      const localDeleted = this.readJSON<string[]>(DELETED_FIBERS_KEY) ?? [];
-      for (const id of localDeleted) {
-        if (typeof id === "string" && id.trim().length > 0) deletedFiberIds.add(id.trim());
-      }
-    }
+    const localDeleted = isAdminEnabled() ? (this.readJSON<string[]>(DELETED_FIBERS_KEY) ?? []) : null;
+    const deletedFiberIds = buildEffectiveDeletedFiberIdSet(localDeleted);
     const overrides = this.readJSON<Record<string, Partial<FiberProfile>>>(KEYS.fibers);
     const activeBundledFibers = bundledFibers.filter((fiber) => !deletedFiberIds.has(fiber.id));
     this._fibers = activeBundledFibers.map((f) => {
@@ -430,10 +457,11 @@ export class LocalStorageSource implements AtlasDataSource {
   }
 
   getFiberById(id: string): FiberProfile | undefined {
+    const canonicalId = resolveCanonicalFiberId(id);
     if (!this._fiberMap) {
       this._fiberMap = new Map(this.getFibers().map((f) => [f.id, f]));
     }
-    return this._fiberMap.get(id);
+    return this._fiberMap.get(canonicalId);
   }
 
   updateFiber(id: string, patch: Partial<FiberProfile>): void {
@@ -512,14 +540,8 @@ export class LocalStorageSource implements AtlasDataSource {
   }
 
   isFiberDeleted(id: string): boolean {
-    const deletedIds = new Set<string>(deletedFiberIdsBundled);
-    if (isAdminEnabled()) {
-      const localDeleted = this.readJSON<string[]>(DELETED_FIBERS_KEY) ?? [];
-      for (const deletedId of localDeleted) {
-        if (typeof deletedId === "string" && deletedId.trim().length > 0) deletedIds.add(deletedId.trim());
-      }
-    }
-    return deletedIds.has(id);
+    const localDeleted = isAdminEnabled() ? (this.readJSON<string[]>(DELETED_FIBERS_KEY) ?? []) : null;
+    return buildEffectiveDeletedFiberIdSet(localDeleted).has(id);
   }
 
   /* ══════════════════════════════════════════════════════

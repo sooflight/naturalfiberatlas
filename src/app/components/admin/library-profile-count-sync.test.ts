@@ -47,6 +47,13 @@ describe("buildKnowledgeFibers", () => {
     expect(result.find((item) => item.id === "hemp")?.category).toBe("fiber");
   });
 
+  it("collapses legacy alias ids that redirect to the same catalog row (tussah → tussar)", () => {
+    const fibers = [{ id: "tussar", name: "Tussah (Wild Silk)", category: "fiber", image: "x.jpg" }];
+    const contentItems = [{ id: "tussar" }, { id: "tussah" }];
+    const result = buildKnowledgeFibers(fibers, contentItems, []);
+    expect(result.map((item) => item.id)).toEqual(["tussar"]);
+  });
+
   it("does not mark content-only profiles as uncategorized", () => {
     const fibers = [{ id: "hemp", name: "Hemp", category: "fiber", image: "hemp.jpg" }];
     const contentItems = [

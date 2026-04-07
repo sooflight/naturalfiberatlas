@@ -1,4 +1,8 @@
+import { previewFocalToObjectPosition, type PreviewFocalPoint } from "./preview-focal";
+
 export type GridTransform = (src: string | undefined, preset: string) => string | undefined;
+
+export type ProfileCardCrossfadeLayer = { url: string; objectPosition?: string };
 
 function isStableCycleUrl(url: string): boolean {
   return !url.trim().toLowerCase().startsWith("blob:");
@@ -30,5 +34,46 @@ export function buildProfileCardCrossfadeImages(
   }
 
   return images;
+}
+
+export type GalleryPreviewLine = { url: string; previewFocal?: PreviewFocalPoint };
+
+/**
+ * Same URL ordering as {@link buildProfileCardCrossfadeImages}, plus optional
+ * `object-position` from each gallery line’s `previewFocal`.
+ */
+export function buildProfileCardCrossfadeLayers(
+  primaryImage: string,
+  galleryLines: readonly GalleryPreviewLine[] | undefined,
+  transform: GridTransform,
+): ProfileCardCrossfadeLayer[] {
+  const primaryTrim = primaryImage?.trim() ?? "";
+  const primaryTransformed = transform(primaryTrim, "grid");
+  if (!primaryTransformed) return [];
+
+  const focalForPrimaryUrl = (): string | undefined => {
+    const hit = galleryLines?.find((line) => line.url.trim() === primaryTrim);
+    return previewFocalToObjectPosition(hit?.previewFocal);
+  };
+
+  const layers: ProfileCardCrossfadeLayer[] = [
+    { url: primaryTransformed, objectPosition: focalForPrimaryUrl() },
+  ];
+  const seen = new Set<string>([primaryTransformed]);
+
+  for (const line of galleryLines ?? []) {
+    const rawUrl = line.url?.trim();
+    if (!rawUrl || !isStableCycleUrl(rawUrl)) continue;
+    const transformed = transform(rawUrl, "grid");
+    if (!transformed || seen.has(transformed)) continue;
+    seen.add(transformed);
+    layers.push({
+      url: transformed,
+      objectPosition: previewFocalToObjectPosition(line.previewFocal),
+    });
+    if (layers.length === 3) break;
+  }
+
+  return layers;
 }
 

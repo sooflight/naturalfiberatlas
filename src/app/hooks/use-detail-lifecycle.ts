@@ -1,63 +1,58 @@
 /**
- * useDetailLifecycle — 4-phase inhale/exhale lifecycle for detail mode.
+ * useDetailLifecycle — phased inhale for detail mode (single state machine).
  *
- * Phase 1 (primed):     compositor layers promoted via will-change
- * Phase 2 (revealed):   detail cards begin opacity transition
- * Phase 3 (backdrop):   backdrop-filter enabled
- * Phase 4 (settled):    will-change reclaimed, VRAM released
+ * Phases map to CSS on `.detail-card-slot` (see getDetailSlotClassSuffix).
  *
- * On exhale (selectedId → null), all flags reset immediately.
+ * Coherence: `phase` state can lag `selectedId` for a frame when opening or
+ * switching fibers. We derive `phase` for consumers so slots never use `idle`
+ * or a previous fiber's `settled` while a new `selectedId` is active (that
+ * mismatch caused visible compositor / backdrop-filter glitching).
+ *
+ * useLayoutEffect: reset `pre_raster` before the browser paints the new
+ * selection so the first painted frame already has correct slot modifiers.
  */
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useLayoutEffect, useRef } from "react";
 import { afterPaint } from "../utils/paint-fence";
+import { DETAIL_COMPOSITOR_SETTLE_MS } from "../utils/detail-motion";
+import type { DetailInhalePhase } from "../utils/detail-slot-classes";
+
+export type { DetailInhalePhase };
 
 export interface DetailLifecycle {
-  detailRevealed: boolean;
-  detailPrimed: boolean;
-  backdropActive: boolean;
-  detailSettled: boolean;
+  /** Safe to pass to getDetailSlotClassSuffix — coherent with selectedId */
+  phase: DetailInhalePhase;
 }
 
 export function useDetailLifecycle(selectedId: string | null): DetailLifecycle {
-  const [detailRevealed, setDetailRevealed] = useState(false);
-  const [detailPrimed, setDetailPrimed] = useState(false);
-  const [backdropActive, setBackdropActive] = useState(false);
-  const [detailSettled, setDetailSettled] = useState(false);
+  const [phase, setPhase] = useState<DetailInhalePhase>("idle");
+  /** Which fiber id the `phase` machine last started for (layout effect) */
+  const [phaseOwnerId, setPhaseOwnerId] = useState<string | null>(null);
   const phaseCleanupRef = useRef<(() => void) | null>(null);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     phaseCleanupRef.current?.();
     phaseCleanupRef.current = null;
 
     if (selectedId === null) {
-      setDetailRevealed(false);
-      setDetailPrimed(false);
-      setBackdropActive(false);
-      setDetailSettled(false);
+      setPhase("idle");
+      setPhaseOwnerId(null);
       return;
     }
 
-    // Inhale — start phased lifecycle
-    setDetailRevealed(false);
-    setDetailPrimed(false);
-    setBackdropActive(false);
-    setDetailSettled(false);
+    setPhaseOwnerId(selectedId);
+    setPhase("pre_raster");
 
-    // Phase 1: after paint fence, prime compositor + reveal cards
     const cancelPhase1 = afterPaint(() => {
-      setDetailPrimed(true);
-      setDetailRevealed(true);
+      setPhase("revealing");
 
-      // Phase 2: enable backdrop-filter after detail cards started animating
       const cancelPhase2 = afterPaint(() => {
-        setBackdropActive(true);
+        setPhase("backdrop_on");
       });
 
-      // Phase 3: settle — reclaim VRAM after animations complete
       const settleTimer = setTimeout(() => {
-        setDetailSettled(true);
-      }, 2400);
+        setPhase("settled");
+      }, DETAIL_COMPOSITOR_SETTLE_MS);
 
       phaseCleanupRef.current = () => {
         cancelPhase2();
@@ -72,5 +67,12 @@ export function useDetailLifecycle(selectedId: string | null): DetailLifecycle {
     };
   }, [selectedId]);
 
-  return { detailRevealed, detailPrimed, backdropActive, detailSettled };
+  const coherentPhase: DetailInhalePhase =
+    selectedId === null
+      ? "idle"
+      : phaseOwnerId !== selectedId
+        ? "pre_raster"
+        : phase;
+
+  return { phase: coherentPhase };
 }

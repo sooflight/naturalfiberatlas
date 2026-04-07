@@ -11,14 +11,14 @@
 
 import { useState, useCallback, useEffect, useRef, useMemo } from "react";
 import { useAtlasData } from "../../context/atlas-data-context";
-import type { FiberProfile } from "../../data/atlas-data";
+import { type FiberProfile, mergeFiberGalleryWithFallback } from "../../data/atlas-data";
 import { dataSource } from "../../data/data-provider";
 import { splitAboutText } from "../plate-primitives";
+import { insightExcerptFromAboutPart } from "../insight-excerpt";
 import {
   Pencil,
   Check,
   Layers,
-  Lightbulb,
   MapPin,
   DollarSign,
   Leaf,
@@ -36,8 +36,12 @@ import {
   Recycle,
   Plus,
   X,
-  BookOpen,
+  Youtube,
 } from "lucide-react";
+import { youtubeVideoIdFromUrl } from "../../utils/youtube-embed";
+import { getYoutubeEmbedUrlRowsForEdit } from "../../utils/youtube-embed-urls";
+import { YouTubeEmbedFrame } from "../youtube-embed-frame";
+import { ProgressiveImage } from "../progressive-image";
 
 /* ── Inline editable text ── */
 export function InlineText({
@@ -419,18 +423,15 @@ export function InsightCard({
   half: 1 | 2 | 3;
 }) {
   const parts = splitAboutText(fiber.about, 3);
-  const text = parts[half - 1];
+  const segment = parts[half - 1];
+  if (!segment) return null;
+  const text = insightExcerptFromAboutPart(segment, half);
   if (!text) return null;
 
   return (
     <EditableCardShell fiber={fiber} minHeight={140}>
       <div className="p-5">
         <div className="flex items-center gap-2 mb-3">
-          {half === 1 ? (
-            <Lightbulb size={14} className="text-blue-400/40" />
-          ) : (
-            <BookOpen size={14} className="text-blue-400/40" />
-          )}
           <span
             className="text-white/40 uppercase tracking-[0.14em] flex-1"
             style={{ fontSize: "11px", fontWeight: 600 }}
@@ -438,7 +439,7 @@ export function InsightCard({
             Insight {half} — {half === 1 ? "Origins" : half === 2 ? "Depth" : "Context"}
           </span>
           <span
-            className="px-1.5 py-0.5 rounded bg-blue-400/[0.06] border border-blue-400/10 text-blue-400/40"
+            className="px-1.5 py-0.5 rounded bg-[#5D9A6D]/[0.06] border border-[#5D9A6D]/10 text-[#5D9A6D]/50"
             style={{ fontSize: "8px" }}
           >
             auto
@@ -446,7 +447,7 @@ export function InsightCard({
         </div>
 
         {/* Blockquote */}
-        <div className="border-l-2 border-blue-400/30 pl-4">
+        <div className="border-l-2 border-[#5D9A6D]/30 pl-4">
           <p
             className="text-white/[0.88]"
             style={{
@@ -461,9 +462,9 @@ export function InsightCard({
         </div>
 
         <div className="flex items-center gap-2 mt-3">
-          <div className="w-4 h-px bg-blue-400/25" />
+          <div className="w-4 h-px bg-[#5D9A6D]/25" />
           <span
-            className="text-blue-400/40 uppercase tracking-[0.15em]"
+            className="text-[#5D9A6D]/45 uppercase tracking-[0.15em]"
             style={{
               fontSize: "9px",
             }}
@@ -473,7 +474,7 @@ export function InsightCard({
         </div>
 
         <p className="text-white/20 mt-2 italic" style={{ fontSize: "9px" }}>
-          Edit the About text to change insight content
+          Pull-quote from each third of About; edit About for full narrative on Identity
         </p>
       </div>
     </EditableCardShell>
@@ -751,6 +752,100 @@ function QuoteCard({ fiber }: { fiber: FiberProfile }) {
   );
 }
 
+function patchYoutubeEmbedRows(onUpdate: (patch: Partial<FiberProfile>) => void, rows: string[]) {
+  const hasContent = rows.some((r) => r.trim().length > 0);
+  onUpdate({
+    youtubeEmbedUrls: hasContent ? rows : undefined,
+    youtubeEmbedUrl: undefined,
+  });
+}
+
+/* ── 7b. YouTube embed URLs (optional public plate — multiple links) ── */
+export function YouTubeUrlCard({
+  fiber,
+  onUpdate,
+}: {
+  fiber: FiberProfile;
+  onUpdate: (patch: Partial<FiberProfile>) => void;
+}) {
+  const stored = getYoutubeEmbedUrlRowsForEdit(fiber);
+  const editRows = stored.length > 0 ? stored : [""];
+
+  return (
+    <EditableCardShell fiber={fiber} minHeight={0}>
+      <div className="p-5">
+        <CardLabel icon={Youtube} iconColor="text-red-400/45">
+          Video (YouTube)
+        </CardLabel>
+        <p className="text-white/25 mb-3" style={{ fontSize: "9px", lineHeight: 1.45 }}>
+          Add one or more watch or youtu.be links. They appear in order on the public profile. Remove all rows to hide the video card.
+        </p>
+        <div className="space-y-2">
+          {editRows.map((url, i) => {
+            const vid = url.trim() ? youtubeVideoIdFromUrl(url) : null;
+            const showInvalid = url.trim().length > 0 && !vid;
+            const setRow = (value: string) => {
+              const next = [...editRows];
+              next[i] = value;
+              patchYoutubeEmbedRows(onUpdate, next);
+            };
+            const removeRow = () => {
+              const next = editRows.filter((_, j) => j !== i);
+              patchYoutubeEmbedRows(onUpdate, next);
+            };
+            return (
+              <div key={i} className="rounded-lg border border-white/[0.06] bg-white/[0.02] p-2">
+                <div className="flex items-start gap-1.5">
+                  <div className="flex-1 min-w-0">
+                    <span className="text-white/30 block mb-1" style={{ fontSize: "8px", fontWeight: 600 }}>
+                      Link {i + 1}
+                    </span>
+                    <InlineText
+                      value={url}
+                      onChange={(v) => setRow(v)}
+                      className="text-white/80"
+                      style={{ fontSize: "10px", fontFamily: "ui-monospace, monospace", wordBreak: "break-all" }}
+                      placeholder="https://www.youtube.com/watch?v=…"
+                    />
+                    {showInvalid && (
+                      <p className="text-amber-400/55 mt-1" style={{ fontSize: "8px", lineHeight: 1.35 }}>
+                        Not a supported YouTube URL.
+                      </p>
+                    )}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeRow()}
+                    className="shrink-0 p-1.5 rounded-md border border-white/[0.08] text-white/25 hover:text-red-400/70 hover:border-red-400/20 transition-colors cursor-pointer mt-5"
+                    title="Remove link"
+                    aria-label={`Remove YouTube link ${i + 1}`}
+                  >
+                    <X size={12} />
+                  </button>
+                </div>
+                {vid && (
+                  <div className="mt-2 pt-2 border-t border-white/[0.06]">
+                    <YouTubeEmbedFrame videoId={vid} title={`${fiber.name} — preview ${i + 1}`} compact />
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
+        <button
+          type="button"
+          onClick={() => patchYoutubeEmbedRows(onUpdate, [...editRows, ""])}
+          className="mt-3 w-full flex items-center justify-center gap-1.5 py-2 rounded-lg border border-dashed border-white/[0.12] text-white/35 hover:text-white/55 hover:border-white/[0.18] transition-colors cursor-pointer"
+          style={{ fontSize: "10px", fontWeight: 600 }}
+        >
+          <Plus size={12} />
+          Add another YouTube link
+        </button>
+      </div>
+    </EditableCardShell>
+  );
+}
+
 /* ── 8. Supplementary data card (Process/Anatomy/Care/WorldNames) ── */
 function SupplementaryCard({
   fiber,
@@ -892,12 +987,14 @@ function ContactSheetCard({
             {images.slice(0, 8).map((img, i) => (
               <div
                 key={img.url}
-                className="aspect-square rounded-lg overflow-hidden border border-white/[0.06]"
+                className="relative aspect-square rounded-lg overflow-hidden border border-white/[0.06]"
               >
-                <img
-                  src={img.url}
+                <ProgressiveImage
+                  src={(img.url?.trim() ? img.url : img.thumbUrl) ?? ""}
+                  preset="contactSheet"
                   alt={img.title ?? `Image ${i + 1}`}
-                  className="w-full h-full object-cover"
+                  className="absolute inset-0 size-full rounded-lg"
+                  loading={i < 4 ? "eager" : "lazy"}
                 />
               </div>
             ))}
@@ -1033,6 +1130,11 @@ export function CardEditor({ fiberId, onOpenGalleryStudio, onScrollToFormSection
     [draft?.about]
   );
 
+  const contactSheetFiber = useMemo(() => {
+    if (!draft) return null;
+    return { ...draft, galleryImages: mergeFiberGalleryWithFallback(fiberId, draft) };
+  }, [fiberId, draft]);
+
   if (!draft || !fiber) {
     return (
       <div className="flex items-center justify-center h-40 text-white/20" style={{ fontSize: "12px" }}>
@@ -1096,6 +1198,8 @@ export function CardEditor({ fiberId, onOpenGalleryStudio, onScrollToFormSection
         {/* Quote */}
         <QuoteCard fiber={draft} />
 
+        <YouTubeUrlCard fiber={draft} onUpdate={pushUpdate} />
+
         {/* Supplementary data cards */}
         <SupplementaryCard
           fiber={draft}
@@ -1141,7 +1245,10 @@ export function CardEditor({ fiberId, onOpenGalleryStudio, onScrollToFormSection
         <SeeAlsoCard fiber={draft} onUpdate={pushUpdate} />
 
         {/* Contact Sheet / Gallery */}
-        <ContactSheetCard fiber={draft} onOpenGalleryStudio={onOpenGalleryStudio} />
+        <ContactSheetCard
+          fiber={contactSheetFiber ?? draft}
+          onOpenGalleryStudio={onOpenGalleryStudio}
+        />
       </div>
     </div>
   );
