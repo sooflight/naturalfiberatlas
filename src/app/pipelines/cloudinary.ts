@@ -4,10 +4,13 @@
  * Inserts on-the-fly resize/format parameters into Cloudinary URLs
  * so the CDN returns right-sized images instead of full-resolution originals.
  *
- * Optional: set `VITE_CLOUDINARY_FETCH_REMOTE=true` to serve arbitrary `http(s)`
- * image URLs through Cloudinary **fetch** delivery (same-origin-friendly, avoids
- * hotlink CORS issues in canvas/WebKit). Requires fetch to be allowed on your
- * Cloudinary cloud. Cloud name defaults to `dawxvzlte` or `VITE_CLOUDINARY_CLOUD_NAME`.
+ * Remote `http(s)` URLs (Pinimg, shop CDNs, etc.) are resized via Cloudinary **fetch**
+ * in **production** builds by default so grid/lightbox presets always receive
+ * right-sized bytes. In development, fetch is off unless you set
+ * `VITE_CLOUDINARY_FETCH_REMOTE=true` (matches prod) or rely on production mode.
+ * Set `VITE_CLOUDINARY_FETCH_REMOTE=false` to force passthrough (e.g. debugging).
+ * Requires remote fetch to be allowed on your Cloudinary cloud. Cloud name defaults
+ * to `dawxvzlte` or `VITE_CLOUDINARY_CLOUD_NAME`.
  */
 
 import type { ImageTransformPipeline, GlassAtlasPreset } from "./types";
@@ -39,7 +42,13 @@ function cloudName(): string {
 }
 
 function fetchRemoteEnabled(): boolean {
-  return import.meta.env.VITE_CLOUDINARY_FETCH_REMOTE === "true";
+  const raw = import.meta.env.VITE_CLOUDINARY_FETCH_REMOTE;
+  if (typeof raw === "string" && raw.trim() !== "") {
+    const t = raw.trim().toLowerCase();
+    if (t === "false" || t === "0" || t === "off") return false;
+    if (t === "true" || t === "1" || t === "on") return true;
+  }
+  return import.meta.env.PROD;
 }
 
 export class CloudinaryPipeline implements ImageTransformPipeline {

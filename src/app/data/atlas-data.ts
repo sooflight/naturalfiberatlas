@@ -174,7 +174,6 @@ export const worldNames: Record<string, string[]> = {
   vetiver: ["Vetiver", "Khus", "Cuscus", "खस (Khas)", "ベチバー (Bechiba)", "Vétiver", "Vetiveria", "Khas Khas"],
   bombax: ["Bombax", "Silk Cotton", "Shalmali", "Red Cotton Tree", "शाल्मलि (Shālmali)", "Fromager Asiatique", "棉木 (Miánmù)"],
   curaua: ["Curauá", "Curaua", "クラウア (Kuraua)", "Bromeliad Fiber", "Fibra de Curauá", "Ananas Erectifolius"],
-  buriti: ["Buriti", "Moriche Palm", "Miriti", "Aguaje", "Mauritia Fiber", "Árvore da Vida", "Palma de Vino"],
   chambira: ["Chambira", "Cumare", "Chambira Palm", "チャンビラ (Chanbira)", "Fibra de Chambira", "Tucuma Fiber"],
   /* ── Dye Profiles ── */
   indigo: ["Indigo", "靛蓝 (Diànlán)", "インディゴ (Indigo)", "인디고 (Indigo)", "Índigo", "Indigo (Indigofera)", "Индиго (Indigo)", "नील (Nīl)", "Çivit", "گل نیل (Gol-e Nīl)", "نيلي (Nīlī)", "Q'aytu", "Chanvre"],
@@ -1754,18 +1753,10 @@ export const quoteData: Record<string, QuoteEntry[]> = {
     { text: "Lincoln fleece hangs in lustrous ringlets nearly a foot long — the heaviest, longest wool in the world.", attribution: "Lincoln Longwool Sheep Breeders' Association" },
     { text: "Lincoln wool is so lustrous it was mistaken for mohair — the 'diamond of the sheep world.'", attribution: "Heritage Breed Conservation" },
   ],
-  "mulberry-silk": [
-    { text: "A single mulberry silkworm cocoon contains up to 900 meters of continuous filament — nearly a kilometer of thread from one caterpillar.", attribution: "Sericulture Science" },
-    { text: "Mulberry silk is stronger than steel by weight, yet it flows like water through your fingers.", attribution: "Materials Science" },
-  ],
   tussar: [
     { text: "Tussar silk is wild silk — its golden color comes from the forest leaves the worm eats, and it cannot be bleached white.", attribution: "Indian Silk Board" },
     { text: "The beauty of tussar is its imperfection — nubby, textured, and warm where mulberry is smooth and cool.", attribution: "Wild Silk Research" },
     { text: "Tasar, eri, and muga are India’s vanya silks — non-mulberry wild silks with deep roots in tribal and rural sericulture.", attribution: "Indian Sericulture" },
-  ],
-  eri: [
-    { text: "Eri is the only silk that never kills the worm — the open-ended cocoon lets the moth emerge before harvesting.", attribution: "Assamese Sericulture" },
-    { text: "In Assam, eri silk is 'the fabric of peace' — ahimsa woven into every thread.", attribution: "Northeast Indian Textile Heritage" },
   ],
   ayate: [
     { text: "The tilma of Juan Diego, on which Our Lady of Guadalupe appeared in 1531, was woven from maguey ayate.", attribution: "Mexican Catholic Tradition" },
@@ -1893,10 +1884,8 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
   silk: [
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771645646/atlas/fg2czrebuvxoinpqedtp.jpg", "Silk thread close-up"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619261/atlas/yksbwtxethsok4bxsoix.jpg", "Silk cocoons"),
-    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619269/atlas/e45iykbpuypcenlnxhfq.jpg", "Mulberry silk"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619272/atlas/bwyoiumzmx5d2kqhvsnz.jpg", "Peace silk"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619274/atlas/u54xnyn30xhvcs7pgqxq.jpg", "Tussar silk"),
-    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619275/atlas/vhtctqa2blfnurmnuj6m.jpg", "Eri silk"),
   ],
   bamboo: [
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619174/atlas/fru5la7c6aitgta2i5f8.jpg", "Bamboo grove"),

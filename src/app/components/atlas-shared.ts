@@ -168,7 +168,7 @@ function firstUrlFromUnknownEntry(entry: unknown): string | null {
 const THUMB_IDS: Record<string, string[]> = {
   fiber: ["hemp", "jute", "flax-linen"],
   textile: ["flax-linen", "organic-cotton", "merino"],
-  dye: ["silk", "mulberry-silk", "hemp"],
+  dye: ["silk", "hemp"],
   plant: ["hemp", "jute", "banana"],
   animal: ["wool", "merino", "cashmere"],
   regen: ["lyocell", "viscose-rayon", "modal"],

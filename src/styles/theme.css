@@ -247,9 +247,12 @@ q,
 }
 
 .group\/glass:hover .pill-zone > span,
-.pill-zone.is-revealed > span {
+.pill-zone.is-revealed > span,
+.pill-zone.pill-zone--ambient > span {
   opacity: 1;
   transform: translateY(0);
+  transition-duration: 0.62s;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 /* ── Grid cell entrance fade ──
@@ -411,6 +414,12 @@ q,
   }
   /* Keep pills visible when explicitly selected */
   .pill-zone.is-revealed > span {
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+  }
+
+  /* Centered-row ambient reveal (same behavior as desktop) */
+  .pill-zone.pill-zone--ambient > span {
     opacity: 1 !important;
     transform: translateY(0) !important;
   }
@@ -723,6 +732,11 @@ q,
   .profile-layer {
     transition-duration: 0.01ms;
     transition-delay: 0s;
+  }
+
+  .pill-zone > span {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
   }
 
   .detail-content-fade {

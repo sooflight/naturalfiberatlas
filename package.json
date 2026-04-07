@@ -21,6 +21,7 @@
     "verify": "npm run test && npm run build && vitest run src/app/utils/admin/verify-bundle-in-dist.test.ts",
     "verify:bundle": "vitest run src/app/utils/admin/verify-bundle-in-dist.test.ts",
     "audit": "npm audit --audit-level=high",
+    "audit:profile-images": "vitest run src/app/pipelines/profile-image-grid-delivery.test.ts",
     "check:no-supabase": "node ./scripts/check-no-supabase.mjs",
     "ops:invalidate-cache": "node ./scripts/invalidate-upstash-cache.mjs",
     "ops:data-parity": "vitest run src/app/utils/admin/data-freshness-ci.test.ts && node ./scripts/data-freshness-api-parity.mjs",

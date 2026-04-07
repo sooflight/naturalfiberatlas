@@ -8,9 +8,16 @@ describe("CloudinaryPipeline", () => {
     vi.unstubAllEnvs();
   });
 
-  it("passes through non-cloudinary URLs unchanged when fetch remote is off", () => {
+  it("passes through non-cloudinary URLs when remote fetch is disabled", () => {
+    vi.stubEnv("VITE_CLOUDINARY_FETCH_REMOTE", "false");
     const url = "https://example.com/images/fiber.jpg";
     expect(pipeline.transform(url, "grid")).toBe(url);
+  });
+
+  it("VITE_CLOUDINARY_FETCH_REMOTE=false forces passthrough regardless of build mode", () => {
+    vi.stubEnv("VITE_CLOUDINARY_FETCH_REMOTE", "false");
+    const url = "https://example.com/images/large-hero.jpg";
+    expect(pipeline.transform(url, "lightbox")).toBe(url);
   });
 
   it("wraps remote https URLs when VITE_CLOUDINARY_FETCH_REMOTE is true", () => {

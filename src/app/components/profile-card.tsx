@@ -336,7 +336,7 @@ export function ProfileCard({
       {/* Selected dot */}
       {isSelected && (
         <div
-          className="absolute top-[8%] left-[8%] rounded-full bg-[#0F783C]"
+          className="absolute top-[6%] right-[8%] rounded-full bg-[#0F783C]"
           style={{
             width: "clamp(6px, 2.5cqi, 10px)",
             height: "clamp(6px, 2.5cqi, 10px)",

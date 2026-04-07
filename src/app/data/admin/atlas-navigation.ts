@@ -113,9 +113,7 @@ export const atlasNavigation: NavNode[] = [
 
       n("silk-fiber", "Silk", { description: "Silk fibers and silkworm-derived variants." }, [
         n("silk", "Silk", { description: "The only natural continuous-filament fiber, produced by silkworms." }, [
-          n("mulberry-silk", "Mulberry Silk"),
           n("tussar", "Tussah"),
-          n("eri", "Eri"),
           n("peace-silk", "Peace Silk"),
         ]),
       ]),

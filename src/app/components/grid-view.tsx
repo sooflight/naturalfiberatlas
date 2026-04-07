@@ -17,6 +17,7 @@ import { useFiberDetail, prefetchFiberDetails } from "../hooks/use-fiber-detail"
 import { useMagneticTilt } from "../hooks/use-magnetic-tilt";
 import { useColumnCount } from "../hooks/use-column-count";
 import { usePrefersReducedMotion } from "../hooks/use-prefers-reduced-motion";
+import { useAmbientGridRow } from "../hooks/use-ambient-grid-row";
 import { useVirtualGrid } from "../hooks/use-virtual-grid";
 import { useDetailLifecycle } from "../hooks/use-detail-lifecycle";
 import { useExhaleLayoutSnapshot } from "../hooks/use-exhale-layout-snapshot";
@@ -373,6 +374,14 @@ export function GridView({
     search,
     selectedId,
   ]);
+
+  const ambientRowIndex = useAmbientGridRow({
+    enabled: !isDetailMode && filtered.length > 0,
+    scrollRoot: atlasScrollPort,
+    filteredLength: filtered.length,
+    cols,
+    indexRefs,
+  });
 
   /* ── Optimization #5 + #6: Prefetch detail data & warm up image analysis cache ── */
   const warmupDone = useRef(false);
@@ -1385,6 +1394,11 @@ export function GridView({
                           isSelected={isSelected}
                           onClick={() => handleCardClick(fiber.id)}
                           profilePills={fiber.profilePills}
+                          ambientPills={
+                            !isDetailMode
+                            && ambientRowIndex !== null
+                            && Math.floor(index / cols) === ambientRowIndex
+                          }
                           priority={gridImageLoad.eagerLoading}
                           fetchPriorityHigh={gridImageLoad.fetchPriorityHigh}
                         />

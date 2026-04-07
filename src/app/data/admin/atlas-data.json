@@ -253,8 +253,20 @@
       "https://i.pinimg.com/1200x/76/a9/ab/76a9ab4de5ecb1e4c5764b63db953e42.jpg"
     ],
     "henequen": [
-      "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619158/atlas/zg1mqfgqqlyxm5syt2fj.jpg",
-      "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619156/atlas/i9h3sb5psqmyvitcfh50.jpg",
+      {
+        "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619158/atlas/zg1mqfgqqlyxm5syt2fj.jpg",
+        "previewFocal": {
+          "x": 0.391304347826087,
+          "y": 0.36904761904761907
+        }
+      },
+      {
+        "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619156/atlas/i9h3sb5psqmyvitcfh50.jpg",
+        "previewFocal": {
+          "x": 0.5217391304347826,
+          "y": 0.6285714285714286
+        }
+      },
       "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619164/atlas/aychyppaxppjdd8czqmi.jpg",
       "https://blob.posta.com.mx/images/2025/08/07/henequen-yucatan-oro-verde-e335aebe-focus-0-0-1479-828.webp",
       "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvXAqNsOfxE-HhHJRmTxFpB38en9i9FHwbZ_vofG2buHL57YtkbEVCY05d70P5F0oKMefZ&s=10",
@@ -638,9 +650,6 @@
       "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619274/atlas/u54xnyn30xhvcs7pgqxq.jpg",
       "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619275/atlas/vhtctqa2blfnurmnuj6m.jpg"
     ],
-    "mulberry-silk": [
-      "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619269/atlas/e45iykbpuypcenlnxhfq.jpg"
-    ],
     "peace-silk": [
       "https://i.pinimg.com/1200x/ab/f3/93/abf393fde9ba18d8beb532ac846ebcfb.jpg",
       "https://sino-silk.com/wp-content/uploads/2024/10/Peace-Silk-1.jpg",
@@ -657,9 +666,6 @@
       "https://cdn.viva.org.uk/wp-content/uploads/2020/12/silkworm-and-cocoon.jpg",
       "https://upload.wikimedia.org/wikipedia/commons/6/6f/Muga_Silkworm.JPG",
       "https://www.sartorbohemia.com/data/tmp/105/0/48817_105.jpg"
-    ],
-    "eri": [
-      "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619275/atlas/vhtctqa2blfnurmnuj6m.jpg"
     ],
     "horsehair": [
       "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619278/atlas/lnnkjf82gd2q6ipf42v3.jpg"
@@ -1091,8 +1097,28 @@
       "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619685/atlas/mhehbhrvqb9e10ma5dxe.jpg"
     ],
     "krajood": [
+      "https://upload.wikimedia.org/wikipedia/commons/1/12/Grey_sedge_imported_from_iNaturalist_photo_28072484_on_6_December_2023.jpg",
+      {
+        "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619695/atlas/i1xto24x8md3yaazsyxd.jpg",
+        "previewFocal": {
+          "x": 0.38405797101449274,
+          "y": 0.5023809523809524
+        }
+      },
+      "https://res.cloudinary.com/dawxvzlte/image/upload/v1775585801/atlas/jwtrujidhuq1v7zrtqfd.jpg",
+      "https://img.freepik.com/premium-photo/view-farmers-harvest-lepironia-articulata-it-is-harvested-by-people-mekong-delta_991182-24117.jpg",
+      "https://img.freepik.com/premium-photo/view-farmers-harvest-lepironia-articulata-it-is-harvested-by-people-mekong-delta_991182-24119.jpg?w=360",
       "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619689/atlas/lxq5ebpnuuvn3lu49x17.jpg",
-      "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619695/atlas/i1xto24x8md3yaazsyxd.jpg"
+      "https://t3.ftcdn.net/jpg/10/34/68/20/360_F_1034682089_sOf2YK91B7tzjrTgKmfkVheAhbCozYPE.jpg",
+      "https://t4.ftcdn.net/jpg/06/36/32/07/360_F_636320777_kiR4sukvXJV3H0ciF61eyHgn9TuWmTov.jpg",
+      "https://images.squarespace-cdn.com/content/v1/6666c2ea50937144dad670ac/11d2dd0e-6e99-430c-b5c8-a95ebaaa00d0/Krajood+Stems+Drying+in+the+Sun.JPG",
+      "https://kooper.co/wp-content/uploads/2019/07/2017-02.jpg",
+      "https://images.squarespace-cdn.com/content/v1/6666c2ea50937144dad670ac/5c6ab1d4-0f3e-4945-b98f-4c35ec6993f1/Krajood+Roller",
+      "https://images.squarespace-cdn.com/content/v1/6666c2ea50937144dad670ac/fc654577-80f9-41c3-8629-ee43820e4869/Krajood+Purse+Weaving",
+      "https://res.cloudinary.com/dawxvzlte/image/upload/v1775585814/atlas/gk3yn2ir30tb2tkcdvxd.jpg",
+      "https://cdn.pixabay.com/photo/2022/04/23/11/58/grey-sedge-7151612_1280.jpg",
+      "https://www.tuffaussieplants.com.au/wp-content/uploads/2020/09/let-art-111.jpg",
+      "https://live.staticflickr.com/8360/8309222121_75d20a03a0_z.jpg"
     ],
     "raffia": [
       "https://cdn.shopify.com/s/files/1/0553/6029/0947/files/Raphia_farinifera.jpg?v=1758979435",
@@ -1816,17 +1842,11 @@
     "silk": [
       "fiber/animal/silk"
     ],
-    "mulberry-silk": [
-      "fiber/animal/silk"
-    ],
     "peace-silk": [
       "fiber/animal/silk"
     ],
     "tussar": [
       "fiber"
-    ],
-    "eri": [
-      "fiber/animal/silk"
     ],
     "horsehair": [
       "fiber/animal/silk"
@@ -2461,9 +2481,7 @@
     "bison": "~Indigenous",
     "qiviut": "~Indigenous",
     "silk": "~3500 BCE",
-    "mulberry-silk": "~3500 BCE",
     "tussar": "~2000 BCE",
-    "eri": "~Ancient",
     "peace-silk": "~1990s",
     "horsehair": "~Ancient",
     "spider-silk": "~2000s",
@@ -2587,9 +2605,7 @@
     "bison": "North America",
     "qiviut": "North America",
     "silk": "Asia",
-    "mulberry-silk": "Asia",
     "tussar": "Asia",
-    "eri": "Asia",
     "peace-silk": "Asia",
     "horsehair": "Global",
     "spider-silk": "Global",
@@ -2701,7 +2717,6 @@
     "bison": "Bison bison",
     "qiviut": "Ovibos moschatus",
     "silk": "Bombyx mori",
-    "mulberry-silk": "Bombyx mori",
     "horsehair": "Equus caballus",
     "spider-silk": "Nephila clavipes",
     "madder": "Rubia tinctorum",

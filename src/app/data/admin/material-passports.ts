@@ -1302,30 +1302,8 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "endUse": {},
     "status": "published"
   },
-  "mulberry-silk": {
-    "materialId": "mulberry-silk",
-    "lastUpdated": "2026-02-28",
-    "performance": {},
-    "process": {},
-    "dyeing": {},
-    "sustainability": {},
-    "sourcing": {},
-    "endUse": {},
-    "status": "published"
-  },
   "tussar": {
     "materialId": "tussar",
-    "lastUpdated": "2026-02-28",
-    "performance": {},
-    "process": {},
-    "dyeing": {},
-    "sustainability": {},
-    "sourcing": {},
-    "endUse": {},
-    "status": "published"
-  },
-  "eri": {
-    "materialId": "eri",
     "lastUpdated": "2026-02-28",
     "performance": {},
     "process": {},

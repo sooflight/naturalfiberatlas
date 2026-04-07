@@ -5,6 +5,9 @@
 export const CANONICAL_FIBER_ID_REDIRECTS: Readonly<Record<string, string>> = {
   angora: "mohair",
   tussah: "tussar",
+  "mulberry-silk": "silk",
+  eri: "peace-silk",
+  buriti: "chambira",
 };
 
 export function resolveCanonicalFiberId(id: string): string {
