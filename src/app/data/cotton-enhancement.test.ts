@@ -1,6 +1,7 @@
 // src/app/data/cotton-enhancement.test.ts
 import { describe, it, expect } from "vitest";
 import { fibers } from "./fibers";
+import { processData } from "./atlas-data";
 
 describe("Cotton Profile Enhancement", () => {
   const cotton = fibers.find((f) => f.id === "organic-cotton");
@@ -58,5 +59,38 @@ describe("Cotton Profile Enhancement", () => {
     it("should have 8 total applications", () => {
       expect(cotton?.applications).toHaveLength(8);
     });
+  });
+});
+
+describe("Process Data", () => {
+  const cottonProcess = processData["organic-cotton"];
+
+  it("should have 8 process steps defined", () => {
+    expect(cottonProcess).toBeDefined();
+    expect(cottonProcess).toHaveLength(8);
+  });
+
+  it("should have correct step sequence", () => {
+    expect(cottonProcess[0].name).toBe("Planting");
+    expect(cottonProcess[1].name).toBe("Growth & Cultivation");
+    expect(cottonProcess[2].name).toBe("Flowering & Boll Formation");
+    expect(cottonProcess[3].name).toBe("Harvesting");
+    expect(cottonProcess[4].name).toBe("Ginning");
+    expect(cottonProcess[5].name).toBe("Cleaning & Grading");
+    expect(cottonProcess[6].name).toBe("Baling & Storage");
+    expect(cottonProcess[7].name).toBe("Spinning Preparation");
+  });
+
+  it("should have detailed descriptions for each step", () => {
+    cottonProcess.forEach((step) => {
+      expect(step.name).toBeTruthy();
+      expect(step.detail).toBeTruthy();
+      expect(step.detail.length).toBeGreaterThan(30);
+    });
+  });
+
+  it("should include organic-specific details", () => {
+    expect(cottonProcess[0].detail).toContain("non-GMO");
+    expect(cottonProcess[1].detail).toContain("beneficial insects");
   });
 });
