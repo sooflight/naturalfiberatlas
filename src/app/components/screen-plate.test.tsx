@@ -91,7 +91,7 @@ describe("ScreenPlate", () => {
       { plateType: "trade", cellIndex: 1 },
     ];
 
-    const { container } = render(
+    render(
       <ScreenPlate
         fiber={baseFiber}
         initialPlateType="about"
@@ -103,7 +103,7 @@ describe("ScreenPlate", () => {
       />,
     );
 
-    const morphCards = container.querySelectorAll(".screen-plate-morph");
+    const morphCards = document.body.querySelectorAll(".screen-plate-morph");
     expect(morphCards.length).toBe(2);
     const first = morphCards[0] as HTMLDivElement;
     expect(first.className).toContain("rounded-3xl");

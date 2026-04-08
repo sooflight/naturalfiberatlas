@@ -107,6 +107,7 @@ export function AtlasDataProvider({ children }: { children: ReactNode }) {
       image: f.image?.trim() || f.galleryImages?.[0]?.url || "",
       status: f.status ?? "published",
       category: classifyProfileCategory(f.id, f.category),
+      tags: f.tags,
       profilePills: f.profilePills,
     }));
     /* C12: Apply hybrid sequence resolver (global baseline). */
@@ -300,6 +301,7 @@ function buildFallback(): AtlasDataContextValue {
     image: f.image,
     status: f.status ?? "published",
     category: classifyProfileCategory(f.id, f.category),
+    tags: f.tags,
     profilePills: f.profilePills,
   }));
   const byId = new Map(baseIndex.map((fiber) => [fiber.id, fiber]));

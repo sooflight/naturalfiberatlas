@@ -62,4 +62,18 @@ describe("syncImageCatalogToDisk", () => {
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.error).toContain("boom");
   });
+
+  it("bypassFingerprint forces a second POST for the same map after success", async () => {
+    const map = { x: "https://x.test/a.jpg" };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ atlasBytes: 10, newImagesBytes: 20 }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await syncImageCatalogToDisk(map);
+    await syncImageCatalogToDisk(map, { bypassFingerprint: true });
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
 });

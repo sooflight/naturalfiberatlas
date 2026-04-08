@@ -1524,14 +1524,14 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
   },
   "columbia": {
     "materialId": "columbia",
-    "lastUpdated": "2026-03-25",
+    "lastUpdated": "2026-04-08",
     "performance": {},
     "process": {},
     "dyeing": {},
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "published"
   },
   "tapa": {
     "materialId": "tapa",

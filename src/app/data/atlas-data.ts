@@ -68,6 +68,8 @@ export interface FiberIndexEntry {
   image: string;
   status: "draft" | "published" | "archived";
   category: "fiber" | "textile" | "dye" | "navigation-parent";
+  /** Profile tags (e.g. Wool, Bast) — used for nav subcategory matching on the grid. */
+  tags: string[];
   profilePills: {
     scientificName: string;
     plantPart: string;
@@ -1811,6 +1813,7 @@ export const fiberIndex: FiberIndexEntry[] = fibers.map((f) => ({
   image: f.image,
   status: f.status ?? "published",
   category: f.category,
+  tags: f.tags,
   profilePills: f.profilePills,
 }));
 
@@ -1886,6 +1889,49 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619261/atlas/yksbwtxethsok4bxsoix.jpg", "Silk cocoons"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619272/atlas/bwyoiumzmx5d2kqhvsnz.jpg", "Peace silk"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619274/atlas/u54xnyn30xhvcs7pgqxq.jpg", "Tussar silk"),
+  ],
+  tussar: [
+    img(
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Cocoons_of_Tasar_Silkworm.jpg/1920px-Cocoons_of_Tasar_Silkworm.jpg",
+      "Tasar silkworm cocoons",
+      "Wikimedia Commons",
+    ),
+    img(
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Tussar_Silk_Moth_Caterpillar_-_Antheraea_mylitta_%288240520369%29.jpg/1920px-Tussar_Silk_Moth_Caterpillar_-_Antheraea_mylitta_%288240520369%29.jpg",
+      "Tussar silkworm caterpillar (Antheraea mylitta)",
+      "Wikimedia Commons",
+    ),
+    img(
+      "https://upload.wikimedia.org/wikipedia/commons/a/ae/Tussar_Silk_Moth_Caterpillar_Antheraea_mylitta_yellow_form._%288241589542%29.jpg",
+      "Tussar caterpillar, yellow form (Antheraea mylitta)",
+      "Wikimedia Commons",
+    ),
+    img(
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Tussar-Silk-Moth.jpg/1920px-Tussar-Silk-Moth.jpg",
+      "Tussar silk moth (adult)",
+      "Wikimedia Commons",
+    ),
+    img(
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Tasar_Silkworm.jpg/1920px-Tasar_Silkworm.jpg",
+      "Tasar silkworm",
+      "Wikimedia Commons",
+    ),
+    img("https://upload.wikimedia.org/wikipedia/commons/d/dc/Tussar_Fabrics.jpg", "Tussar silk fabrics", "Wikimedia Commons"),
+    img(
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Tussar_insects_weaving_up_picture.jpg/1920px-Tussar_insects_weaving_up_picture.jpg",
+      "Tussar silk production",
+      "Wikimedia Commons",
+    ),
+    img(
+      "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Ghicha_Tasar_Yarn.jpg/1920px-Ghicha_Tasar_Yarn.jpg",
+      "Ghicha tasar yarn",
+      "Wikimedia Commons",
+    ),
+    img(
+      "https://inaturalist-open-data.s3.amazonaws.com/photos/612911/original.jpg",
+      "Wild silkmoth (Antheraea)",
+      "iNaturalist",
+    ),
   ],
   bamboo: [
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619174/atlas/fru5la7c6aitgta2i5f8.jpg", "Bamboo grove"),
@@ -2334,6 +2380,8 @@ const jsonKeyAliases: Record<string, string> = {
   "lyocell-tencel": "lyocell",
   "pineapple-pina": "pineapple",
   "cotton": "organic-cotton",
+  /** Legacy nav / disk export id; canonical catalog row is `tussar`. */
+  tussah: "tussar",
 };
 
 interface NewImagesProfile {
@@ -2436,14 +2484,19 @@ export function getGalleryImages(fiberId: string): GalleryImageEntry[] {
  * then the baseline from curated atlas-data + new-images.json. Dedupes by URL so a
  * partial galleryImages patch cannot hide the rest of the catalog (e.g. after a single
  * upload is synced to promoted-overrides).
+ *
+ * When `galleryImages` is an empty array, that means the curator explicitly cleared the
+ * gallery (admin save). Do not substitute the baseline catalog — otherwise “deleted”
+ * images reappear on the public grid and in crossfade layers.
  */
 export function mergeFiberGalleryWithFallback(
   fiberId: string,
   fiber: Pick<FiberProfile, "galleryImages">,
 ): GalleryImageEntry[] {
   const primary = fiber.galleryImages ?? [];
+  if (primary.length === 0) return [];
+
   const fallback = getGalleryImages(fiberId);
-  if (primary.length === 0) return fallback;
   const seen = new Set<string>();
   const out: GalleryImageEntry[] = [];
   for (const e of primary) {

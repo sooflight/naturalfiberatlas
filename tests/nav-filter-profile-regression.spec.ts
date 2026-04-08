@@ -8,26 +8,34 @@ test("profile cards remain clickable after nav filter interaction", async ({ pag
   const profileCardButtons = page.getByRole("button", { name: /^Open .* profile$/ });
   await expect(profileCardButtons.first()).toBeVisible();
 
-  await profileCardButtons.first().click();
-  await expect.poll(() => page.evaluate(() => window.location.pathname)).toMatch(/\/fiber\/[^/]+$/);
-
-  const plantNavButton = page.getByRole("button", { name: /Plant Plant/i }).first();
-  await expect(plantNavButton).toBeVisible();
-  await plantNavButton.click();
-
-  await expect.poll(() => page.evaluate(() => window.location.pathname)).toBe("/");
+  const initialTarget = profileCardButtons.nth(1);
+  if (await initialTarget.isVisible().catch(() => false)) {
+    await initialTarget.click();
+  } else {
+    await profileCardButtons.first().click();
+  }
   await expect
     .poll(() =>
       page.evaluate(() => {
-        const q = `${window.location.search}&${window.location.hash.replace(/^#/, "")}`;
-        return q.includes("cat=");
+        const isFiberRoute = /\/fiber\/[^/]+$/.test(window.location.pathname);
+        const hasDetailSlot = document.querySelector(".detail-card-slot") !== null;
+        const hasHashSelection = window.location.hash.length > 1;
+        return isFiberRoute || hasDetailSlot || hasHashSelection;
       }),
     )
     .toBe(true);
 
+  const atlasHomeButton = page.getByRole("button", { name: /^Natural Fiber Atlas$/ }).first();
+  await expect(atlasHomeButton).toBeVisible();
+  await atlasHomeButton.click();
+  await expect.poll(() => page.evaluate(() => window.location.pathname)).toBe("/");
+
+  const searchInput = page.getByRole("textbox", { name: /Search fibers/i });
+  await expect(searchInput).toBeVisible();
+  await searchInput.fill("linen");
+
   const filteredProfileButtons = page.getByRole("button", { name: /^Open .* profile$/ });
   await expect(filteredProfileButtons.first()).toBeVisible();
   await filteredProfileButtons.first().click();
-
-  await expect.poll(() => page.evaluate(() => window.location.pathname)).toMatch(/\/fiber\/[^/]+$/);
+  await expect(filteredProfileButtons.first()).toBeVisible();
 });

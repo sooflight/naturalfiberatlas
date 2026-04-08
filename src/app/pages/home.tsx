@@ -6,68 +6,19 @@
  */
 
 import { useState, useMemo } from "react";
-import { Outlet } from "react-router";
+import { Outlet, useNavigate } from "react-router";
+import { AtlasSiteFooter } from "../components/atlas-site-footer";
 import { GridView } from "../components/grid-view";
 import { TopNav } from "../components/top-nav";
+import { useColumnCount } from "../hooks/use-column-count";
 import { useEffect } from "react";
+import { mapNavToGridFilters, type GridFiberSubcategory } from "../data/map-nav-to-grid-filters";
 
-export type GridFiberSubcategory =
-  | "plant"
-  | "animal"
-  | "regen"
-  | "bast-fiber"
-  | "bark-fiber"
-  | "seed-fiber"
-  | "leaf-fiber"
-  | "grass-fiber"
-  | "fruit-fiber"
-  | "wool-fiber"
-  | "silk-fiber"
-  | "hair-fiber"
-  | "specialty-protein";
-
-export function mapNavToGridFilters(nodeId: string | null): {
-  category: string;
-  fiberSubcategory: GridFiberSubcategory | null;
-} {
-  if (!nodeId || nodeId === "home") return { category: "all", fiberSubcategory: null };
-
-  if (["fiber", "textile", "dye"].includes(nodeId)) {
-    return { category: nodeId, fiberSubcategory: null };
-  }
-
-  if (nodeId === "plant") {
-    return { category: "fiber", fiberSubcategory: "plant" };
-  }
-
-  if (["bast-fiber", "bark-fiber", "seed-fiber", "leaf-fiber", "grass-fiber", "fruit-fiber"].includes(nodeId)) {
-    return { category: "fiber", fiberSubcategory: nodeId as GridFiberSubcategory };
-  }
-
-  if (nodeId === "animal") {
-    return { category: "fiber", fiberSubcategory: "animal" };
-  }
-
-  if (["wool-fiber", "silk-fiber", "hair-fiber", "specialty-protein"].includes(nodeId)) {
-    return { category: "fiber", fiberSubcategory: nodeId as GridFiberSubcategory };
-  }
-
-  if (nodeId === "regen") {
-    return { category: "fiber", fiberSubcategory: "regen" };
-  }
-
-  if (["woven", "knit", "nonwoven"].includes(nodeId)) {
-    return { category: "textile", fiberSubcategory: null };
-  }
-
-  if (["natural-dye", "synthetic-dye", "bio-dye"].includes(nodeId)) {
-    return { category: "dye", fiberSubcategory: null };
-  }
-
-  return { category: "all", fiberSubcategory: null };
-}
+export type { GridFiberSubcategory };
+export { mapNavToGridFilters };
 
 export function HomeAtlasLayout() {
+  const navigate = useNavigate();
   const [activeNodeId, setActiveNodeId] = useState<string | null>(null);
   const [previewNodeId, setPreviewNodeId] = useState<string | null>(null);
   const [debouncedPreviewNodeId, setDebouncedPreviewNodeId] = useState<string | null>(null);
@@ -75,6 +26,7 @@ export function HomeAtlasLayout() {
   const [navInteractionEpoch, setNavInteractionEpoch] = useState(0);
   const [search, setSearch] = useState("");
   const [visibleProfileCount, setVisibleProfileCount] = useState(0);
+  const [profileDetailOpen, setProfileDetailOpen] = useState(false);
 
   useEffect(() => {
     if (previewNodeId === null) {
@@ -96,6 +48,9 @@ export function HomeAtlasLayout() {
     [effectiveNodeId],
   );
 
+  const { cols, gridGap } = useColumnCount();
+  const columnGap = cols <= 2 ? "0.875rem" : gridGap;
+
   return (
     <>
       <h1 className="sr-only">Natural Fiber Atlas</h1>
@@ -106,27 +61,52 @@ export function HomeAtlasLayout() {
           setDebouncedPreviewNodeId(null);
           setActiveNodeId(id);
           setNavInteractionEpoch((e) => e + 1);
+          if (id === "home") {
+            navigate({ pathname: "/", search: "", hash: "" }, { replace: true });
+          }
+        }}
+        onBackToBrowse={() => {
+          setPreviewNodeId(null);
+          setDebouncedPreviewNodeId(null);
+          setActiveNodeId(null);
+          setNavInteractionEpoch((e) => e + 1);
+          if (window.history.length > 1) {
+            navigate(-1);
+            return;
+          }
+          navigate({ pathname: "/", search: "", hash: "" }, { replace: true });
         }}
         onPreviewNavigate={setPreviewNodeId}
         externalSearch={search}
         onSearchChange={setSearch}
         visibleProfileCount={visibleProfileCount}
+        hideCategoryNavStrip={profileDetailOpen}
       >
-        <GridView
-          hideHeader
-          navInteractionEpoch={navInteractionEpoch}
-          externalCategory={gridCategory}
-          externalFiberSubcategory={gridFiberSubcategory}
-          externalSearch={search}
-          onVisibleProfilesChange={setVisibleProfileCount}
-          onCategoryChange={(cat) => {
-            if (cat !== gridCategory) {
-              setPreviewNodeId(null);
-              setActiveNodeId(cat === "all" ? null : cat);
-            }
-          }}
-          onSearchChange={setSearch}
-        />
+        <div className="flex min-h-[min-content] w-full flex-1 flex-col">
+          <GridView
+            includeSiteFooter={false}
+            hideHeader
+            navInteractionEpoch={navInteractionEpoch}
+            externalCategory={gridCategory}
+            externalFiberSubcategory={gridFiberSubcategory}
+            externalSearch={search}
+            onVisibleProfilesChange={setVisibleProfileCount}
+            onProfileDetailOpenChange={setProfileDetailOpen}
+            onCategoryChange={(cat) => {
+              if (cat !== gridCategory) {
+                setPreviewNodeId(null);
+                setActiveNodeId(cat === "all" ? null : cat);
+              }
+            }}
+            onSearchChange={setSearch}
+          />
+          <div className="min-h-0 min-w-0 flex-1 basis-0" aria-hidden />
+          <AtlasSiteFooter
+            cols={cols}
+            columnGap={columnGap}
+            className="shrink-0 px-4 sm:px-[3%]"
+          />
+        </div>
       </TopNav>
       <Outlet />
     </>

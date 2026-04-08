@@ -561,9 +561,13 @@ export function WorldNamesPlate({ fiber }: { fiber: FiberProfile }) {
           <div className={`flex flex-col gap-[${sp.sm}]`}>
             {parsed.map((entry, i) => (
               <div key={names[i]} className={`${cellPad} ${propertiesCellSurface} min-w-0`}>
-                <div className={`flex items-start justify-between gap-[${sp.sm}] min-w-0`}>
+                <div
+                  className="flex min-w-0 items-start justify-between"
+                  style={{ gap: sp.md }}
+                >
                   <div
-                    className={`min-w-0 flex-1 flex flex-row flex-wrap items-baseline gap-x-[${sp.md}] gap-y-[${sp.xs}]`}
+                    className="flex min-w-0 flex-1 flex-row flex-wrap items-baseline"
+                    style={{ columnGap: sp.lg, rowGap: sp.xs }}
                   >
                     <span
                       className={`${T.primary} [text-wrap:balance]`}
@@ -577,7 +581,10 @@ export function WorldNamesPlate({ fiber }: { fiber: FiberProfile }) {
                       {entry.native}
                     </span>
                     {entry.romanized ? (
-                      <span className={`${T.muted} shrink-0`} style={{ fontSize: "clamp(10px, 3.2cqi, 14px)", letterSpacing: "0.04em" }}>
+                      <span
+                        className={`${T.muted} shrink-0`}
+                        style={{ fontSize: "clamp(10px, 3.2cqi, 14px)", letterSpacing: "0.04em" }}
+                      >
                         {entry.romanized}
                       </span>
                     ) : null}
@@ -841,12 +848,18 @@ export function CarePlate({ fiber }: { fiber: FiberProfile }) {
   );
 }
 
-/* ═══ YouTube embed (optional — one plate, multiple videos when several URLs parse) ═══ */
-export function YouTubeEmbedPlate({ fiber }: { fiber: FiberProfile }) {
+/* ═══ YouTube embed (optional — one video per detail card; slotIndex picks the URL) ═══ */
+export function YouTubeEmbedPlate({
+  fiber,
+  slotIndex = 0,
+}: {
+  fiber: FiberProfile;
+  /** Which valid embed row to show (0-based). Default 0. */
+  slotIndex?: number;
+}) {
   const entries = getValidYoutubeEmbedEntries(fiber);
-  if (entries.length === 0) return null;
-
-  const titleLabel = entries.length > 1 ? "Videos" : "Video";
+  const row = entries[slotIndex];
+  if (!row) return null;
 
   return (
     <div className={`h-full flex flex-col min-h-0 ${pad}`}>
@@ -857,7 +870,7 @@ export function YouTubeEmbedPlate({ fiber }: { fiber: FiberProfile }) {
             className="tracking-[0.18em] uppercase text-white/[0.82] truncate"
             style={{ fontSize: "clamp(7px, 2.2cqi, 9px)", fontWeight: 500 }}
           >
-            {titleLabel}
+            Video
           </span>
         </div>
         <span
@@ -869,29 +882,22 @@ export function YouTubeEmbedPlate({ fiber }: { fiber: FiberProfile }) {
       </div>
       <div className={`mt-[${sp.xs}] w-full max-w-full h-px bg-gradient-to-r from-white/[0.14] via-white/[0.06] to-transparent shrink-0`} />
       <DetailScrollRegion wrapperClassName="flex-1 min-h-0" scrollClassName={`pt-[${sp.xs}]`}>
-        <div className={`flex flex-col gap-[${sp.md}]`}>
-          {entries.map(({ videoId, watchUrl }, idx) => (
-            <div key={videoId} className={`flex flex-col gap-[${sp.xs}]`}>
-              {entries.length > 1 && (
-                <span className={T.muted} style={{ fontSize: "clamp(7px, 2.2cqi, 9px)", fontWeight: 600 }}>
-                  {idx + 1} / {entries.length}
-                </span>
-              )}
-              <YouTubeEmbedFrame videoId={videoId} title={`${fiber.name} on YouTube`} />
-              <div className="flex justify-end shrink-0">
-                <a
-                  href={watchUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`inline-flex items-center gap-1 shrink-0 rounded-md border border-white/[0.1] bg-white/[0.04] px-[clamp(6px,1.8cqi,10px)] py-[clamp(3px,1cqi,5px)] ${T.secondary} transition-colors hover:bg-white/[0.07] hover:text-white/[0.88] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#5D9A6D]/50`}
-                  style={{ fontSize: "clamp(8px, 2.5cqi, 10px)", fontWeight: 600, letterSpacing: "0.06em" }}
-                >
-                  <ExternalLink size={10} className="opacity-70" aria-hidden />
-                  Watch
-                </a>
-              </div>
+        <div className={`min-h-full flex flex-col justify-center gap-[${sp.md}]`}>
+          <div className={`flex flex-col gap-[${sp.xs}]`}>
+            <YouTubeEmbedFrame videoId={row.videoId} title={`${fiber.name} on YouTube`} />
+            <div className="flex justify-end shrink-0">
+              <a
+                href={row.watchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center gap-1 shrink-0 rounded-md border border-white/[0.1] bg-white/[0.04] px-[clamp(6px,1.8cqi,10px)] py-[clamp(3px,1cqi,5px)] ${T.secondary} transition-colors hover:bg-white/[0.07] hover:text-white/[0.88] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-[#5D9A6D]/50`}
+                style={{ fontSize: "clamp(8px, 2.5cqi, 10px)", fontWeight: 600, letterSpacing: "0.06em" }}
+              >
+                <ExternalLink size={10} className="opacity-70" aria-hidden />
+                Watch
+              </a>
             </div>
-          ))}
+          </div>
         </div>
       </DetailScrollRegion>
     </div>

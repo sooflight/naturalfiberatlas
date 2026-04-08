@@ -8,6 +8,7 @@ import {
 import { fiberIndex } from "../data/atlas-data";
 import { getGalleryImages } from "../data/atlas-data";
 import type { GalleryImageEntry } from "../data/atlas-data";
+import { dataSource } from "../data/data-provider";
 
 function makeVisibility(keys: number[]): { ratios: Map<number, number> } {
   const ratios = new Map<number, number>();
@@ -76,6 +77,25 @@ describe("computePlateLayout", () => {
 
     const assigned = [...result.plateAssignments.keys()].sort((a, b) => a - b);
     expect(assigned).toEqual(expectedPool);
+  });
+
+  it("assigns one youtubeEmbed cell per valid URL with distinct slot indices", () => {
+    dataSource.resetToDefaults();
+    dataSource.updateFiber("lotus", {
+      youtubeEmbedUrls: [
+        "https://youtu.be/dQw4w9WgXcQ",
+        "https://youtu.be/9bZkp7q19f0",
+      ],
+    });
+    const cols = 4;
+    const filtered = fiberIndex;
+    const visibility = makeVisibility(Array.from({ length: filtered.length + 40 }, (_, i) => i));
+    const result = computePlateLayout("lotus", filtered, cols, visibility);
+    const ytCells = [...result.plateAssignments.entries()].filter(([, pt]) => pt === "youtubeEmbed");
+    expect(ytCells.length).toBe(2);
+    const slots = ytCells.map(([cell]) => result.youtubeEmbedSlotByCell.get(cell)).sort();
+    expect(slots).toEqual([0, 1]);
+    dataSource.resetToDefaults();
   });
 
   it("places one contactSheet cell per 12-image gallery chunk with correct global offsets", () => {

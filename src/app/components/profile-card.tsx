@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useImagePipeline } from "../context/image-pipeline";
 import { useCrossfade } from "../hooks/use-crossfade";
 import { useHasRealHover } from "../hooks/use-has-real-hover";
@@ -108,6 +108,7 @@ export function ProfileCard({
   const revealed = isSelected ? "is-revealed" : "";
   const [hovered, setHovered] = useState(false);
   const [imageStackRevealed, setImageStackRevealed] = useState(false);
+  const [failedLayerMap, setFailedLayerMap] = useState<Record<number, true>>({});
   const primaryImgRef = useRef<HTMLImageElement | null>(null);
   const hasRealHover = useHasRealHover();
   const hoverLogRef = useRef(false);
@@ -134,11 +135,23 @@ export function ProfileCard({
     paused: (hasRealHover && hovered) || crossfadePaused,
   });
   const primarySrc = crossfadeLayers[0]?.url;
+  const primaryImageFailed = failedLayerMap[0] === true;
   const useHighFetch = priority && fetchPriorityHigh;
   const prefersReducedMotion = usePrefersReducedMotion();
   const revealMs = prefersReducedMotion ? 0 : 500;
   const revealTransition =
     revealMs === 0 ? "none" : `opacity ${revealMs}ms ease-out`;
+
+  useEffect(() => {
+    setFailedLayerMap({});
+  }, [id, primarySrc]);
+
+  const markLayerFailed = useCallback((layerIndex: number) => {
+    setFailedLayerMap((prev) => {
+      if (prev[layerIndex]) return prev;
+      return { ...prev, [layerIndex]: true };
+    });
+  }, []);
 
   useEffect(() => {
     if (!primarySrc) {
@@ -264,7 +277,7 @@ export function ProfileCard({
       <div
         className="absolute inset-0 -z-20 bg-gradient-to-b from-[#0e0e0e] via-[#0a0a0a] to-[#0c0c0c] pointer-events-none"
         style={{
-          opacity: imageStackRevealed ? 0 : 1,
+          opacity: imageStackRevealed && !primaryImageFailed ? 0 : 1,
           transition: revealTransition,
         }}
         aria-hidden
@@ -274,15 +287,16 @@ export function ProfileCard({
       <div
         className="absolute inset-0 -z-10 overflow-hidden"
         style={{
-          opacity: imageStackRevealed ? 1 : 0,
+          opacity: imageStackRevealed && !primaryImageFailed ? 1 : 0,
           transition: revealTransition,
         }}
       >
         {crossfadeLayers.map((layer, layerIndex) => {
           const isActive = layerIndex === activeIndex;
           const isPrevious = layerIndex === previousIndex && layerIndex !== activeIndex;
+          const isFailed = failedLayerMap[layerIndex] === true;
           const style: React.CSSProperties = {
-            opacity: isActive || isPrevious ? 1 : 0,
+            opacity: isFailed ? 0 : (isActive || isPrevious ? 1 : 0),
             zIndex: isActive ? 2 : isPrevious ? 1 : 0,
             transition: isActive ? "opacity 3s ease" : "none",
             ...(layer.objectPosition ? { objectPosition: layer.objectPosition } : {}),
@@ -300,6 +314,7 @@ export function ProfileCard({
               loading={eagerLayer ? "eager" : "lazy"}
               decoding="async"
               draggable={false}
+              onError={() => markLayerFailed(layerIndex)}
               {...(useHighFetch && layerIndex === 0
                 ? ({ fetchpriority: "high" } as Record<string, string>)
                 : {})}
@@ -310,7 +325,7 @@ export function ProfileCard({
 
       {/* ── Subtle graduated frost overlay ── */}
       <div
-        className="absolute inset-0 bg-white/[0.06] pointer-events-none"
+        className="absolute inset-0 z-0 bg-white/[0.06] pointer-events-none"
         style={{
           maskImage:
             "linear-gradient(to bottom, black 0%, rgba(0,0,0,0.4) 25%, transparent 50%)",
@@ -320,7 +335,7 @@ export function ProfileCard({
       />
       {/* ── Bottom frost overlay — subtle tint anchoring the lower portion ── */}
       <div
-        className="absolute inset-0 bg-white/[0.06] pointer-events-none"
+        className="absolute inset-0 z-0 bg-white/[0.06] pointer-events-none"
         style={{
           maskImage:
             "linear-gradient(to bottom, transparent 50%, rgba(0,0,0,0.4) 70%, black 90%)",
@@ -330,13 +345,20 @@ export function ProfileCard({
       />
       {/* ── Breathing mask expansion layer removed — hover is specular sweep only ── */}
 
-      {/* Gradient scrim */}
-      <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-transparent pointer-events-none" />
+      {/* Readability scrim — subtle black vignette; title & pills sit above at z-[2] */}
+      <div
+        className="absolute inset-0 z-[1] pointer-events-none"
+        style={{
+          background:
+            "linear-gradient(to bottom, rgba(0,0,0,0.26) 0%, rgba(0,0,0,0.05) 16%, transparent 38%, transparent 55%, rgba(0,0,0,0.1) 70%, rgba(0,0,0,0.48) 100%)",
+        }}
+        aria-hidden
+      />
 
       {/* Selected dot */}
       {isSelected && (
         <div
-          className="absolute top-[6%] right-[8%] rounded-full bg-[#0F783C]"
+          className="absolute top-[6%] right-[8%] z-[2] rounded-full bg-[#0F783C]"
           style={{
             width: "clamp(6px, 2.5cqi, 10px)",
             height: "clamp(6px, 2.5cqi, 10px)",
@@ -348,7 +370,7 @@ export function ProfileCard({
       {/* ── Property pills — top zone ── */}
       {profilePills && (
         <div
-          className={`absolute top-[6%] right-[8%] flex flex-wrap gap-[clamp(3px,1.2cqi,6px)] pointer-events-none pill-zone ${revealed}`}
+          className={`absolute top-[6%] right-[8%] z-[2] flex flex-wrap gap-[clamp(3px,1.2cqi,6px)] pointer-events-none pill-zone ${revealed}`}
           style={{ left: "clamp(10px,5cqi,20px)" }}
         >
           <Pill colorKey="scientificName" delay={0}>
@@ -366,7 +388,7 @@ export function ProfileCard({
       {/* ── Property pills — bottom zone (above name) ── */}
       {profilePills && (
         <div
-          className={`absolute bottom-[6%] right-[8%] flex flex-wrap gap-[clamp(3px,1.2cqi,6px)] pointer-events-none pill-zone ${revealed}`}
+          className={`absolute bottom-[6%] right-[8%] z-[2] flex flex-wrap gap-[clamp(3px,1.2cqi,6px)] pointer-events-none pill-zone ${revealed}`}
           style={{ left: "clamp(10px,5cqi,20px)" }}
         >
           <Pill colorKey="fiberType" delay={70}>
@@ -382,7 +404,7 @@ export function ProfileCard({
       )}
 
       {/* Name — vertically centered */}
-      <div className="absolute inset-0 flex items-center justify-start p-[clamp(10px,5cqi,20px)]">
+      <div className="absolute inset-0 z-[2] flex items-center justify-start p-[clamp(10px,5cqi,20px)]">
         <h3
           className="text-white tracking-[0.28em] uppercase text-left"
           style={{

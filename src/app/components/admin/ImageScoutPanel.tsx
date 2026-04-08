@@ -316,6 +316,31 @@ function createScoutUploadTaskId(): string {
   return `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+async function uploadRemoteImageUrlsToAtlasFolder(
+  urls: string[],
+  media: AtlasMedia[] | undefined,
+  cloudinaryConfig: CloudinaryConfig,
+  onProgress?: (done: number, total: number) => void,
+): Promise<{ uploaded: string[]; uploadedMedia: AtlasMedia[]; failed: string[] }> {
+  const uploaded: string[] = [];
+  const uploadedMedia: AtlasMedia[] = [];
+  const failed: string[] = [];
+  for (let i = 0; i < urls.length; i += 1) {
+    try {
+      const cloudUrl = await uploadFromUrl(urls[i], cloudinaryConfig, { folder: "atlas" });
+      uploaded.push(cloudUrl);
+      if (media?.[i]) uploadedMedia.push({ ...media[i], url: cloudUrl });
+    } catch {
+      failed.push(urls[i]);
+    }
+    onProgress?.(i + 1, urls.length);
+  }
+  return { uploaded, uploadedMedia, failed };
+}
+
+const HOTLINK_ONLY_TITLE =
+  "Stores the original image URL only. Those links often break when the source site changes. Prefer “Upload to CDN” when Cloudinary is configured.";
+
 // ── Main Component ───────────────────────────────────────
 
 export default function ImageScoutPanel({
@@ -944,17 +969,6 @@ export default function ImageScoutPanel({
   }, [onFlash]);
 
   // ── Add actions ──
-  const confirmProfile = useCallback(async (profile: string) => {
-    setTargetProfile(profile);
-    setShowProfilePicker(false);
-    setProfileSearch('');
-    setProfileNodePath([]);
-    const action = pendingAction;
-    setPendingAction(null);
-    if (action === 'direct') await doAddDirect(profile);
-    else if (action === 'upload') await doUploadAndAdd(profile);
-  }, [pendingAction]);
-
   const doAddDirect = useCallback(async (profile: string) => {
     const urls = selectedUrls();
     const media = selectedMedia();
@@ -973,44 +987,87 @@ export default function ImageScoutPanel({
     } else {
       onClose();
     }
-  }, [staged, onAddImages, onFlash, onClose, isQueueMode, queueAdvance]);
+  }, [onAddImages, onFlash, onClose, isQueueMode, queueAdvance]);
+
+  const addImagesToProfileWithDurability = useCallback(
+    async (profile: string, urls: string[], media?: AtlasMedia[]) => {
+      if (urls.length === 0) return { added: 0, failed: 0, usedHotlink: false };
+      if (!cloudinaryReady) {
+        await onAddImages(profile, urls, media);
+        return { added: urls.length, failed: 0, usedHotlink: true };
+      }
+      setUploading(true);
+      setUploadProgress({ done: 0, total: urls.length });
+      const { uploaded, uploadedMedia, failed } = await uploadRemoteImageUrlsToAtlasFolder(
+        urls,
+        media,
+        cloudinaryConfig,
+        (done, total) => setUploadProgress({ done, total }),
+      );
+      setUploading(false);
+      setUploadProgress({ done: 0, total: 0 });
+      if (uploaded.length > 0) {
+        await onAddImages(
+          profile,
+          uploaded,
+          uploadedMedia.length > 0 ? uploadedMedia : undefined,
+        );
+      }
+      return { added: uploaded.length, failed: failed.length, usedHotlink: false };
+    },
+    [cloudinaryReady, cloudinaryConfig, onAddImages],
+  );
 
   const doUploadAndAdd = useCallback(async (profile: string) => {
-    if (!cloudinaryReady) { onFlash('Configure Cloudinary in settings first'); return; }
+    if (!cloudinaryReady) {
+      onFlash("Configure Cloudinary in settings first");
+      return;
+    }
     const urls = selectedUrls();
     const media = selectedMedia();
     if (!urls.length) return;
-    setUploading(true);
-    setUploadProgress({ done: 0, total: urls.length });
-    const uploaded: string[] = [];
-    const uploadedMedia: AtlasMedia[] = [];
-    const failed: string[] = [];
-    for (let i = 0; i < urls.length; i++) {
-      try {
-        const cloudUrl = await uploadFromUrl(urls[i], cloudinaryConfig, { folder: 'atlas' });
-        uploaded.push(cloudUrl);
-        uploadedMedia.push({ ...media[i], url: cloudUrl });
-      } catch { failed.push(urls[i]); }
-      setUploadProgress(p => ({ ...p, done: p.done + 1 }));
-    }
-    if (uploaded.length) await onAddImages(profile, uploaded, uploadedMedia);
-    const msg = failed.length
-      ? `Uploaded ${uploaded.length}/${urls.length} (${failed.length} failed)`
-      : `Uploaded & added ${uploaded.length} image${uploaded.length > 1 ? 's' : ''} to ${profile}`;
+    const { added, failed } = await addImagesToProfileWithDurability(profile, urls, media);
+    const msg =
+      failed > 0
+        ? `Uploaded ${added}/${urls.length} (${failed} failed)`
+        : `Uploaded & added ${added} image${added > 1 ? "s" : ""} to ${profile}`;
     onFlash(msg);
-    setUploading(false);
-    if (uploaded.length) {
+    if (added > 0) {
       if (isQueueMode) {
-        setCompleted(prev => new Set(prev).add(profile));
-        setTotalAdded(prev => prev + uploaded.length);
+        setCompleted((prev) => new Set(prev).add(profile));
+        setTotalAdded((prev) => prev + added);
         justAddedRef.current = true;
         setStaged([]);
-        advanceTimerRef.current = setTimeout(() => { justAddedRef.current = false; queueAdvance(); }, ADVANCE_DELAY_MS);
+        advanceTimerRef.current = setTimeout(() => {
+          justAddedRef.current = false;
+          queueAdvance();
+        }, ADVANCE_DELAY_MS);
       } else {
         onClose();
       }
     }
-  }, [staged, cloudinaryConfig, cloudinaryReady, onAddImages, onFlash, onClose, isQueueMode, queueAdvance]);
+  }, [
+    addImagesToProfileWithDurability,
+    cloudinaryReady,
+    onFlash,
+    onClose,
+    isQueueMode,
+    queueAdvance,
+  ]);
+
+  const confirmProfile = useCallback(
+    async (profile: string) => {
+      setTargetProfile(profile);
+      setShowProfilePicker(false);
+      setProfileSearch("");
+      setProfileNodePath([]);
+      const action = pendingAction;
+      setPendingAction(null);
+      if (action === "direct") await doAddDirect(profile);
+      else if (action === "upload") await doUploadAndAdd(profile);
+    },
+    [pendingAction, doAddDirect, doUploadAndAdd],
+  );
 
   const handleAdd = (action: 'direct' | 'upload') => {
     if (staged.length === 0) return;
@@ -1403,21 +1460,38 @@ export default function ImageScoutPanel({
                   >
                     Clear
                   </button>
-                  <button
-                    onClick={() => handleAdd('direct')}
-                    disabled={uploading}
-                    className="flex-1 py-1.5 text-[10px] font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors disabled:opacity-40"
-                  >
-                    Add Direct
-                  </button>
-                  <button
-                    onClick={() => handleAdd('upload')}
-                    disabled={uploading || !cloudinaryReady}
-                    className="flex-1 py-1.5 text-[10px] font-medium text-white bg-green-600 hover:bg-green-500 rounded-lg transition-colors disabled:opacity-40"
-                    title={!cloudinaryReady ? 'Configure Cloudinary' : 'Upload to CDN & add'}
-                  >
-                    {uploading ? `${uploadProgress.done}/${uploadProgress.total}` : 'Upload'}
-                  </button>
+                  {cloudinaryReady ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => handleAdd("upload")}
+                        disabled={uploading}
+                        className="flex-[1.35] py-1.5 text-[10px] font-medium text-white bg-green-600 hover:bg-green-500 rounded-lg transition-colors disabled:opacity-40"
+                        title="Copy images into your Cloudinary folder (recommended)"
+                      >
+                        {uploading ? `${uploadProgress.done}/${uploadProgress.total}` : "Upload to CDN"}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAdd("direct")}
+                        disabled={uploading}
+                        className="flex-1 py-1.5 text-[10px] font-medium text-amber-200/90 bg-white/[0.06] hover:bg-white/[0.1] border border-amber-500/25 rounded-lg transition-colors disabled:opacity-40"
+                        title={HOTLINK_ONLY_TITLE}
+                      >
+                        Hotlink only
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => handleAdd("direct")}
+                      disabled={uploading}
+                      className="flex-1 py-1.5 text-[10px] font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors disabled:opacity-40"
+                      title={HOTLINK_ONLY_TITLE}
+                    >
+                      Add (hotlink)
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -1816,22 +1890,30 @@ export default function ImageScoutPanel({
 
               {/* Right: Standardized action buttons */}
               <div className="flex gap-2 shrink-0 items-center">
-                {/* Secondary: Clear */}
                 <button onClick={() => setStaged([])} disabled={uploading}
                   className="px-2 py-1 text-[10px] font-medium text-neutral-500 hover:text-white border border-neutral-800 hover:border-neutral-600 rounded-lg transition-colors disabled:opacity-40">
                   Clear
                 </button>
-                {/* Primary: Add Direct */}
-                <button onClick={() => handleAdd('direct')} disabled={uploading}
-                  className="px-3 py-1 text-[10px] font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors disabled:opacity-40">
-                  Add Direct
-                </button>
-                {/* Secondary: Upload & Add */}
-                <button onClick={() => handleAdd('upload')} disabled={uploading || !cloudinaryReady}
-                  className="px-3 py-1 text-[10px] font-medium text-white bg-green-600 hover:bg-green-500 rounded-lg transition-colors disabled:opacity-40"
-                  title={!cloudinaryReady ? 'Configure Cloudinary first' : 'Upload to CDN & add'}>
-                  {uploading ? `${uploadProgress.done}/${uploadProgress.total}` : 'Upload & Add'}
-                </button>
+                {cloudinaryReady ? (
+                  <>
+                    <button type="button" onClick={() => handleAdd("upload")} disabled={uploading}
+                      className="px-3 py-1 text-[10px] font-medium text-white bg-green-600 hover:bg-green-500 rounded-lg transition-colors disabled:opacity-40"
+                      title="Copy images into your Cloudinary folder (recommended)">
+                      {uploading ? `${uploadProgress.done}/${uploadProgress.total}` : "Upload to CDN"}
+                    </button>
+                    <button type="button" onClick={() => handleAdd("direct")} disabled={uploading}
+                      className="px-2.5 py-1 text-[10px] font-medium text-amber-200/90 bg-white/[0.06] border border-amber-500/25 hover:bg-white/[0.1] rounded-lg transition-colors disabled:opacity-40"
+                      title={HOTLINK_ONLY_TITLE}>
+                      Hotlink only
+                    </button>
+                  </>
+                ) : (
+                  <button type="button" onClick={() => handleAdd("direct")} disabled={uploading}
+                    className="px-3 py-1 text-[10px] font-medium text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-colors disabled:opacity-40"
+                    title={HOTLINK_ONLY_TITLE}>
+                    Add (hotlink)
+                  </button>
+                )}
               </div>
 
               {/* Profile picker dropdown (absolute positioned) */}
@@ -1965,14 +2047,34 @@ export default function ImageScoutPanel({
           onSend={async (profile) => {
             const match = results.find(r => r.imageUrl === ctxMenu.imageUrl);
             const media = match ? [resultToMedia(match)] : undefined;
-            await onAddImages(profile, [ctxMenu.imageUrl], media);
-            onFlash(`Sent image to ${profile}`);
+            const { added, failed, usedHotlink } = await addImagesToProfileWithDurability(profile, [ctxMenu.imageUrl], media);
+            if (added > 0) {
+              onFlash(
+                failed > 0
+                  ? `Sent to ${profile} (${failed} failed)`
+                  : usedHotlink
+                    ? `Sent image to ${profile} (hotlink — may break later)`
+                    : `Sent image to ${profile}`,
+              );
+            } else {
+              onFlash("Could not add image (upload failed)");
+            }
           }}
           onCopyToProfile={async (profile) => {
             const match = results.find(r => r.imageUrl === ctxMenu.imageUrl);
             const media = match ? [resultToMedia(match)] : undefined;
-            await onAddImages(profile, [ctxMenu.imageUrl], media);
-            onFlash(`Copied image to ${profile}`);
+            const { added, failed, usedHotlink } = await addImagesToProfileWithDurability(profile, [ctxMenu.imageUrl], media);
+            if (added > 0) {
+              onFlash(
+                failed > 0
+                  ? `Copied to ${profile} (${failed} failed)`
+                  : usedHotlink
+                    ? `Copied image to ${profile} (hotlink — may break later)`
+                    : `Copied image to ${profile}`,
+              );
+            } else {
+              onFlash("Could not add image (upload failed)");
+            }
           }}
           onCopyImage={handleCtxCopyImage}
           onUpscale={handleCtxUpscale}

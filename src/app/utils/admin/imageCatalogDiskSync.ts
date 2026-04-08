@@ -51,14 +51,22 @@ export type ImageCatalogDiskSyncResult =
   | { ok: true; skipped: false; atlasBytes: number; newImagesBytes: number }
   | { ok: false; error: string };
 
+export interface SyncImageCatalogToDiskOptions {
+  /** When true, always POST even if the map matches the last successful sync (e.g. user Retry after a failed write). */
+  bypassFingerprint?: boolean;
+}
+
 /**
  * Persists the Image Base map into `atlas-data.json` (merged `images`) and
  * `new-images.json` (gallery URL manifest) via the Vite dev admin API.
  * No-ops when the payload matches the last successful sync fingerprint.
  */
-export async function syncImageCatalogToDisk(imageMap: ImageMap): Promise<ImageCatalogDiskSyncResult> {
+export async function syncImageCatalogToDisk(
+  imageMap: ImageMap,
+  options?: SyncImageCatalogToDiskOptions,
+): Promise<ImageCatalogDiskSyncResult> {
   const fingerprint = imageMapSyncFingerprint(imageMap);
-  if (fingerprint === lastSuccessfulSyncFingerprint) {
+  if (!options?.bypassFingerprint && fingerprint === lastSuccessfulSyncFingerprint) {
     return { ok: true, skipped: true };
   }
 

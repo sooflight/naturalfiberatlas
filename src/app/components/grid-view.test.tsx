@@ -126,6 +126,7 @@ vi.mock("../utils/smooth-scroll", () => ({
 function defaultPlateLayoutResult() {
   return {
     plateAssignments: new Map(),
+    youtubeEmbedSlotByCell: new Map(),
     profileInhaleDelays: new Map(),
     detailInhaleDelays: new Map(),
     profileExhaleDelays: new Map(),
@@ -391,12 +392,13 @@ describe("GridView image sync", () => {
 
     vi.mocked(plateLayout.computePlateLayout).mockReturnValue({
       plateAssignments: assignmentsBeyondFiltered,
+      youtubeEmbedSlotByCell: new Map(),
       profileInhaleDelays: delayMap,
       detailInhaleDelays: delayMap,
       profileExhaleDelays: delayMap,
       detailExhaleDelays: delayMap,
       gallerySlotImages: new Map(),
-    gallerySlotStartIndex: new Map(),
+      gallerySlotStartIndex: new Map(),
       plateExitOffsets: new Map(),
     });
 

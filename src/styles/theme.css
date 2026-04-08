@@ -348,15 +348,8 @@ q,
 }
 
 .atlas-nfa-mark-target {
-  transform: rotate(0deg);
   transform-origin: 50% 50%;
   transform-box: fill-box;
-  transition: transform 0.75s ease-in-out;
-}
-
-.atlas-wordmark-home:hover .atlas-nfa-mark-target,
-.atlas-wordmark-home:focus-visible .atlas-nfa-mark-target {
-  transform: rotate(180deg);
 }
 
 /* TopNav search field (mobile): placeholder + text track the field width */
@@ -744,14 +737,6 @@ q,
     opacity: 1;
   }
 
-  .atlas-nfa-mark-target {
-    transition: none;
-  }
-
-  .atlas-wordmark-home:hover .atlas-nfa-mark-target,
-  .atlas-wordmark-home:focus-visible .atlas-nfa-mark-target {
-    transform: rotate(0deg);
-  }
 }
 
 /* ═══════════════════════════════════════════════════════════════════

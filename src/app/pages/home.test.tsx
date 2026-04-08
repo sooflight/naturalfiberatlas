@@ -1,6 +1,12 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import type { ReactElement } from "react";
 import { describe, expect, it, vi } from "vitest";
+import { MemoryRouter } from "react-router";
 import { HomePage, mapNavToGridFilters } from "./home";
+
+function renderHome(ui: ReactElement = <HomePage />) {
+  return render(<MemoryRouter>{ui}</MemoryRouter>);
+}
 
 vi.mock("../components/grid-view", () => ({
   GridView: ({
@@ -45,12 +51,12 @@ vi.mock("../components/ui/use-mobile", () => ({
 
 describe("HomePage search integration", () => {
   it("shows the visible profile count from GridView in TopNav", () => {
-    render(<HomePage />);
+    renderHome();
     expect(screen.getByText("7 Profiles")).toBeInTheDocument();
   });
 
   it("propagates TopNav input to GridView externalSearch", async () => {
-    render(<HomePage />);
+    renderHome();
 
     const input = screen.getByPlaceholderText("Search profiles...");
     const query = "zzzzzzzz-no-match";
@@ -86,7 +92,7 @@ describe("HomePage search integration", () => {
   });
 
   it("applies Layer 2 click as a GridView fiber subcategory filter", async () => {
-    render(<HomePage />);
+    renderHome();
 
     fireEvent.click(screen.getByRole("button", { name: /Plant Plant/i }));
 
@@ -97,7 +103,7 @@ describe("HomePage search integration", () => {
   });
 
   it("applies Layer 2 hover as preview and activates Layer 3 filtering", async () => {
-    render(<HomePage />);
+    renderHome();
 
     fireEvent.click(screen.getByRole("button", { name: /Plant Plant/i }));
 
@@ -116,7 +122,7 @@ describe("HomePage search integration", () => {
   });
 
   it("applies Animal Layer 3 click as a specific filter", async () => {
-    render(<HomePage />);
+    renderHome();
 
     fireEvent.click(screen.getByRole("button", { name: /Animal Animal/i }));
     fireEvent.click(screen.getByRole("button", { name: /Wool Wool/i }));
@@ -128,7 +134,7 @@ describe("HomePage search integration", () => {
   });
 
   it("debounces hover preview filter updates", async () => {
-    render(<HomePage />);
+    renderHome();
 
     expect(screen.getByTestId("grid-category-prop")).toHaveTextContent("all");
 

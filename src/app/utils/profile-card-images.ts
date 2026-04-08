@@ -1,3 +1,4 @@
+import { galleryUrlDedupeKey } from "./gallery-url-dedupe";
 import { previewFocalToObjectPosition, type PreviewFocalPoint } from "./preview-focal";
 
 export type GridTransform = (src: string | undefined, preset: string) => string | undefined;
@@ -52,7 +53,9 @@ export function buildProfileCardCrossfadeLayers(
   if (!primaryTransformed) return [];
 
   const focalForPrimaryUrl = (): string | undefined => {
-    const hit = galleryLines?.find((line) => line.url.trim() === primaryTrim);
+    if (!galleryLines?.length || !primaryTrim) return undefined;
+    const primaryKey = galleryUrlDedupeKey(primaryTrim);
+    const hit = galleryLines.find((line) => galleryUrlDedupeKey(line.url) === primaryKey);
     return previewFocalToObjectPosition(hit?.previewFocal);
   };
 

@@ -130,6 +130,12 @@ export function isCloudinaryUrl(url: string): boolean {
   return /https?:\/\/res\.cloudinary\.com\//.test(url);
 }
 
+/** True for stored delivery URLs under `/image/upload/` (materialized asset), not `image/fetch`. */
+export function isCloudinaryUploadDeliveryUrl(url: string): boolean {
+  const t = url.trim();
+  return /https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/upload\//i.test(t);
+}
+
 /**
  * Build a Cloudinary URL from a public ID and options.
  */

@@ -699,7 +699,7 @@ export function Lightbox({
   return (
     <motion.div
       ref={modalRef}
-      className="fixed inset-0 z-[100] flex flex-col bg-transparent"
+      className="fixed inset-0 z-[100] flex flex-col bg-transparent overscroll-none"
       role="dialog"
       aria-modal="true"
       aria-label={`${fiberName} image gallery`}
@@ -789,8 +789,8 @@ export function Lightbox({
 
         {!chromeActive && (
           <div
-            className="absolute left-1/2 -translate-x-1/2 z-40 pointer-events-auto"
-            style={{ top: safeTop }}
+            className="absolute left-0 right-0 z-40 flex items-center justify-between gap-2 pointer-events-auto"
+            style={{ top: 0, paddingTop: safeTop, paddingLeft: safeX, paddingRight: safeX }}
           >
             <button
               type="button"
@@ -800,6 +800,15 @@ export function Lightbox({
             >
               <Eye size={14} />
               Show UI
+            </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              aria-label="Close gallery"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 border border-white/15 text-white/80 hover:text-white hover:border-white/30 text-[11px] font-medium cursor-pointer backdrop-blur-md"
+            >
+              <X size={14} />
+              Close
             </button>
           </div>
         )}

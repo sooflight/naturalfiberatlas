@@ -35,6 +35,22 @@ describe("CloudinaryPipeline", () => {
     expect(pipeline.transform(once, "grid")).toBe(once);
   });
 
+  it("applies grid transforms to stored canonical fetch URLs (no inline transforms)", () => {
+    const src =
+      "https://res.cloudinary.com/demo/image/fetch/https%3A%2F%2Fexample.com%2Fx.jpg";
+    expect(pipeline.transform(src, "grid")).toBe(
+      "https://res.cloudinary.com/demo/image/fetch/w_320,h_427,c_fill,f_auto,q_auto/https%3A%2F%2Fexample.com%2Fx.jpg",
+    );
+  });
+
+  it("replaces stale inline transforms on fetch URLs when preset changes", () => {
+    const withOld =
+      "https://res.cloudinary.com/demo/image/fetch/w_10,h_10,c_fill,f_auto,q_auto/https%3A%2F%2Fexample.com%2Fx.jpg";
+    expect(pipeline.transform(withOld, "lightbox")).toBe(
+      "https://res.cloudinary.com/demo/image/fetch/w_1400,f_auto,q_auto/https%3A%2F%2Fexample.com%2Fx.jpg",
+    );
+  });
+
   it("applies the expected transform for known presets", () => {
     const src = "https://res.cloudinary.com/demo/image/upload/v123/atlas/fiber.jpg";
     const out = pipeline.transform(src, "grid");

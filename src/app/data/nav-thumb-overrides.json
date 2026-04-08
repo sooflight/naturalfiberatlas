@@ -1,19 +1,19 @@
 {
-  "plant-cellulose": "https://upload.wikimedia.org/wikipedia/commons/f/fb/Snake_Plant_%28Sansevieria_trifasciata_%27Laurentii%27%29.jpg",
+  "plant-cellulose": "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Ff%2Ffb%2FSnake_Plant_%2528Sansevieria_trifasciata_%2527Laurentii%2527%2529.jpg",
   "bast-fibers": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773617425/atlas/npyr2lsidpuffk7rnizi.jpg",
-  "bark-fibers": "https://i.pinimg.com/1200x/d0/36/0e/d0360e4ac8af842e74f599c3f179fecd.jpg",
+  "bark-fibers": "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F1200x%2Fd0%2F36%2F0e%2Fd0360e4ac8af842e74f599c3f179fecd.jpg",
   "seed-fibers": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773730727/atlas/vayitrnv74dqrjt4cyho.jpg",
   "cotton": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771660007/atlas/pmkztjyyr8keuydhjssm.jpg",
   "leaf-fibers": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773761358/atlas/ynh2frqypmpkh5dzcr5i.png",
   "pineapple-pina": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619124/atlas/w1yt5po5mcws4zgrtjfs.png",
-  "fruit-fibers": "https://i.pinimg.com/1200x/87/ed/36/87ed369aa638634ee776388d19633ba7.jpg",
+  "fruit-fibers": "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F1200x%2F87%2Fed%2F36%2F87ed369aa638634ee776388d19633ba7.jpg",
   "coir-coconut": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771538775/lmgulrcokuc0ixdd40if.jpg",
   "animal-protein": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773730788/atlas/tczdjtdxj6zayjlch5gj.jpg",
   "wool-fiber": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773764076/atlas/uyrezhpkh4zctzowpkeo.jpg",
-  "suri": "https://i.pinimg.com/736x/9c/44/75/9c4475f450a7a21a634063c3968166d1.jpg",
+  "suri": "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F736x%2F9c%2F44%2F75%2F9c4475f450a7a21a634063c3968166d1.jpg",
   "hair-fiber": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619255/atlas/mplwe2qsjn0qjt2v1lqw.avif",
   "horsehair": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619278/atlas/lnnkjf82gd2q6ipf42v3.jpg",
-  "silk-fiber": "https://i.pinimg.com/1200x/72/8d/72/728d72f3357a696894fbc7ea93066a0c.jpg",
-  "mineral-regenerated": "https://2d73cea0.delivery.rocketcdn.me/app/uploads/2022/09/forest-greenery-viscose-630x474.jpg",
-  "lyocell-tencel": "https://www.pslbg.org/wp-content/uploads/2024/05/Rainbow-Eucalyptus-1-773x1030.jpg"
+  "silk-fiber": "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F1200x%2F72%2F8d%2F72%2F728d72f3357a696894fbc7ea93066a0c.jpg",
+  "mineral-regenerated": "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2F2d73cea0.delivery.rocketcdn.me%2Fapp%2Fuploads%2F2022%2F09%2Fforest-greenery-viscose-630x474.jpg",
+  "lyocell-tencel": "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fwww.pslbg.org%2Fwp-content%2Fuploads%2F2024%2F05%2FRainbow-Eucalyptus-1-773x1030.jpg"
 }

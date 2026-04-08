@@ -51,13 +51,35 @@ function fetchRemoteEnabled(): boolean {
   return import.meta.env.PROD;
 }
 
+/**
+ * Re-apply delivery transforms to a stored `image/fetch/` URL (canonical data may omit
+ * transforms). Drops any prior comma-separated transform segment(s) before the
+ * percent-encoded remote URL.
+ */
+function rebuildFetchUrlWithTransforms(src: string, transforms: string): string | null {
+  const m = /^https:\/\/res\.cloudinary\.com\/([^/]+)\/image\/fetch\/(.*)$/i.exec(src.trim());
+  if (!m) return null;
+  const cn = m[1];
+  const rest = m[2];
+  const segments = rest.split("/");
+  const encIdx = segments.findIndex(
+    (s) => s.startsWith("http%3A") || s.startsWith("https%3A"),
+  );
+  if (encIdx === -1) return null;
+  const remoteEncoded = segments.slice(encIdx).join("/");
+  return `https://res.cloudinary.com/${cn}${FETCH_SEGMENT}${transforms}/${remoteEncoded}`;
+}
+
 export class CloudinaryPipeline implements ImageTransformPipeline {
   transform(src: string | undefined, preset: string): string | undefined {
     if (!src) return src;
-    if (src.includes(FETCH_SEGMENT)) return src;
 
     const transforms = PRESET_TRANSFORMS[preset as GlassAtlasPreset];
     if (!transforms) return src;
+
+    if (src.includes(FETCH_SEGMENT)) {
+      return rebuildFetchUrlWithTransforms(src, transforms) ?? src;
+    }
 
     if (src.includes(CLOUDINARY_BASE)) {
       const idx = src.indexOf(UPLOAD_SEGMENT);

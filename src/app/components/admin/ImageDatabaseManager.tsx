@@ -36,7 +36,7 @@ import { copyImageFromUrl } from '@/utils/clipboardImage';
 import { AdminProfileStoryboard } from './AdminProfileStoryboard';
 import { useAdminSettings } from '@/contexts/AdminSettingsContext';
 import { useAdminSave } from '@/contexts/AdminSaveContext';
-import { extractImageUrl, toEntryArray, toUrlArray } from '@/utils/imageUrl';
+import { extractImageUrl, isCloudinaryUploadDeliveryUrl, toEntryArray, toUrlArray } from '@/utils/imageUrl';
 import { syncImageCatalogToDisk } from '@/utils/imageCatalogDiskSync';
 import { extractFirstImageUrlFromClipboardText } from '@/utils/paste-image-urls';
 import { useDebounce } from '@/utils/debounce';
@@ -75,6 +75,7 @@ import {
 import { ProfileStatusCircle } from "./ProfileStatusCircle";
 import { PreviewFocalEditor } from "./PreviewFocalEditor";
 import { SEEDED_TAG_PATHS } from "./image-tag-paths";
+import { galleryUrlDedupeKey } from "../../utils/gallery-url-dedupe";
 import { clamp01, previewFocalToObjectPosition, type PreviewFocalPoint } from "../../utils/preview-focal";
 
 // ── Constants ────────────────────────────────────────────
@@ -289,18 +290,6 @@ function resolveImageEntries(
     return mergeFiberGalleryWithFallback(key, fiber as FiberProfile).map(galleryRowToImageEntry);
   }
   return [];
-}
-
-/** Treat Shopify-style `file_600x.jpg` and `file.jpg` as one asset for dedupe / subset checks. */
-function galleryUrlDedupeKey(url: string): string {
-  const t = url.trim();
-  try {
-    const u = new URL(t);
-    const path = u.pathname.replace(/_600x(\.(?:jpg|jpeg|png|webp|gif))$/i, "$1");
-    return `${u.origin}${path}`;
-  } catch {
-    return t;
-  }
 }
 
 function dedupeImageEntriesPreserveOrder(entries: ImageEntry[]): ImageEntry[] {
@@ -1822,10 +1811,17 @@ export default function ImageDatabaseManager({
   const imagesForDiskSyncRef = useRef(images);
   imagesForDiskSyncRef.current = images;
 
-  const flushImageCatalogDiskSync = useCallback(() => {
+  const flushImageCatalogDiskSync = useCallback((opts?: { bypassFingerprint?: boolean }) => {
     if (!import.meta.env.DEV || import.meta.env.MODE === 'test') return;
-    void syncImageCatalogToDisk(imagesForDiskSyncRef.current).then((r) => {
-      if (!r.ok) console.warn('[image-catalog:disk]', r.error);
+    void syncImageCatalogToDisk(imagesForDiskSyncRef.current, {
+      bypassFingerprint: opts?.bypassFingerprint === true,
+    }).then((r) => {
+      if (!r.ok) {
+        setImageCatalogDiskSyncError(r.error);
+        console.warn('[image-catalog:disk]', r.error);
+        return;
+      }
+      setImageCatalogDiskSyncError(null);
     });
   }, []);
 
@@ -1973,6 +1969,7 @@ export default function ImageDatabaseManager({
   const [isCollapseAllActive, setIsCollapseAllActive] = useState(false);
   const [zoom, setZoom] = useState(ZOOM_DEFAULT);
   const [flashMsg, setFlashMsg] = useState<string | null>(null);
+  const [imageCatalogDiskSyncError, setImageCatalogDiskSyncError] = useState<string | null>(null);
   const [lightbox, setLightbox] = useState<LightboxData | null>(null);
   const [showScout, setShowScout] = useState<{ profileKey: string; initialQuery?: string } | null>(null);
   const [showStoryboard, setShowStoryboard] = useState<{ entryKey: string; urls: string[] } | null>(null);
@@ -2591,13 +2588,54 @@ export default function ImageDatabaseManager({
         flash('Clipboard does not contain a valid URL');
         return false;
       }
-      addImage(key, url);
+      const trimmed = url.trim();
+      if (cloudinaryReady && !isCloudinaryUploadDeliveryUrl(trimmed)) {
+        const task: ProfileUploadTask = {
+          id: createUploadTaskId(),
+          label: trimmed,
+          profileKey: key,
+          source: { kind: 'url', url: trimmed },
+          status: 'queued',
+        };
+        setProfileUploadQueue((prev) => [task, ...prev]);
+        const cloudUrl = await runProfileUploadTask(task);
+        if (!cloudUrl) {
+          flash('Clipboard URL upload failed — check Cloudinary settings or try again');
+          return false;
+        }
+        setImages((prev) => {
+          const existing = resolveProfileUrls(prev, key);
+          if (existing.includes(cloudUrl)) return prev;
+          const entries = [...resolveDisplayImageEntriesForKey(prev, key, activeNodeId, getFiberById), cloudUrl];
+          return { ...prev, [key]: coerceImageMapValue(entries) };
+        });
+        flash(`Added image to ${key}`);
+        logActivity({
+          tab: 'images',
+          action: 'create',
+          entityType: 'image',
+          entityId: key,
+          summary: `Pasted & uploaded image to ${key}`,
+          detail: { url: cloudUrl },
+        });
+        return true;
+      }
+      addImage(key, trimmed);
       return true;
     } catch (err: any) {
       flash('Failed to read clipboard: ' + err.message);
       return false;
     }
-  }, [addImage, flash]);
+  }, [
+    activeNodeId,
+    addImage,
+    cloudinaryReady,
+    flash,
+    getFiberById,
+    resolveProfileUrls,
+    runProfileUploadTask,
+    setImages,
+  ]);
 
   const promoteToHero = useCallback((key: string, idx: number) => {
     setImages((prev) => {
@@ -2705,6 +2743,23 @@ export default function ImageDatabaseManager({
 
   return (
     <div className="h-full flex flex-col bg-neutral-950 text-neutral-200 overflow-hidden">
+      {import.meta.env.DEV && import.meta.env.MODE !== 'test' && imageCatalogDiskSyncError ? (
+        <div
+          className="flex-none flex flex-wrap items-center gap-2 px-4 py-2 border-b border-red-500/35 bg-red-950/85 text-sm text-red-100"
+          role="alert"
+        >
+          <span className="flex-1 min-w-[12rem]">
+            Could not save image catalog to disk: {imageCatalogDiskSyncError}
+          </span>
+          <button
+            type="button"
+            className="shrink-0 px-2.5 py-1 rounded-md bg-red-500/20 hover:bg-red-500/30 text-red-50 text-xs font-medium border border-red-400/30"
+            onClick={() => flushImageCatalogDiskSync({ bypassFingerprint: true })}
+          >
+            Retry save
+          </button>
+        </div>
+      ) : null}
       {/* Header Toolbar */}
       <div
         className="flex-none flex items-center gap-3 px-4 py-3 border-b"

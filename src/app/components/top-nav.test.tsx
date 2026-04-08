@@ -68,6 +68,27 @@ describe("TopNav search sync", () => {
     expect(screen.queryByRole("button", { name: /Dye Dye/i })).not.toBeInTheDocument();
   });
 
+  it("does not open the L2/L3 children strip when hovering the breadcrumb bar at a grid-scoped fiber family", async () => {
+    const { container } = render(
+      <TopNav activeNodeId="silk-fiber" onNavigate={() => {}}>
+        <div>content</div>
+      </TopNav>,
+    );
+
+    await waitFor(() => {
+      expect(screen.getByRole("button", { name: /^All$/i })).toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /Plant Plant/i })).not.toBeInTheDocument();
+    });
+
+    fireEvent.mouseEnter(screen.getByTestId("atlas-nav-category-slot"));
+
+    await waitFor(() => {
+      const strip = container.querySelector("#atlas-children-strip") as HTMLElement | null;
+      expect(strip).not.toBeNull();
+      expect(strip?.style.height).toBe("0px");
+    });
+  });
+
   it("keeps the subcategory row visible while browsing", async () => {
     const { container } = render(
       <TopNav activeNodeId={null} onNavigate={() => {}}>
@@ -150,14 +171,13 @@ describe("TopNav search sync", () => {
   });
 
   it("keeps the content region vertically scrollable", () => {
-    const { container } = render(
+    render(
       <TopNav activeNodeId={null} onNavigate={() => {}}>
         <div style={{ height: "200vh" }}>content</div>
       </TopNav>,
     );
 
-    const contentRegion = container.querySelector(".min-h-0.flex-1");
-    expect(contentRegion).not.toBeNull();
+    const contentRegion = screen.getByTestId("atlas-main-scroll");
     expect(contentRegion).toHaveClass("overflow-y-auto");
   });
 
@@ -168,7 +188,7 @@ describe("TopNav search sync", () => {
       </TopNav>,
     );
 
-    const shell = container.querySelector(".flex.w-full.flex-col.overflow-hidden");
+    const shell = container.querySelector(".relative.h-dvh.min-h-0.w-full.overflow-hidden");
     expect(shell).not.toBeNull();
     expect(shell).toHaveClass("h-dvh");
     expect(shell).toHaveClass("min-h-0");

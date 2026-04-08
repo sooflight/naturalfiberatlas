@@ -309,11 +309,18 @@ describe("ImageDatabaseManager view mode layouts", () => {
             galleryImages: [
               expect.objectContaining({ url: "https://example.com/draft-hero.jpg" }),
               expect.objectContaining({ url: "https://example.com/draft-secondary.jpg" }),
-              expect.objectContaining({ url: "https://example.com/pasted.jpg" }),
+              expect.objectContaining({
+                url: "https://res.cloudinary.com/demo/image/upload/v1/new-drop-url.jpg",
+              }),
             ],
           }),
         );
       });
+      expect(uploadFromUrlMock).toHaveBeenCalledWith(
+        "https://example.com/pasted.jpg",
+        expect.any(Object),
+        { folder: "atlas" },
+      );
     } finally {
       Object.defineProperty(navigator, "clipboard", {
         configurable: true,
@@ -538,14 +545,20 @@ describe("ImageDatabaseManager view mode layouts", () => {
 
     const previews = screen.getAllByAltText(/ preview$/);
     expect(previews.length).toBeGreaterThanOrEqual(2);
-    const firstPreview = previews[0];
     const lastPreview = previews[previews.length - 1];
 
-    expect(firstPreview.getAttribute("loading")).toBe("eager");
-    expect(firstPreview.getAttribute("fetchpriority")).toBe("high");
-    expect(firstPreview.getAttribute("decoding")).toBe("async");
-    expect(firstPreview.getAttribute("sizes")).toContain("50vw");
-    expect(firstPreview.getAttribute("srcset")).toContain("w_420");
+    const eagerCloudinary = previews.find(
+      (img) =>
+        img.getAttribute("loading") === "eager" &&
+        (img.getAttribute("src") || "").includes("res.cloudinary.com"),
+    );
+    expect(eagerCloudinary).toBeTruthy();
+    expect(eagerCloudinary!.getAttribute("fetchpriority")).toBe("high");
+    expect(eagerCloudinary!.getAttribute("decoding")).toBe("async");
+    expect(eagerCloudinary!.getAttribute("sizes")).toContain("50vw");
+    const eagerSrcset = eagerCloudinary!.getAttribute("srcset");
+    expect(eagerSrcset).toBeTruthy();
+    expect(eagerSrcset!).toContain("w_420");
 
     expect(lastPreview.getAttribute("loading")).toBe("lazy");
     expect(lastPreview.getAttribute("fetchpriority")).toBe("auto");

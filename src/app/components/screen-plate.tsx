@@ -13,9 +13,15 @@
  * plates; long content scrolls inside the active card.
  *
  * Layers: Grid → Inhale #1 (detail cards) → Inhale #2 (ScreenPlate) → Lightbox
+ *
+ * Renders via a portal to `document.body` so `position: fixed` is viewport-anchored.
+ * TopNav’s scroll port uses `transform: translateZ(0)` for compositing; without a portal,
+ * fixed descendants are trapped in that layer and grid detail plates (e.g. See Also)
+ * can composite above the overlay.
  */
 
 import { useEffect, useCallback, useState, useMemo, useRef, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { motion } from "motion/react";
 import type { FiberProfile, PlateType } from "../data/atlas-data";
 import {
@@ -82,6 +88,8 @@ const neutA = accent.neutral;
 export interface ScreenPlateEntry {
   plateType: PlateType;
   cellIndex: number;
+  /** When `plateType` is `youtubeEmbed`, which video index this slide shows (mobile may use several slides with the same cellIndex). */
+  youtubeEmbedSlot?: number;
 }
 
 interface ScreenPlateProps {
@@ -383,7 +391,8 @@ export function ScreenPlate({
       case "silkOrganza":
         return <SilkVariantPlate plateType={pt} />;
       case "quote": return <QuoteScreenPlate fiber={fiber} />;
-      case "youtubeEmbed": return <YouTubeScreenPlate fiber={fiber} />;
+      case "youtubeEmbed":
+        return <YouTubeScreenPlate fiber={fiber} slotIndex={entry.youtubeEmbedSlot ?? 0} />;
       case "trade": return <TradeScreenPlate fiber={fiber} />;
       case "worldNames": return <WorldNamesPlate fiber={fiber} />;
       case "regions": return <RegionsPlate fiber={fiber} />;
@@ -410,7 +419,7 @@ export function ScreenPlate({
     }
   };
 
-  return (
+  const overlay = (
     <motion.div
       ref={modalRef}
       className="fixed inset-0 z-[90] overflow-hidden"
@@ -454,7 +463,7 @@ export function ScreenPlate({
           const showEntrance = index === initialIndex && !entranceComplete;
           return (
             <section
-              key={`${entry.plateType}-${entry.cellIndex}`}
+              key={`screen-slide-${index}`}
               className={`pointer-events-none flex w-full shrink-0 snap-center snap-always items-center justify-center box-border p-3 sm:p-10 ${
                 plates.length <= 1 ? "min-h-full" : ""
               }`}
@@ -497,6 +506,12 @@ export function ScreenPlate({
       </div>
     </motion.div>
   );
+
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  return createPortal(overlay, document.body);
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -611,12 +626,11 @@ function InsightScreenPlate({ fiber, half }: { fiber: FiberProfile; half: 1 | 2 
   );
 }
 
-/* ── YOUTUBE (optional embed — expanded, multiple videos scroll) ── */
-function YouTubeScreenPlate({ fiber }: { fiber: FiberProfile }) {
+/* ── YOUTUBE (optional embed — one video per fullscreen slide) ── */
+function YouTubeScreenPlate({ fiber, slotIndex = 0 }: { fiber: FiberProfile; slotIndex?: number }) {
   const entries = getValidYoutubeEmbedEntries(fiber);
-  if (entries.length === 0) return null;
-
-  const titleLabel = entries.length > 1 ? "Videos" : "Video";
+  const row = entries[slotIndex];
+  if (!row) return null;
 
   return (
     <div className={`h-full flex flex-col min-h-0 ${pad}`}>
@@ -627,7 +641,7 @@ function YouTubeScreenPlate({ fiber }: { fiber: FiberProfile }) {
             className={`tracking-[0.18em] uppercase text-[${accent.neutral}] truncate`}
             style={{ fontSize: "clamp(8px, 2.6cqi, 11px)", fontWeight: 500 }}
           >
-            {titleLabel}
+            Video
           </span>
         </div>
         <span
@@ -639,29 +653,22 @@ function YouTubeScreenPlate({ fiber }: { fiber: FiberProfile }) {
       </div>
       <div className={`w-full h-px bg-gradient-to-r from-[${warmA}]/35 via-white/10 to-transparent mb-[${sp.sm}] shrink-0`} />
       <DetailScrollRegion wrapperClassName="flex-1 min-h-0" scrollClassName={`pt-[${sp.xs}]`}>
-        <div className={`flex flex-col gap-[${sp.lg}]`}>
-          {entries.map(({ videoId, watchUrl }, idx) => (
-            <div key={videoId} className={`flex flex-col gap-[${sp.sm}]`}>
-              {entries.length > 1 && (
-                <span className={T.muted} style={{ fontSize: "clamp(9px, 2.8cqi, 11px)", fontWeight: 600 }}>
-                  {idx + 1} / {entries.length}
-                </span>
-              )}
-              <YouTubeEmbedFrame videoId={videoId} title={`${fiber.name} on YouTube`} />
-              <div className="flex justify-end shrink-0">
-                <a
-                  href={watchUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={`inline-flex items-center gap-1.5 rounded-lg border border-white/[0.12] bg-white/[0.05] px-3 py-1.5 ${T.secondary} transition-colors hover:bg-white/[0.08] hover:text-white/[0.9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5D9A6D]/45`}
-                  style={{ fontSize: "clamp(10px, 3cqi, 12px)", fontWeight: 600, letterSpacing: "0.06em" }}
-                >
-                  <ExternalLink size={12} className="opacity-75" aria-hidden />
-                  Watch on YouTube
-                </a>
-              </div>
+        <div className={`min-h-full flex flex-col justify-center gap-[${sp.lg}]`}>
+          <div className={`flex flex-col gap-[${sp.sm}]`}>
+            <YouTubeEmbedFrame videoId={row.videoId} title={`${fiber.name} on YouTube`} />
+            <div className="flex justify-end shrink-0">
+              <a
+                href={row.watchUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`inline-flex items-center gap-1.5 rounded-lg border border-white/[0.12] bg-white/[0.05] px-3 py-1.5 ${T.secondary} transition-colors hover:bg-white/[0.08] hover:text-white/[0.9] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#5D9A6D]/45`}
+                style={{ fontSize: "clamp(10px, 3cqi, 12px)", fontWeight: 600, letterSpacing: "0.06em" }}
+              >
+                <ExternalLink size={12} className="opacity-75" aria-hidden />
+                Watch on YouTube
+              </a>
             </div>
-          ))}
+          </div>
         </div>
       </DetailScrollRegion>
     </div>

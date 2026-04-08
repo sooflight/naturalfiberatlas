@@ -41,6 +41,8 @@ interface DetailCardProps {
   /** Stagger delay from the inhale cascade — used to offset the content fade
    *  so it begins after the card shell snaps visible. */
   contentDelay?: number;
+  /** When `plateType` is `youtubeEmbed`, which video URL row to show (from merged fiber data). */
+  youtubeEmbedSlot?: number;
 }
 
 export function DetailCard({
@@ -53,6 +55,7 @@ export function DetailCard({
   galleryStartIndex = 0,
   galleryIndex = 0,
   contentDelay = 0,
+  youtubeEmbedSlot = 0,
 }: DetailCardProps) {
   const isGallery = plateType === "contactSheet";
   const canScreen = !NON_SCREEN_PLATES.includes(plateType);
@@ -113,7 +116,7 @@ export function DetailCard({
       case "quote":
         return <QuotePlate fiber={fiber} />;
       case "youtubeEmbed":
-        return <YouTubeEmbedPlate fiber={fiber} />;
+        return <YouTubeEmbedPlate fiber={fiber} slotIndex={youtubeEmbedSlot} />;
       default:
         return null;
     }

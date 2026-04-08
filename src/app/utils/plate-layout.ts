@@ -19,7 +19,7 @@ import {
 } from "../data/atlas-data";
 import { dataSource } from "../data/data-provider";
 import { DETAIL_FADE, EXHALE_EASE } from "./detail-motion";
-import { hasAnyValidYoutubeEmbed } from "./youtube-embed-urls";
+import { getValidYoutubeEmbedEntries, hasAnyValidYoutubeEmbed } from "./youtube-embed-urls";
 
 /* ══════════════════════════════════════════════════════════
    Animation constants — shared between this module and grid-view.
@@ -89,6 +89,8 @@ const PLATE_ZONE_PREFS: [PlateType, Zone[]][] = [
   /* Ring 1 — Immediate context */
   ["about",          ["right", "left", "below-right", "below-left", "below", "above-right", "above-left", "above"]],
   ["properties",     ["left", "right", "below", "below-right", "below-left", "above", "above-right", "above-left"]],
+  /* Anatomy — keep adjacent to hero (title card); assign early before ring-2/3 consume nearby cells */
+  ["anatomy",        ["below", "above", "right", "left", "below-right", "below-left", "above-right", "above-left"]],
   ["insight1",       ["left", "above-left", "above", "above-right", "right", "below-left", "below", "below-right"]],
   ["insight2",       ["below", "below-right", "below-left", "right", "left", "above", "above-right", "above-left"]],
   ["insight3",       ["above", "above-right", "above-left", "right", "left", "below", "below-right", "below-left"]],
@@ -108,7 +110,6 @@ const PLATE_ZONE_PREFS: [PlateType, Zone[]][] = [
 
   /* Ring 3 — Deep knowledge */
   ["process",        ["below", "below-left", "below-right", "left", "right", "above", "above-left", "above-right"]],
-  ["anatomy",        ["left", "below-left", "below", "right", "below-right", "above-left", "above", "above-right"]],
   ["care",           ["below-right", "below", "right", "below-left", "left", "above-right", "above", "above-left"]],
 ];
 
@@ -167,6 +168,51 @@ function filterAvailablePlates(fiberId: string): [PlateType, Zone[]][] {
   });
 }
 
+/** One layout row per YouTube video so each gets its own detail cell. */
+/** Lowest zone-preference index wins; ties break on lower cell index (deterministic). */
+function pickBestCellForZonePrefs(
+  pool: Set<number>,
+  selectedIndex: number,
+  cols: number,
+  prefs: Zone[],
+  consumed: Set<number>,
+): number | null {
+  let bestCell: number | null = null;
+  let bestScore = Infinity;
+  for (const cellIdx of pool) {
+    if (consumed.has(cellIdx)) continue;
+    const zone = classifyZone(cellIdx, selectedIndex, cols);
+    const score = prefs.indexOf(zone);
+    if (score < 0) continue;
+    if (score < bestScore || (score === bestScore && bestCell !== null && cellIdx < bestCell)) {
+      bestScore = score;
+      bestCell = cellIdx;
+    }
+  }
+  return bestCell;
+}
+
+function expandYoutubePlateRows(
+  fiberId: string,
+  plates: [PlateType, Zone[]][],
+): [PlateType, Zone[]][] {
+  const fiber = getFiberForPlateAvailability(fiberId);
+  const n = fiber ? getValidYoutubeEmbedEntries(fiber).length : 0;
+  if (n <= 1) return plates;
+
+  const out: [PlateType, Zone[]][] = [];
+  for (const row of plates) {
+    if (row[0] === "youtubeEmbed") {
+      for (let i = 0; i < n; i++) {
+        out.push(row);
+      }
+    } else {
+      out.push(row);
+    }
+  }
+  return out;
+}
+
 /* ══════════════════════════════════════════════════════════
    Gallery queue builder
    ══════════════════════════════════════════════════════════ */
@@ -218,6 +264,8 @@ export interface CellVisibility {
 
 export interface PlateLayoutResult {
   plateAssignments: Map<number, PlateType>;
+  /** For `youtubeEmbed` cells only: which video index (0-based) that cell shows. */
+  youtubeEmbedSlotByCell: Map<number, number>;
   profileInhaleDelays: Map<number, number>;
   detailInhaleDelays: Map<number, number>;
   profileExhaleDelays: Map<number, number>;
@@ -230,6 +278,7 @@ export interface PlateLayoutResult {
 
 const EMPTY_RESULT: PlateLayoutResult = {
   plateAssignments: new Map(),
+  youtubeEmbedSlotByCell: new Map(),
   profileInhaleDelays: new Map(),
   detailInhaleDelays: new Map(),
   profileExhaleDelays: new Map(),
@@ -267,6 +316,7 @@ export function computePlateLayout(
   const galleryImages = new Map<number, GalleryImageEntry[]>();
   const galleryStartIndex = new Map<number, number>();
   const exitOffsets = new Map<number, { x: number; y: number }>();
+  const youtubeEmbedSlotByCell = new Map<number, number>();
   const consumed = new Set<number>();
 
   /** Manhattan distance from a cell index to the selected cell */
@@ -280,7 +330,7 @@ export function computePlateLayout(
   const galleryQueue = buildGalleryQueue(selectedId, galleryOverride);
 
   /* ── Step 0b: Compute required pool size from data-available plates ── */
-  const availablePlates = filterAvailablePlates(selectedId);
+  const availablePlates = expandYoutubePlateRows(selectedId, filterAvailablePlates(selectedId));
   const fiber = getFiberForPlateAvailability(selectedId);
   const hasSeeAlso = fiber && fiber.seeAlso.length > 0;
   const requiredPoolSize =
@@ -314,6 +364,38 @@ export function computePlateLayout(
   const allCandidates = [...realCandidates, ...virtualCandidates].sort((a, b) => a - b);
   const pool = new Set(allCandidates.slice(0, requiredPoolSize));
 
+  const aboutPrefs = PLATE_ZONE_PREFS.find(([pt]) => pt === "about")?.[1];
+  let identityPreassigned = false;
+  /* Identity (about): claim best hero-adjacent cell before gallery — contact sheet used to win "right". */
+  if (aboutPrefs) {
+    const identityCell = pickBestCellForZonePrefs(pool, selectedIndex, cols, aboutPrefs, consumed);
+    if (identityCell !== null) {
+      assignments.set(identityCell, "about");
+      consumed.add(identityCell);
+      pool.delete(identityCell);
+      identityPreassigned = true;
+    }
+  }
+
+  let reservedSeeAlsoCell: number | null = null;
+  /* See Also: reserve the farthest pool cell up front. Step 3 used to pick "farthest of leftovers",
+     but only one cell remained — often adjacent to the hero. */
+  if (hasSeeAlso) {
+    let farthest: number | null = null;
+    let farthestDist = -1;
+    for (const cellIdx of pool) {
+      const d = mDist(cellIdx);
+      if (d > farthestDist || (d === farthestDist && farthest !== null && cellIdx < farthest)) {
+        farthestDist = d;
+        farthest = cellIdx;
+      }
+    }
+    if (farthest !== null) {
+      reservedSeeAlsoCell = farthest;
+      pool.delete(farthest);
+    }
+  }
+
   /* ── Step 1b: Place contact sheet in the pool via zone scoring ── */
   const CONTACT_SHEET_ZONE_PREFS: Zone[] = [
     "below", "below-right", "below-left", "right", "left",
@@ -345,7 +427,9 @@ export function computePlateLayout(
   }
 
   /* ── Step 2: Assign named plates to pool cells by zone preference ── */
+  let nextYoutubeSlot = 0;
   for (const [plateType, prefs] of availablePlates) {
+    if (plateType === "about" && identityPreassigned) continue;
     let bestCell: number | null = null;
     let bestScore = Infinity;
 
@@ -362,27 +446,18 @@ export function computePlateLayout(
 
     if (bestCell !== null) {
       assignments.set(bestCell, plateType);
+      if (plateType === "youtubeEmbed") {
+        youtubeEmbedSlotByCell.set(bestCell, nextYoutubeSlot++);
+      }
       consumed.add(bestCell);
       pool.delete(bestCell);
     }
   }
 
-  /* ── Step 3: seeAlso → farthest remaining cell in pool ── */
-  let farthestInPool: number | null = null;
-  let farthestPoolDist = -1;
-  if (hasSeeAlso) {
-    for (const cellIdx of pool) {
-      if (consumed.has(cellIdx)) continue;
-      const dist = mDist(cellIdx);
-      if (dist > farthestPoolDist) {
-        farthestPoolDist = dist;
-        farthestInPool = cellIdx;
-      }
-    }
-  }
-  if (farthestInPool !== null) {
-    assignments.set(farthestInPool, "seeAlso");
-    consumed.add(farthestInPool);
+  /* ── Step 3: seeAlso → cell reserved at layout start (max distance from hero in pool) ── */
+  if (reservedSeeAlsoCell !== null) {
+    assignments.set(reservedSeeAlsoCell, "seeAlso");
+    consumed.add(reservedSeeAlsoCell);
   }
 
   /* ── Step 3d: Directional exit offsets ── */
@@ -482,6 +557,7 @@ export function computePlateLayout(
 
   return {
     plateAssignments: assignments,
+    youtubeEmbedSlotByCell,
     profileInhaleDelays: profInhale,
     detailInhaleDelays: detInhale,
     profileExhaleDelays: profExhale,

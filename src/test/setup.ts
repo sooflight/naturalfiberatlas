@@ -35,6 +35,12 @@ Object.defineProperty(globalThis, "localStorage", {
   writable: true,
 });
 
+globalThis.ResizeObserver = class ResizeObserver {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
+};
+
 afterEach(() => {
   cleanup();
   vi.stubEnv("VITE_ENABLE_ADMIN", "true");

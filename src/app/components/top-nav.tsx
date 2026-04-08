@@ -1,6 +1,17 @@
 import { ChevronDown, ChevronRight, ChevronUp, FileText, Search, X } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState, type ImgHTMLAttributes, type ReactNode } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ImgHTMLAttributes,
+  type ReactNode,
+} from "react";
 import { atlasNavigation, findNode, findNodePath, type NavNode } from "../data/atlas-navigation";
+import { mapNavToGridFilters } from "../data/map-nav-to-grid-filters";
 import {
   ATLAS_GRID_SEARCH_STYLE,
   ATLAS_GRID_SUBHEAD_MUTED_STYLE,
@@ -17,6 +28,8 @@ import {
 } from "./atlas-shared";
 import { AtlasScrollPortContext } from "../context/atlas-scroll-port-context";
 import { NavFilterProvider, useNavFilter } from "../context/nav-filter-context";
+import { useNfaMarkScrollRotation } from "../hooks/use-nfa-mark-scroll-rotation";
+import { usePrefersReducedMotion } from "../hooks/use-prefers-reduced-motion";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { NfaMark } from "./nfa-mark";
 import { useIsMobile } from "./ui/use-mobile";
@@ -104,6 +117,30 @@ const PATH_SEG = { width: 52, borderRadius: 6, imgRadius: 5 };
 const STRIP_THUMB = { width: 72, borderRadius: 8, imgRadius: 7 };
 const ATLAS_AMBIENT_BG = "var(--atlas-ambient-bg, #111111)";
 const ATLAS_AMBIENT_TRANSITION = "background-color 2s ease";
+/**
+ * Chrome tiers (top → bottom):
+ * 1) Wordmark + search — frosted bar over the grid.
+ * 2) Category strip (“L1”): root portals (Plant / Animal / …) or breadcrumb path — still present when category nav is shown.
+ * 3) Subcategory drawer: one or two `ChildrenStrip` rows over a single full-height frosted layer (same paint as (2)).
+ */
+const ATLAS_CHROME_GLASS_RGBA = "rgba(17, 17, 17, 0.4)";
+
+function atlasChromeGlassRowStyle(
+  prefersReducedMotion: boolean,
+  options?: { omitTopInset?: boolean },
+): CSSProperties {
+  if (prefersReducedMotion) {
+    return { backgroundColor: ATLAS_AMBIENT_BG, transition: ATLAS_AMBIENT_TRANSITION };
+  }
+  const omitTopInset = options?.omitTopInset ?? false;
+  return {
+    backgroundColor: ATLAS_CHROME_GLASS_RGBA,
+    backdropFilter: "blur(12px) saturate(1.35)",
+    WebkitBackdropFilter: "blur(12px) saturate(1.35)",
+    ...(omitTopInset ? {} : { boxShadow: "inset 0 1px 0 rgba(255, 255, 255, 0.07)" }),
+    transition: ATLAS_AMBIENT_TRANSITION,
+  };
+}
 
 function useDebouncedHover(onSelect: (id: string) => void, delay = 150) {
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -261,6 +298,8 @@ function ChildrenStrip({
   nodes,
   activeId,
   isMobile,
+  prefersReducedMotion,
+  omitTopBorder,
   onHover,
   onHoverLeave,
   onSelect,
@@ -268,6 +307,9 @@ function ChildrenStrip({
   nodes: NavNode[];
   activeId: string | null;
   isMobile: boolean;
+  prefersReducedMotion: boolean;
+  /** When true, no top rule (drawer container draws the separator under the category strip). */
+  omitTopBorder?: boolean;
   onHover: (id: string) => void;
   onHoverLeave: () => void;
   onSelect: (id: string) => void;
@@ -290,13 +332,13 @@ function ChildrenStrip({
     debouncedLeave();
     onHoverLeave();
   }, [debouncedLeave, onHoverLeave]);
+  const edgeFade = prefersReducedMotion ? ATLAS_AMBIENT_BG : ATLAS_CHROME_GLASS_RGBA;
   return (
     <div
-      className="relative w-full border-t border-white/[0.06]"
-      style={{ backgroundColor: ATLAS_AMBIENT_BG, transition: ATLAS_AMBIENT_TRANSITION }}
+      className={`relative z-10 w-full bg-transparent ${omitTopBorder ? "" : "border-t border-white/[0.1]"}`}
     >
-      <div className="absolute left-0 top-0 bottom-0 w-10 pointer-events-none z-10" style={{ background: `linear-gradient(to right, ${ATLAS_AMBIENT_BG}, transparent)` }} />
-      <div className="absolute right-0 top-0 bottom-0 w-10 pointer-events-none z-10" style={{ background: `linear-gradient(to left, ${ATLAS_AMBIENT_BG}, transparent)` }} />
+      <div className="absolute left-0 top-0 bottom-0 w-10 pointer-events-none z-10" style={{ background: `linear-gradient(to right, ${edgeFade}, transparent)` }} />
+      <div className="absolute right-0 top-0 bottom-0 w-10 pointer-events-none z-10" style={{ background: `linear-gradient(to left, ${edgeFade}, transparent)` }} />
       <div ref={scrollRef} className="overflow-x-auto" onMouseLeave={handleMouseLeave}>
         <div className="flex items-end px-4 sm:px-[3%]" style={{ gap: STRIP_THUMB_GAP, paddingTop: 8, paddingBottom: 8, width: "fit-content", minWidth: "100%", justifyContent: "flex-start" }}>
           {nodes.map((node) => {
@@ -330,22 +372,28 @@ function ChildrenStrip({
 export interface TopNavProps {
   activeNodeId: string | null;
   onNavigate: (nodeId: string) => void;
+  /** Detail-mode escape hatch: return to browse while preserving strict history semantics. */
+  onBackToBrowse?: () => void;
   onPreviewNavigate?: (nodeId: string | null) => void;
   externalSearch?: string;
   onSearchChange?: (query: string) => void;
   visibleProfileCount?: number;
   locationKey?: string;
+  /** When true, category strip is hidden visually but kept in layout so scroll spacer height is unchanged (avoids CLS when opening profile detail). */
+  hideCategoryNavStrip?: boolean;
   children?: ReactNode;
 }
 
 function TopNavInner({
   activeNodeId,
   onNavigate,
+  onBackToBrowse,
   onPreviewNavigate,
   externalSearch,
   onSearchChange,
   visibleProfileCount = 0,
   locationKey,
+  hideCategoryNavStrip = false,
   children,
 }: TopNavProps) {
   const isMobile = useIsMobile();
@@ -358,6 +406,13 @@ function TopNavInner({
   const [l1Hovered, setL1Hovered] = useState(false);
   const [childrenOpenOnMobile, setChildrenOpenOnMobile] = useState(false);
   const [atlasScrollPortEl, setAtlasScrollPortEl] = useState<HTMLDivElement | null>(null);
+  const navStripMeasureRef = useRef<HTMLDivElement>(null);
+  const topChromeStackRef = useRef<HTMLDivElement>(null);
+  const lastScrollTopRef = useRef(0);
+  /** Ignore scroll-driven nav hide/show while chrome height is settling (avoids padTop ↔ scrollTop feedback flicker). */
+  const scrollNavSuppressedUntilRef = useRef(0);
+  const scrollNavRafRef = useRef<number | null>(null);
+  const prevNavStripHiddenByScrollRef = useRef<boolean | null>(null);
   const l1LeaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasPath = selectedPath.length > 0;
@@ -399,10 +454,207 @@ function TopNavInner({
     return findNode(atlasNavigation, anchor)?.children || [];
   }, [hoveredL2Id, selectedPath]);
   const activeLevel3Id = selectedPath[2] ?? null;
-  const showChildrenStrip = level2Nodes.length > 0 && (isMobile ? childrenOpenOnMobile : l1Hovered);
+  /** At a grid-scoped fiber family (e.g. Silk) or a nav leaf, do not open L2/L3 strips from hovering the breadcrumb row. */
+  const suppressChildrenStripOnBreadcrumbHover = useMemo(() => {
+    if (!hasPath || !activeNodeId || activeNodeId === "home") return false;
+    const node = findNode(atlasNavigation, activeNodeId);
+    const isNavLeaf = !node?.children?.length;
+    const gridScopedFamily = mapNavToGridFilters(activeNodeId).fiberSubcategory != null;
+    return isNavLeaf || gridScopedFamily;
+  }, [hasPath, activeNodeId]);
+  const showChildrenStrip =
+    level2Nodes.length > 0 &&
+    (isMobile ? childrenOpenOnMobile : l1Hovered && !suppressChildrenStripOnBreadcrumbHover);
   const stripHeight = showChildrenStrip
     ? CHILDREN_STRIP_HEIGHT + (level3Nodes.length > 0 ? CHILDREN_STRIP_HEIGHT : 0)
     : 0;
+
+  const prefersReducedMotion = usePrefersReducedMotion();
+  const { nfaMarkStyle } = useNfaMarkScrollRotation(atlasScrollPortEl, prefersReducedMotion);
+  /** Drawer height only — frosted glass is on the parent column so one `backdrop-filter` covers L1 + L2/L3. */
+  const childrenStripDrawerStyle = useMemo((): CSSProperties => {
+    const base: CSSProperties = {
+      height: stripHeight,
+      pointerEvents: stripHeight === 0 ? "none" : "auto",
+    };
+    if (prefersReducedMotion) return base;
+    return { ...base, transition: `height 250ms ${TRANSITION_EASE}` };
+  }, [prefersReducedMotion, stripHeight]);
+  /** Breadcrumb path (All › …) or open L2/L3 strip — keep the thumb/breadcrumb nav visible. */
+  const breadcrumbFilterRowActive = hasPath || stripHeight > 0;
+  const pinNavStripOnScroll = breadcrumbFilterRowActive;
+
+  const [navStripMeasuredHeight, setNavStripMeasuredHeight] = useState<number | null>(null);
+  const [navStripHiddenByScroll, setNavStripHiddenByScroll] = useState(false);
+  const [scrollPadTop, setScrollPadTop] = useState(0);
+
+  /** Outer slot height includes L2/L3 (in-flow under L1) so the pointer stays inside one hit box — avoids instant `mouseleave` when moving into the subcategory row. */
+  const navStripSlotHeight =
+    navStripHiddenByScroll && !pinNavStripOnScroll
+      ? 0
+      : navStripMeasuredHeight != null
+        ? navStripMeasuredHeight + stripHeight
+        : undefined;
+
+  const navStripMeasureRafRef = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    const el = navStripMeasureRef.current;
+    if (!el) return;
+    const flush = () => {
+      navStripMeasureRafRef.current = null;
+      setNavStripMeasuredHeight(el.offsetHeight);
+    };
+    const schedule = () => {
+      if (navStripMeasureRafRef.current != null) return;
+      navStripMeasureRafRef.current = requestAnimationFrame(flush);
+    };
+    const ro = new ResizeObserver(schedule);
+    ro.observe(el);
+    schedule();
+    return () => {
+      ro.disconnect();
+      if (navStripMeasureRafRef.current != null) {
+        cancelAnimationFrame(navStripMeasureRafRef.current);
+        navStripMeasureRafRef.current = null;
+      }
+    };
+  }, [isMobile, hasPath, stripHeight]);
+
+  /** Spacer height for overlaid chrome — coalesce ResizeObserver to one `setScrollPadTop` per frame (avoids layout thrash during chrome height changes). */
+  const scrollPadRafRef = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    const stack = topChromeStackRef.current;
+    if (!stack) return;
+    const flushPad = () => {
+      scrollPadRafRef.current = null;
+      setScrollPadTop(stack.offsetHeight);
+    };
+    const schedulePad = () => {
+      if (scrollPadRafRef.current != null) return;
+      scrollPadRafRef.current = requestAnimationFrame(flushPad);
+    };
+    const ro = new ResizeObserver(schedulePad);
+    ro.observe(stack);
+    schedulePad();
+    return () => {
+      ro.disconnect();
+      if (scrollPadRafRef.current != null) {
+        cancelAnimationFrame(scrollPadRafRef.current);
+        scrollPadRafRef.current = null;
+      }
+    };
+  }, []);
+
+  /**
+   * ResizeObserver pad updates are rAF-coalesced above — that can leave the spacer one frame
+   * behind the real chrome height. Measure synchronously after every commit so profile-open
+   * strip removal and similar jumps align spacer + scroll compensation before paint.
+   */
+  useLayoutEffect(() => {
+    const stack = topChromeStackRef.current;
+    if (!stack) return;
+    const next = stack.offsetHeight;
+    setScrollPadTop((prev) => (prev === next ? prev : next));
+  });
+
+  /** When chrome height changes, nudge scrollTop by the same delta. Set suppress **before** `scrollTop` so synchronous scroll handlers don’t toggle nav. */
+  const prevScrollPadTopRef = useRef<number | null>(null);
+  useLayoutEffect(() => {
+    const root = atlasScrollPortEl;
+    if (!root) return;
+    const prev = prevScrollPadTopRef.current;
+    prevScrollPadTopRef.current = scrollPadTop;
+    if (prev === null) return;
+    const delta = scrollPadTop - prev;
+    if (delta === 0) return;
+    if (Math.abs(delta) < 2) return;
+    const maxScroll = Math.max(0, root.scrollHeight - root.clientHeight);
+    const adjusted = Math.min(maxScroll, Math.max(0, root.scrollTop + delta));
+    scrollNavSuppressedUntilRef.current = Date.now() + 550;
+    root.scrollTop = adjusted;
+    lastScrollTopRef.current = adjusted;
+  }, [scrollPadTop, atlasScrollPortEl]);
+
+  useEffect(() => {
+    if (pinNavStripOnScroll) setNavStripHiddenByScroll(false);
+  }, [pinNavStripOnScroll]);
+
+  useEffect(() => {
+    if (hideCategoryNavStrip) setNavStripHiddenByScroll(false);
+  }, [hideCategoryNavStrip]);
+
+  useEffect(() => {
+    if (hideCategoryNavStrip || pinNavStripOnScroll) {
+      prevNavStripHiddenByScrollRef.current = navStripHiddenByScroll;
+      return;
+    }
+    const prev = prevNavStripHiddenByScrollRef.current;
+    prevNavStripHiddenByScrollRef.current = navStripHiddenByScroll;
+    if (prev !== null && prev !== navStripHiddenByScroll) {
+      scrollNavSuppressedUntilRef.current = Date.now() + 550;
+    }
+  }, [navStripHiddenByScroll, hideCategoryNavStrip, pinNavStripOnScroll]);
+
+  useEffect(() => {
+    const root = atlasScrollPortEl;
+    if (!root) return;
+    const DOWN_DELTA = 36;
+    const UP_DELTA = 24;
+    const TOP_EPSILON = 8;
+
+    const processScroll = () => {
+      const st = root.scrollTop;
+      if (Date.now() < scrollNavSuppressedUntilRef.current) {
+        lastScrollTopRef.current = st;
+        return;
+      }
+      if (hideCategoryNavStrip || pinNavStripOnScroll) {
+        setNavStripHiddenByScroll(false);
+        lastScrollTopRef.current = st;
+        return;
+      }
+      const prev = lastScrollTopRef.current;
+      lastScrollTopRef.current = st;
+
+      if (st <= TOP_EPSILON) {
+        setNavStripHiddenByScroll((h) => (h ? false : h));
+        return;
+      }
+      if (st < prev - UP_DELTA) {
+        setNavStripHiddenByScroll((h) => (h ? false : h));
+      } else if (st > prev + DOWN_DELTA) {
+        setNavStripHiddenByScroll((h) => (!h ? true : h));
+      }
+    };
+
+    const onScroll = () => {
+      if (hideCategoryNavStrip) {
+        setNavStripHiddenByScroll(false);
+        lastScrollTopRef.current = root.scrollTop;
+        return;
+      }
+      if (pinNavStripOnScroll) {
+        setNavStripHiddenByScroll(false);
+        lastScrollTopRef.current = root.scrollTop;
+        return;
+      }
+      if (scrollNavRafRef.current != null) return;
+      scrollNavRafRef.current = requestAnimationFrame(() => {
+        scrollNavRafRef.current = null;
+        processScroll();
+      });
+    };
+
+    root.addEventListener("scroll", onScroll, { passive: true });
+    lastScrollTopRef.current = root.scrollTop;
+    return () => {
+      root.removeEventListener("scroll", onScroll);
+      if (scrollNavRafRef.current != null) {
+        cancelAnimationFrame(scrollNavRafRef.current);
+        scrollNavRafRef.current = null;
+      }
+    };
+  }, [atlasScrollPortEl, hideCategoryNavStrip, pinNavStripOnScroll]);
 
   const handleRootClick = useCallback((id: string) => {
     setHoveredL2Id(null);
@@ -440,25 +692,71 @@ function TopNavInner({
     onPreviewNavigate?.(null);
     onNavigate("home");
     setChildrenOpenOnMobile(false);
-  }, [clearFilter, onNavigate, onPreviewNavigate, onSearchChange]);
+    if (atlasScrollPortEl) atlasScrollPortEl.scrollTop = 0;
+  }, [atlasScrollPortEl, clearFilter, onNavigate, onPreviewNavigate, onSearchChange]);
 
-  /* Scroll architecture (avoid nested-scroll / “stuck” gestures):
-     1) Layout — `h-dvh min-h-0` fixes shell height to the viewport so `flex-1` below is a
-        real scrollport (was `min-h-dvh`, which let the column grow with content and killed
-        inner overflow).
-     2) Single primary vertical scroller — only `data-testid="atlas-main-scroll"` uses
-        overflow-y-auto; nav strips use horizontal overflow inside fixed-height chrome.
-     3) Layering — children strip is `absolute` + z-50; when height is 0 it must not
-        intercept touches above the grid. */
+  /* Scroll architecture:
+     1) `h-dvh min-h-0` fixes shell height to the viewport.
+     2) Main content scrolls in a full-bleed layer (`absolute inset-0`); a top **spacer** (not
+        container padding) matches chrome height so the first row clears the bars, then scrolls away
+        and tiles pass under the glass wordmark row.
+     3) Wordmark + category strip + subcategory drawer sit in `pointer-events-none` stack; interactive
+        rows use `pointer-events-auto`. L1 and L2/L3 share one frosted flex column (single
+        `backdrop-filter`) so the drawer matches the category bar; horizontal clip stays on the portal
+        row only. Scroll-collapse uses **instant** height so ResizeObserver + scroll compensation don’t
+        fight each frame. */
   return (
     <div
-      className="flex h-dvh min-h-0 w-full flex-col overflow-hidden"
+      className="relative h-dvh min-h-0 w-full overflow-hidden"
       style={{ backgroundColor: ATLAS_AMBIENT_BG, transition: ATLAS_AMBIENT_TRANSITION }}
     >
       <div
-        className="shrink-0 border-b border-white/[0.06]"
-        style={{ backgroundColor: ATLAS_AMBIENT_BG, transition: ATLAS_AMBIENT_TRANSITION }}
+        ref={setAtlasScrollPortEl}
+        className="absolute inset-0 overflow-y-auto overflow-x-hidden"
+        data-testid="atlas-main-scroll"
+        style={{
+          touchAction: "pan-y",
+          transform: "translateZ(0)",
+          overflowAnchor: "none" as const,
+        }}
       >
+        <AtlasScrollPortContext.Provider value={atlasScrollPortEl ?? undefined}>
+          <div
+            className="shrink-0"
+            style={{ height: scrollPadTop }}
+            aria-hidden
+          />
+          {/*
+            Fill at least the viewport below the top spacer so in-flow content (e.g. site footer)
+            can sit after the grid while still anchoring to the bottom when the grid is short.
+          */}
+          <div
+            className="flex min-h-[min-content] flex-col"
+            style={{
+              minHeight: `calc(100dvh - ${scrollPadTop}px)`,
+              paddingTop: 20,
+              paddingBottom: 20,
+            }}
+          >
+            {locationKey ? (
+              <div
+                key={locationKey}
+                className="atlas-page-fade flex min-h-[min-content] flex-1 flex-col"
+              >
+                {children}
+              </div>
+            ) : (
+              <div className="flex min-h-[min-content] flex-1 flex-col">{children}</div>
+            )}
+          </div>
+        </AtlasScrollPortContext.Provider>
+      </div>
+
+      <div
+        ref={topChromeStackRef}
+        className="pointer-events-none absolute left-0 right-0 top-0 z-[45] flex flex-col overflow-visible"
+      >
+      <div className="pointer-events-auto shrink-0 border-b border-white/[0.1]" style={atlasChromeGlassRowStyle(prefersReducedMotion)}>
         <div
           className={`flex px-4 sm:px-[3%] ${isMobile ? "flex-col items-stretch gap-2 py-2" : "min-h-14 items-center gap-3 justify-between"}`}
         >
@@ -470,7 +768,10 @@ function TopNavInner({
               onClick={resetToAll}
               className={`atlas-wordmark-home flex min-w-0 cursor-pointer items-center gap-2.5 text-left ${isMobile ? "max-w-full" : ""}`}
             >
-              <NfaMark className="atlas-nfa-mark-target block h-9 w-9 shrink-0 text-[#e8e0d0]" />
+              <NfaMark
+                className="atlas-nfa-mark-target block h-9 w-9 shrink-0 text-[#e8e0d0]"
+                style={nfaMarkStyle}
+              />
               <span
                 className={`min-w-0 whitespace-nowrap text-[#e8e0d0] ${isMobile ? "atlas-wordmark-fluid max-w-full" : ""}`}
                 style={
@@ -483,9 +784,26 @@ function TopNavInner({
               </span>
             </button>
             {!isMobile && (
-              <span className="whitespace-nowrap text-[#8e8678]" style={{ ...NAV_FONT_STYLE, ...ATLAS_GRID_SUBHEAD_MUTED_STYLE }}>
+              <span className="whitespace-nowrap text-[#c4bbb0]" style={{ ...NAV_FONT_STYLE, ...ATLAS_GRID_SUBHEAD_MUTED_STYLE }}>
                 {visibleProfileCount} Profiles
               </span>
+            )}
+            {hideCategoryNavStrip && (
+              <button
+                type="button"
+                onClick={() => {
+                  if (onBackToBrowse) {
+                    onBackToBrowse();
+                    return;
+                  }
+                  resetToAll();
+                }}
+                className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-white/75 hover:text-white transition-colors"
+                style={ATLAS_GRID_SUBHEAD_MUTED_STYLE}
+                aria-label="Back to browse"
+              >
+                Back to browse
+              </button>
             )}
           </div>
           <div
@@ -529,7 +847,25 @@ function TopNavInner({
       </div>
 
       <div
-        className="relative shrink-0 border-b border-white/[0.06] z-40"
+        className={`${
+          navStripHiddenByScroll && !pinNavStripOnScroll
+            ? "pointer-events-auto shrink-0 overflow-hidden"
+            : "pointer-events-auto shrink-0 overflow-visible"
+        }${hideCategoryNavStrip ? " invisible pointer-events-none select-none" : ""}`}
+        style={{
+          height: navStripSlotHeight,
+          minHeight: navStripHiddenByScroll && !pinNavStripOnScroll ? 0 : undefined,
+          pointerEvents:
+            hideCategoryNavStrip || (navStripHiddenByScroll && !pinNavStripOnScroll)
+              ? "none"
+              : undefined,
+        }}
+        aria-hidden={
+          hideCategoryNavStrip || (navStripHiddenByScroll && !pinNavStripOnScroll)
+            ? true
+            : undefined
+        }
+        data-testid="atlas-nav-category-slot"
         onMouseEnter={() => {
           if (l1LeaveTimer.current) {
             clearTimeout(l1LeaveTimer.current);
@@ -546,140 +882,138 @@ function TopNavInner({
           l1LeaveTimer.current = setTimeout(() => setL1Hovered(false), 80);
           onPreviewNavigate?.(null);
         }}
-        style={{ backgroundColor: ATLAS_AMBIENT_BG, transition: ATLAS_AMBIENT_TRANSITION }}
       >
         <div
-          className="flex items-center px-4 sm:px-[3%]"
-          style={{
-            minHeight: isMobile ? MOBILE_PRIMARY_NAV_STRIP_MIN_HEIGHT : 76,
-            paddingTop: 8,
-            paddingBottom: 8,
-            gap: 12,
-            justifyContent: "flex-start",
-            transition: `gap ${TRANSITION_MS}ms ${TRANSITION_EASE}`,
-          }}
+          className={`flex w-full min-h-0 shrink-0 flex-col ${navStripSlotHeight != null ? "h-full" : ""}`}
+          style={atlasChromeGlassRowStyle(prefersReducedMotion, { omitTopInset: true })}
         >
-          {!hasPath &&
-            atlasNavigation.map((node) => (
-              <PortalThumb
-                key={node.id}
-                nodeId={node.id}
-                mode="full"
-                isActiveSegment={false}
-                isHovered={hoveredPortalId === node.id}
+          <div
+            ref={navStripMeasureRef}
+            className="relative z-40 min-w-0 w-full shrink-0 border-b border-white/[0.1]"
+          >
+          {/*
+            Horizontal clipping only on the portal/breadcrumb row. The frosted panel is the parent
+            column so L2/L3 inherit the same blur as L1 without a second `backdrop-filter` layer.
+          */}
+          <div className="min-w-0 w-full overflow-x-hidden">
+          <div
+            className="flex items-center px-4 sm:px-[3%]"
+            style={{
+              minHeight: isMobile ? MOBILE_PRIMARY_NAV_STRIP_MIN_HEIGHT : 76,
+              paddingTop: 8,
+              paddingBottom: 8,
+              gap: 12,
+              justifyContent: "flex-start",
+              transition: `gap ${TRANSITION_MS}ms ${TRANSITION_EASE}`,
+            }}
+          >
+            {!hasPath &&
+              atlasNavigation.map((node) => (
+                <PortalThumb
+                  key={node.id}
+                  nodeId={node.id}
+                  mode="full"
+                  isActiveSegment={false}
+                  isHovered={hoveredPortalId === node.id}
+                  isMobile={isMobile}
+                  onClick={() => handleRootClick(node.id)}
+                  onMouseEnter={!isMobile ? () => {
+                    setHoveredL2Id(null);
+                    setHoveredPortalId(node.id);
+                    hoveredPortalIdRef.current = node.id;
+                    onPreviewNavigate?.(node.id);
+                  } : undefined}
+                />
+              ))}
+
+            {hasPath && (
+              <div className="flex min-w-0 items-center gap-2">
+                <AllSegment isMobile={isMobile} onClick={resetToAll} />
+                {selectedPath.map((id, i) => {
+                  const isLast = i === selectedPath.length - 1;
+                  return (
+                    <div key={id} className="flex items-center gap-2">
+                      <ChevronRight size={10} className="text-white/30" />
+                      <PathSegment
+                        nodeId={id}
+                        isActive={isLast}
+                        isMobile={isMobile}
+                        onClick={() => handleNodeClick(id)}
+                        onMouseEnter={!isMobile ? () => onPreviewNavigate?.(id) : undefined}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+            {isMobile && hasPath && level2Nodes.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setChildrenOpenOnMobile((prev) => !prev)}
+                className="ml-auto p-1.5 rounded-full text-white/40 hover:text-white/70 transition-colors"
+                aria-label={childrenOpenOnMobile ? "Hide subcategories" : "Browse subcategories"}
+                aria-expanded={childrenOpenOnMobile}
+                aria-controls="atlas-children-strip"
+              >
+                {childrenOpenOnMobile ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              </button>
+            )}
+          </div>
+          </div>
+          </div>
+
+          <div
+            id="atlas-children-strip"
+            className={`relative z-10 flex min-h-0 w-full shrink-0 flex-col overflow-hidden ${stripHeight > 0 ? "border-b border-white/[0.1]" : ""}`}
+            style={childrenStripDrawerStyle}
+          >
+            {level2Nodes.length > 0 && (
+              <ChildrenStrip
+                nodes={level2Nodes}
+                activeId={activeLevel2Id}
                 isMobile={isMobile}
-                onClick={() => handleRootClick(node.id)}
-                onMouseEnter={!isMobile ? () => {
-                  setHoveredL2Id(null);
-                  setHoveredPortalId(node.id);
-                  hoveredPortalIdRef.current = node.id;
-                  onPreviewNavigate?.(node.id);
-                } : undefined}
+                prefersReducedMotion={prefersReducedMotion}
+                omitTopBorder
+                onHover={(id) => {
+                  const nodePath = findNodePath(atlasNavigation, id);
+                  const node = findNode(atlasNavigation, id);
+                  if (nodePath && node?.children?.length) {
+                    setHoveredL2Id(id);
+                  } else {
+                    setHoveredL2Id(null);
+                  }
+                  onPreviewNavigate?.(id);
+                }}
+                onHoverLeave={() => {
+                  const root = hoveredPortalIdRef.current;
+                  if (root && selectedPath.length === 0) onPreviewNavigate?.(root);
+                  else if (selectedPath.length > 0) {
+                    const anchor = hoveredL2Id ?? selectedPath[1] ?? selectedPath[selectedPath.length - 1] ?? null;
+                    onPreviewNavigate?.(anchor);
+                  }
+                  else onPreviewNavigate?.(null);
+                }}
+                onSelect={(id) => handleNodeClick(id)}
               />
-            ))}
-
-          {hasPath && (
-            <div className="flex min-w-0 items-center gap-2">
-              <AllSegment isMobile={isMobile} onClick={resetToAll} />
-              {selectedPath.map((id, i) => {
-                const isLast = i === selectedPath.length - 1;
-                return (
-                  <div key={id} className="flex items-center gap-2">
-                    <ChevronRight size={10} className="text-white/30" />
-                    <PathSegment
-                      nodeId={id}
-                      isActive={isLast}
-                      isMobile={isMobile}
-                      onClick={() => handleNodeClick(id)}
-                      onMouseEnter={!isMobile ? () => onPreviewNavigate?.(id) : undefined}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          {isMobile && hasPath && level2Nodes.length > 0 && (
-            <button
-              type="button"
-              onClick={() => setChildrenOpenOnMobile((prev) => !prev)}
-              className="ml-auto p-1.5 rounded-full text-white/40 hover:text-white/70 transition-colors"
-              aria-label={childrenOpenOnMobile ? "Hide subcategories" : "Browse subcategories"}
-              aria-expanded={childrenOpenOnMobile}
-              aria-controls="atlas-children-strip"
-            >
-              {childrenOpenOnMobile ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-            </button>
-          )}
-        </div>
-
-        <div
-          id="atlas-children-strip"
-          className="absolute left-0 top-full z-50 w-full overflow-hidden"
-          style={{
-            height: stripHeight,
-            transition: `height 250ms ${TRANSITION_EASE}`,
-            pointerEvents: stripHeight === 0 ? "none" : "auto",
-          }}
-        >
-          {level2Nodes.length > 0 && (
-            <ChildrenStrip
-              nodes={level2Nodes}
-              activeId={activeLevel2Id}
-              isMobile={isMobile}
-              onHover={(id) => {
-                const nodePath = findNodePath(atlasNavigation, id);
-                const node = findNode(atlasNavigation, id);
-                if (nodePath && node?.children?.length) {
-                  setHoveredL2Id(id);
-                } else {
-                  setHoveredL2Id(null);
-                }
-                onPreviewNavigate?.(id);
-              }}
-              onHoverLeave={() => {
-                const root = hoveredPortalIdRef.current;
-                if (root && selectedPath.length === 0) onPreviewNavigate?.(root);
-                else if (selectedPath.length > 0) {
-                  const anchor = hoveredL2Id ?? selectedPath[1] ?? selectedPath[selectedPath.length - 1] ?? null;
-                  onPreviewNavigate?.(anchor);
-                }
-                else onPreviewNavigate?.(null);
-              }}
-              onSelect={(id) => handleNodeClick(id)}
-            />
-          )}
-          {level3Nodes.length > 0 && (
-            <ChildrenStrip
-              nodes={level3Nodes}
-              activeId={activeLevel3Id}
-              isMobile={isMobile}
-              onHover={(id) => onPreviewNavigate?.(id)}
-              onHoverLeave={() => {
-                const anchor = hoveredL2Id ?? selectedPath[1] ?? null;
-                if (anchor) onPreviewNavigate?.(anchor);
-                else onPreviewNavigate?.(null);
-              }}
-              onSelect={(id) => handleNodeClick(id)}
-            />
-          )}
+            )}
+            {level3Nodes.length > 0 && (
+              <ChildrenStrip
+                nodes={level3Nodes}
+                activeId={activeLevel3Id}
+                isMobile={isMobile}
+                prefersReducedMotion={prefersReducedMotion}
+                onHover={(id) => onPreviewNavigate?.(id)}
+                onHoverLeave={() => {
+                  const anchor = hoveredL2Id ?? selectedPath[1] ?? null;
+                  if (anchor) onPreviewNavigate?.(anchor);
+                  else onPreviewNavigate?.(null);
+                }}
+                onSelect={(id) => handleNodeClick(id)}
+              />
+            )}
+          </div>
         </div>
       </div>
-
-      <div
-        ref={setAtlasScrollPortEl}
-        className="min-h-0 flex-1 overflow-y-auto overflow-x-hidden"
-        data-testid="atlas-main-scroll"
-        style={{ touchAction: "pan-y" }}
-      >
-        <AtlasScrollPortContext.Provider value={atlasScrollPortEl ?? undefined}>
-          {locationKey ? (
-            <div key={locationKey} className="atlas-page-fade" style={{ height: "100%", display: "flex", flexDirection: "column" }}>
-              {children}
-            </div>
-          ) : (
-            children
-          )}
-        </AtlasScrollPortContext.Provider>
       </div>
     </div>
   );

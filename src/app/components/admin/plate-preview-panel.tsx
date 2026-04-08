@@ -47,7 +47,7 @@ import {
   LayoutGrid,
   Youtube,
 } from "lucide-react";
-import { hasAnyValidYoutubeEmbed } from "../../utils/youtube-embed-urls";
+import { getValidYoutubeEmbedEntries, hasAnyValidYoutubeEmbed } from "../../utils/youtube-embed-urls";
 
 /* ── Plate metadata for display ── */
 const PLATE_META: Record<PlateType, {
@@ -112,43 +112,51 @@ function getAvailablePlates(fiber: FiberProfile): PlateType[] {
   const quoteData = dataSource.getQuoteData();
   const wn = dataSource.getWorldNames();
 
-  return ALL_PLATES.filter((pt) => {
-    switch (pt) {
-      case "worldNames": {
-        const names = wn[fiber.id];
-        return names && names.length > 1;
+  return ALL_PLATES.flatMap((pt) => {
+    const include = (() => {
+      switch (pt) {
+        case "worldNames": {
+          const names = wn[fiber.id];
+          return !!(names && names.length > 1);
+        }
+        case "process":
+          return (processData[fiber.id] ?? []).length > 0;
+        case "anatomy":
+          return !!anatomyData[fiber.id];
+        case "care":
+          return !!careData[fiber.id];
+        case "quote":
+          return (quoteData[fiber.id] ?? []).length > 0;
+        case "youtubeEmbed":
+          return hasAnyValidYoutubeEmbed(fiber);
+        case "insight1":
+        case "insight2":
+        case "insight3": {
+          const sentences = fiber.about?.match(/[^.!?]+[.!?]+/g) ?? [];
+          if (pt === "insight3") return sentences.length >= 3;
+          return sentences.length >= 2;
+        }
+        case "silkCharmeuse":
+        case "silkHabotai":
+        case "silkDupioni":
+        case "silkTaffeta":
+        case "silkChiffon":
+        case "silkOrganza":
+          return fiber.id === "silk";
+        case "seeAlso":
+          return fiber.seeAlso.length > 0;
+        case "contactSheet":
+          return (fiber.galleryImages ?? []).length > 0;
+        default:
+          return true;
       }
-      case "process":
-        return (processData[fiber.id] ?? []).length > 0;
-      case "anatomy":
-        return !!anatomyData[fiber.id];
-      case "care":
-        return !!careData[fiber.id];
-      case "quote":
-        return (quoteData[fiber.id] ?? []).length > 0;
-      case "youtubeEmbed":
-        return hasAnyValidYoutubeEmbed(fiber);
-      case "insight1":
-      case "insight2":
-      case "insight3": {
-        const sentences = fiber.about?.match(/[^.!?]+[.!?]+/g) ?? [];
-        if (pt === "insight3") return sentences.length >= 3;
-        return sentences.length >= 2;
-      }
-      case "silkCharmeuse":
-      case "silkHabotai":
-      case "silkDupioni":
-      case "silkTaffeta":
-      case "silkChiffon":
-      case "silkOrganza":
-        return fiber.id === "silk";
-      case "seeAlso":
-        return fiber.seeAlso.length > 0;
-      case "contactSheet":
-        return (fiber.galleryImages ?? []).length > 0;
-      default:
-        return true;
+    })();
+    if (!include) return [];
+    if (pt === "youtubeEmbed") {
+      const n = getValidYoutubeEmbedEntries(fiber).length;
+      return Array.from({ length: n }, () => pt);
     }
+    return [pt];
   });
 }
 
@@ -159,7 +167,15 @@ function getMissingPlates(fiber: FiberProfile): PlateType[] {
 }
 
 /* ── Render a plate component in a preview container ── */
-function PlateRenderer({ fiber, plateType }: { fiber: FiberProfile; plateType: PlateType }) {
+function PlateRenderer({
+  fiber,
+  plateType,
+  youtubeSlot,
+}: {
+  fiber: FiberProfile;
+  plateType: PlateType;
+  youtubeSlot?: number;
+}) {
   switch (plateType) {
     case "about":
       return <AboutPlate fiber={fiber} />;
@@ -181,7 +197,7 @@ function PlateRenderer({ fiber, plateType }: { fiber: FiberProfile; plateType: P
     case "quote":
       return <QuotePlate fiber={fiber} />;
     case "youtubeEmbed":
-      return <YouTubeEmbedPlate fiber={fiber} />;
+      return <YouTubeEmbedPlate fiber={fiber} slotIndex={youtubeSlot ?? 0} />;
     case "regions":
       return <RegionsPlate fiber={fiber} />;
     case "trade":
@@ -215,12 +231,17 @@ function PlateRenderer({ fiber, plateType }: { fiber: FiberProfile; plateType: P
 function PlatePreviewCard({
   fiber,
   plateType,
+  headerLabel,
+  youtubeSlot,
   isHidden,
   onToggleHide,
   onEdit,
 }: {
   fiber: FiberProfile;
   plateType: PlateType;
+  /** Overrides `PLATE_META` title (e.g. second YouTube card). */
+  headerLabel?: string;
+  youtubeSlot?: number;
   isHidden: boolean;
   onToggleHide: () => void;
   onEdit: () => void;
@@ -246,7 +267,7 @@ function PlatePreviewCard({
         </button>
         <meta.icon size={11} className={meta.color} />
         <span className="text-white/60 flex-1 truncate" style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}>
-          {meta.label}
+          {headerLabel ?? meta.label}
         </span>
 
         {/* Insight explanation */}
@@ -302,7 +323,7 @@ function PlatePreviewCard({
 
           {/* Actual plate content */}
           <div className="relative z-10" style={{ minHeight: plateType === "contactSheet" ? 180 : 140 }}>
-            <PlateRenderer fiber={fiber} plateType={plateType} />
+            <PlateRenderer fiber={fiber} plateType={plateType} youtubeSlot={youtubeSlot} />
           </div>
         </div>
       )}
@@ -320,12 +341,30 @@ interface PlatePreviewPanelProps {
 }
 
 export function PlatePreviewPanel({ fiber, onScrollToEditorSection }: PlatePreviewPanelProps) {
-  const [hiddenPlates, setHiddenPlates] = useState<Set<PlateType>>(new Set());
+  const [hiddenPlates, setHiddenPlates] = useState<Set<string>>(new Set());
 
   const fiberForPlates = useMemo(() => withMergedGalleryImages(fiber), [fiber]);
 
   const availablePlates = useMemo(() => getAvailablePlates(fiberForPlates), [fiberForPlates]);
   const missingPlates = useMemo(() => getMissingPlates(fiberForPlates), [fiberForPlates]);
+  const previewRows = useMemo(() => {
+    let yt = 0;
+    const ytTotal = getValidYoutubeEmbedEntries(fiberForPlates).length;
+    return availablePlates.map((pt, i) => {
+      if (pt === "youtubeEmbed") {
+        const slot = yt++;
+        const headerLabel =
+          ytTotal > 1 ? `${PLATE_META.youtubeEmbed.label} (${slot + 1}/${ytTotal})` : undefined;
+        return {
+          rowKey: `youtubeEmbed:${slot}`,
+          plateType: pt,
+          youtubeSlot: slot,
+          headerLabel,
+        };
+      }
+      return { rowKey: `${pt}:${i}`, plateType: pt, youtubeSlot: undefined, headerLabel: undefined };
+    });
+  }, [availablePlates, fiberForPlates]);
   const [showMissing, setShowMissing] = useState(false);
 
   const sentences = useMemo(
@@ -333,11 +372,11 @@ export function PlatePreviewPanel({ fiber, onScrollToEditorSection }: PlatePrevi
     [fiber.about],
   );
 
-  const toggleHide = useCallback((pt: PlateType) => {
+  const toggleHide = useCallback((rowKey: string) => {
     setHiddenPlates((prev) => {
       const next = new Set(prev);
-      if (next.has(pt)) next.delete(pt);
-      else next.add(pt);
+      if (next.has(rowKey)) next.delete(rowKey);
+      else next.add(rowKey);
       return next;
     });
   }, []);
@@ -433,14 +472,16 @@ export function PlatePreviewPanel({ fiber, onScrollToEditorSection }: PlatePrevi
         )}
 
         {/* Active plate cards */}
-        {availablePlates.map((pt) => (
+        {previewRows.map(({ rowKey, plateType, youtubeSlot, headerLabel }) => (
           <PlatePreviewCard
-            key={pt}
+            key={rowKey}
             fiber={fiberForPlates}
-            plateType={pt}
-            isHidden={hiddenPlates.has(pt)}
-            onToggleHide={() => toggleHide(pt)}
-            onEdit={() => handleEdit(pt)}
+            plateType={plateType}
+            headerLabel={headerLabel}
+            youtubeSlot={youtubeSlot}
+            isHidden={hiddenPlates.has(rowKey)}
+            onToggleHide={() => toggleHide(rowKey)}
+            onEdit={() => handleEdit(plateType)}
           />
         ))}
 

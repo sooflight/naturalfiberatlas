@@ -362,10 +362,10 @@ describe("ImageScoutPanel recovered behavior", () => {
 
     const actionBars = Array.from(container.querySelectorAll(".scout-action-bar"));
     const activeActionBar = actionBars[actionBars.length - 1] as HTMLElement;
-    const addDirectButton = Array.from(activeActionBar.querySelectorAll("button")).find(
-      (button) => button.textContent?.trim() === "Add Direct",
+    const hotlinkButton = Array.from(activeActionBar.querySelectorAll("button")).find(
+      (button) => button.textContent?.trim() === "Hotlink only",
     ) as HTMLButtonElement;
-    await user.click(addDirectButton);
+    await user.click(hotlinkButton);
 
     expect(await screen.findByText("Select Layer 1 node")).toBeTruthy();
     await user.click(screen.getByRole("button", { name: /fiber/i }));

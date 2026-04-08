@@ -101,4 +101,16 @@ describe("buildProfileCardCrossfadeLayers", () => {
     );
     expect(layers).toEqual([{ url: "https://cdn.example.com/a.jpg?preset=grid", objectPosition: undefined }]);
   });
+
+  it("matches hero focal when URL differs only by Shopify _600x suffix", () => {
+    const layers = buildProfileCardCrossfadeLayers(
+      "https://cdn.shopify.com/files/1/x_600x.jpg",
+      [{ url: "https://cdn.shopify.com/files/1/x.jpg", previewFocal: { x: 0.1, y: 0.9 } }],
+      transform,
+    );
+    expect(layers[0]).toEqual({
+      url: "https://cdn.shopify.com/files/1/x_600x.jpg?preset=grid",
+      objectPosition: "10% 90%",
+    });
+  });
 });

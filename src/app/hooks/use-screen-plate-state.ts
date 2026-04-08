@@ -28,6 +28,7 @@ export interface ScreenPlateState {
 
 export function useScreenPlateState(
   plateAssignments: Map<number, PlateType>,
+  youtubeEmbedSlotByCell: Map<number, number>,
   filtered: FiberIndexEntry[],
   cellRefs: MutableRefObject<Map<string, HTMLDivElement>>,
   indexRefs: MutableRefObject<Map<number, HTMLDivElement>>,
@@ -38,12 +39,22 @@ export function useScreenPlateState(
   const screenPlateEntries = useMemo((): ScreenPlateEntry[] => {
     const entries: ScreenPlateEntry[] = [];
     for (const [cellIndex, pt] of plateAssignments) {
-      entries.push({ plateType: pt, cellIndex });
+      const slot = youtubeEmbedSlotByCell.get(cellIndex);
+      entries.push({
+        plateType: pt,
+        cellIndex,
+        ...(pt === "youtubeEmbed" && slot !== undefined ? { youtubeEmbedSlot: slot } : {}),
+      });
     }
     const order = new Map(namedPlates.map((p, i) => [p, i]));
-    entries.sort((a, b) => (order.get(a.plateType) ?? 99) - (order.get(b.plateType) ?? 99));
+    entries.sort((a, b) => {
+      const oa = order.get(a.plateType) ?? 99;
+      const ob = order.get(b.plateType) ?? 99;
+      if (oa !== ob) return oa - ob;
+      return a.cellIndex - b.cellIndex;
+    });
     return entries;
-  }, [plateAssignments]);
+  }, [plateAssignments, youtubeEmbedSlotByCell]);
 
   /** Live cellRef → DOMRect lookup for exit morph. Supports virtual cells via indexRefs. */
   const getCellRect = useCallback(

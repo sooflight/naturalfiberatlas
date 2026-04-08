@@ -277,7 +277,7 @@ export function MobileDetailView({
   }, []);
 
   /* ── Plate renderer ── */
-  const renderPlate = (plateType: PlateType) => {
+  const renderPlate = (plateType: PlateType, youtubeEmbedSlot = 0) => {
     switch (plateType) {
       case "about":
         return <AboutPlate fiber={fiber} />;
@@ -299,7 +299,7 @@ export function MobileDetailView({
       case "quote":
         return <QuotePlate fiber={fiber} />;
       case "youtubeEmbed":
-        return <YouTubeEmbedPlate fiber={fiber} />;
+        return <YouTubeEmbedPlate fiber={fiber} slotIndex={youtubeEmbedSlot} />;
       case "trade":
         return <TradePlate fiber={fiber} />;
       case "regions":
@@ -321,9 +321,14 @@ export function MobileDetailView({
 
   // Total sections = hero + plates + gallery (if present)
   const totalSections = 1 + plates.length + (hasGallery ? 1 : 0);
+  const youtubePlateCount = plates.filter((p) => p === "youtubeEmbed").length;
   const dotLabels = [
     "Hero",
-    ...plates.map((p) => plateLabelMap[p] ?? p),
+    ...plates.map((p, i) => {
+      if (p !== "youtubeEmbed") return plateLabelMap[p] ?? p;
+      const slot = plates.slice(0, i).filter((x) => x === "youtubeEmbed").length;
+      return youtubePlateCount > 1 ? `Video ${slot + 1}` : plateLabelMap.youtubeEmbed ?? p;
+    }),
     ...(hasGallery ? ["Gallery"] : []),
   ];
 
@@ -467,6 +472,10 @@ export function MobileDetailView({
               const sectionIndex = i + 1; // hero is 0
               const cascade = cascadeEntries[i];
               const canScreen = !NON_SCREEN_PLATES.includes(plateType) && onOpenScreenPlate;
+              const youtubeEmbedSlot =
+                plateType === "youtubeEmbed"
+                  ? plates.slice(0, i).filter((p) => p === "youtubeEmbed").length
+                  : 0;
 
               const openScreenPlateFromRect = (e: React.MouseEvent<HTMLElement> | { currentTarget: HTMLElement }) => {
                 if (!canScreen) return;
@@ -476,7 +485,7 @@ export function MobileDetailView({
 
               return (
                 <section
-                  key={plateType}
+                  key={`${plateType}-${i}`}
                   className="mobile-detail-snap px-3"
                   style={{
                     minHeight: plateType === "seeAlso" ? "40vh" : "70vh",
@@ -534,7 +543,7 @@ export function MobileDetailView({
 
                     {/* Plate content */}
                     <div className="relative z-10">
-                      {renderPlate(plateType)}
+                      {renderPlate(plateType, youtubeEmbedSlot)}
                     </div>
                   </motion.div>
                 </section>

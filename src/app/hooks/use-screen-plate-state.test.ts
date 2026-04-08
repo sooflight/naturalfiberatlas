@@ -8,6 +8,8 @@ function makeFiber(id: string): FiberIndexEntry {
     id,
     name: id,
     category: "fiber",
+    status: "published",
+    tags: [],
     image: `https://example.com/${id}.jpg`,
     profilePills: {
       origin: "test",
@@ -36,7 +38,7 @@ describe("useScreenPlateState", () => {
     };
 
     const { result } = renderHook(() =>
-      useScreenPlateState(plateAssignments, filtered, cellRefs, indexRefs),
+      useScreenPlateState(plateAssignments, new Map(), filtered, cellRefs, indexRefs),
     );
 
     const rect = result.current.getCellRect(5);
@@ -58,7 +60,7 @@ describe("useScreenPlateState", () => {
     };
 
     const { result } = renderHook(() =>
-      useScreenPlateState(plateAssignments, filtered, cellRefs, indexRefs),
+      useScreenPlateState(plateAssignments, new Map(), filtered, cellRefs, indexRefs),
     );
 
     expect(result.current.screenPlateEntries.map((entry) => entry.plateType)).toEqual([

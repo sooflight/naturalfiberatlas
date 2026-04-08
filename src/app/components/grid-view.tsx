@@ -40,10 +40,16 @@ import {
   DETAIL_FADE, EXHALE_EASE,
   type CellVisibility,
 } from "../utils/plate-layout";
+import {
+  computeDetailShellRevealDelay,
+  shouldHydrateDetailSlotDuringInhale,
+} from "../utils/detail-hydration";
 import { getDetailSlotClassSuffix, computeDetailGridRenderPlan } from "../utils/detail-slot-classes";
 import { getAvailablePlates } from "./plate-availability";
+import type { ScreenPlateEntry } from "./screen-plate";
 import { Search, X } from "lucide-react";
 import { useImagePipeline } from "../context/image-pipeline";
+import { AtlasSiteFooter } from "./atlas-site-footer";
 import { GridSkeleton } from "./grid-skeleton";
 import { Link, useLocation, useNavigate } from "react-router";
 import { preloadAboutRoute } from "../route-preload";
@@ -133,6 +139,13 @@ interface GridViewProps {
   onCategoryChange?: (category: string) => void;
   onSearchChange?: (search: string) => void;
   onVisibleProfilesChange?: (count: number) => void;
+  /** Fires when a profile detail view opens or closes (e.g. parent can hide category chrome). */
+  onProfileDetailOpenChange?: (isOpen: boolean) => void;
+  /**
+   * When false, `AtlasSiteFooter` (and the flex spacer above it) are omitted so the shell can render
+   * them as siblings of `GridView` — avoids flex/overflow stacking between grid and footer.
+   */
+  includeSiteFooter?: boolean;
 }
 
 export function GridView({
@@ -144,10 +157,16 @@ export function GridView({
   onCategoryChange,
   onSearchChange,
   onVisibleProfilesChange,
+  onProfileDetailOpenChange,
+  includeSiteFooter = true,
 }: GridViewProps = {}) {
   const [internalSearch, setInternalSearch] = useState("");
   const [internalCategory, setInternalCategory] = useState<string>("all");
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  useLayoutEffect(() => {
+    onProfileDetailOpenChange?.(selectedId !== null);
+  }, [selectedId, onProfileDetailOpenChange]);
 
   // Use external values when provided, otherwise fall back to internal state
   const search = externalSearch !== undefined ? externalSearch : internalSearch;
@@ -231,8 +250,11 @@ export function GridView({
 
     if (id.includes("spider") || name.includes("spider")) return "specialty-protein";
     if (id.includes("silk") || name.includes("silk") || part.includes("cocoon") || part.includes("spinneret")) return "silk-fiber";
+    const hasWoolTag = fiber.tags.some((t) => t.toLowerCase() === "wool");
     if (
       name.includes("wool")
+      || fiberType.includes("wool")
+      || hasWoolTag
       || id === "merino"
       || id === "columbia"
       || id === "corriedale"
@@ -277,7 +299,13 @@ export function GridView({
 
   const { cols, gridGap } = useColumnCount();
   const isMobile = cols <= 2;
+  const columnGap = isMobile ? "0.875rem" : gridGap;
   const prefersReducedMotion = usePrefersReducedMotion();
+  /** Grid cells are visually staggered with translateY; reserve that overflow before rendering the footer. */
+  const gridVisualBottomClearancePx = useMemo(
+    () => gridColumnStaggerPx(1, cols, prefersReducedMotion),
+    [cols, prefersReducedMotion],
+  );
   const cellRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const indexRefs = useRef<Map<number, HTMLDivElement>>(new Map());
   const pipeline = useImagePipeline();
@@ -287,6 +315,18 @@ export function GridView({
   const isDetailMode = selectedId !== null;
   const atlasScrollPort = useAtlasScrollPort();
   const { visibleIds, observeCell, virtualIoGeneration } = useVirtualGrid(isDetailMode, atlasScrollPort);
+
+  /* Lightbox is `fixed` but TopNav’s scrollport uses `transform: translateZ(0)`, so the overlay is tied to
+   * that scroller; wheel/touch still scrolls it unless we lock overflow while the gallery is open. */
+  useEffect(() => {
+    if (!lightboxFiberId || !atlasScrollPort) return;
+    const el = atlasScrollPort;
+    const prevOverflow = el.style.overflow;
+    el.style.overflow = "hidden";
+    return () => {
+      el.style.overflow = prevOverflow;
+    };
+  }, [lightboxFiberId, atlasScrollPort]);
 
   /* Virtual grid: ref callbacks run before useVirtualGrid’s effect installs the observer — re-observe after each IO (re)create. */
   useLayoutEffect(() => {
@@ -499,6 +539,7 @@ export function GridView({
      Cell visibility is snapshotted from the DOM at computation time. */
   const {
     plateAssignments,
+    youtubeEmbedSlotByCell,
     profileInhaleDelays,
     detailInhaleDelays,
     profileExhaleDelays,
@@ -560,7 +601,13 @@ export function GridView({
   }, [selectedId, filtered, cols]);
 
   /* ── ScreenPlate hook — replaces inline screenPlateEntries/getCellRect ── */
-  const { screenPlateInfo, screenPlateEntries, getCellRect, openScreenPlate, closeScreenPlate } = useScreenPlateState(plateAssignments, filtered, cellRefs, indexRefs);
+  const { screenPlateInfo, screenPlateEntries, getCellRect, openScreenPlate, closeScreenPlate } = useScreenPlateState(
+    plateAssignments,
+    youtubeEmbedSlotByCell,
+    filtered,
+    cellRefs,
+    indexRefs,
+  );
 
   /* ── Mobile ScreenPlate: plates from mobile's getAvailablePlates + contactSheet ── */
   const mobileScreenPlateEntries = useMemo(() => {
@@ -571,7 +618,14 @@ export function GridView({
       selectedFiberDetail.id,
       screenFiber ?? selectedFiberDetail,
     );
-    const entries = avail.map((pt) => ({ plateType: pt, cellIndex: 0 }));
+    let mobileYoutubeSlot = 0;
+    const entries: ScreenPlateEntry[] = avail.map((pt) => {
+      if (pt === "youtubeEmbed") {
+        const slot = mobileYoutubeSlot++;
+        return { plateType: pt, cellIndex: 0, youtubeEmbedSlot: slot };
+      }
+      return { plateType: pt, cellIndex: 0 };
+    });
     if (gallery.length > 0) {
       chunkGalleryForContactSheets(gallery).forEach((_, chunkIdx) => {
         entries.push({ plateType: "contactSheet" as PlateType, cellIndex: chunkIdx });
@@ -921,9 +975,11 @@ export function GridView({
     const sid = selectedId;
     const rid = requestAnimationFrame(() => {
       if (closeDetailButtonRef.current) {
-        closeDetailButtonRef.current.focus();
+        closeDetailButtonRef.current.focus({ preventScroll: true });
       } else {
-        document.querySelector<HTMLElement>(`[data-atlas-fiber-id="${CSS.escape(sid)}"]`)?.focus();
+        document
+          .querySelector<HTMLElement>(`[data-atlas-fiber-id="${CSS.escape(sid)}"]`)
+          ?.focus({ preventScroll: true });
       }
     });
     return () => cancelAnimationFrame(rid);
@@ -999,20 +1055,7 @@ export function GridView({
       if (selectedId && window.location.pathname.startsWith(FIBER_PATH_PREFIX)) {
         const next = buildFiberPath(selectedId, activeCategory);
         if (pathQs !== next) {
-          /* TopNav fiber subtype (plant, bast, …): stay on browse grid, not /fiber/:id?cat=… */
-          if (activeFiberSubcategory != null) {
-            suppressUrlFiberReselectionRef.current = true;
-            if (activeCategory === "all") {
-              navigate("/", { replace: true });
-            } else {
-              navigate(
-                { pathname: "/", search: `?cat=${encodeURIComponent(activeCategory)}` },
-                { replace: true },
-              );
-            }
-          } else {
-            navigateToFiberRoute(selectedId, true);
-          }
+          navigateToFiberRoute(selectedId, true);
         }
       } else {
         writeBrowseHashState(pathname, selectedId, activeCategory, false);
@@ -1022,7 +1065,6 @@ export function GridView({
   }, [
     selectedId,
     activeCategory,
-    activeFiberSubcategory,
     location.pathname,
     location.search,
     navigate,
@@ -1061,18 +1103,28 @@ export function GridView({
       requestAnimationFrame(() => {
         const el = cellRefs.current.get(fiberId);
         if (!el) return;
-        void smoothScrollToIfNeeded(el, 100).then(() => {
+        void smoothScrollToIfNeeded(el, 100, atlasScrollPort).then(() => {
           if (selectedIdRef.current === fiberId) {
             saveScrollPosition();
           }
         });
       });
     });
-  }, [location.pathname, location.search, location.hash, setActiveCategory]);
+  }, [
+    location.pathname,
+    location.search,
+    location.hash,
+    setActiveCategory,
+    atlasScrollPort,
+  ]);
 
   return (
     <div
-      className="min-h-dvh bg-[#111111] text-white"
+      className={
+        includeSiteFooter
+          ? "flex min-h-[min-content] flex-1 flex-col bg-[#111111] text-white"
+          : "flex min-h-[min-content] w-full shrink-0 flex-col bg-[#111111] text-white"
+      }
       style={{
         backgroundColor: ambientBg,
         transition: "background-color 2s, margin-right 0.4s cubic-bezier(0.25, 1, 0.5, 1)",
@@ -1260,13 +1312,23 @@ export function GridView({
         </>
       )}
 
-      {/* Grid */}
-      <main className="mx-auto px-4 sm:px-[3%] py-4 pb-16" style={{ paddingBottom: "max(4rem, env(safe-area-inset-bottom, 0px))" }}>
+      {/* Main: content-sized (shrink-0). A flex-grow <main> is capped to viewport height while the grid is taller; overflow paints under the footer. Spacer below absorbs slack when the grid is short. */}
+      <main
+        className="mx-auto flex w-full shrink-0 flex-col px-4 sm:px-[3%]"
+        style={{
+          /* Extra scroll padding so the last grid row / footer clears the viewport bottom comfortably */
+          paddingBottom: "calc(2.5rem + env(safe-area-inset-bottom, 0px))",
+        }}
+      >
+        <div
+          className="w-full min-w-0 shrink-0"
+          style={{ marginBottom: `calc(3 * ${columnGap} + ${gridVisualBottomClearancePx}px)` }}
+        >
         <div
           className={`atlas-grid grid ${isMobile ? 'gap-3.5' : 'gap-2.5 sm:gap-3'}`}
           style={{
             gridTemplateColumns: `repeat(${cols}, minmax(0, 1fr))`,
-            ["--grid-gap" as any]: isMobile ? "0.875rem" : gridGap,
+            ["--grid-gap" as any]: columnGap,
           }}
           ref={gridRef}
         >
@@ -1280,6 +1342,10 @@ export function GridView({
                 ? (profileInhaleDelays.get(index) ?? 0)
                 : (exhaleProfileDelaysRef.current.get(index) ?? 0);
               const detailDelay = detailInhaleDelays.get(index) ?? 0;
+              const detailShellDelay = computeDetailShellRevealDelay(
+                detailDelay,
+                prefersReducedMotion,
+              );
               const showDetail = isDetailMode && !isSelected && plateType && selectedFiberDetail;
               const profileOpacity = (isDetailMode && !isSelected) ? 0 : 1;
 
@@ -1291,11 +1357,25 @@ export function GridView({
                 ? mergeFiberGalleryWithFallback(fiber.id, profileFull)
                 : [];
               const mergedGalleryUrls = mergedGallery.map((entry) => entry.url);
+              /** Align hero URL with merged gallery order so grid focal matches `previewFocal` on row 0. */
+              const profileHeroImage =
+                mergedGallery[0]?.url?.trim() || fiber?.image || "";
 
               const colIndex = index % cols;
               const colOffset = gridColumnStaggerPx(colIndex, cols, prefersReducedMotion);
 
               const getCellEl = () => indexRefs.current.get(index) ?? (fiber ? cellRefs.current.get(fiber.id) : null);
+              const cellRect = getCellEl()?.getBoundingClientRect();
+              const shouldHydrateDetail =
+                !showDetail
+                ? false
+                : shouldHydrateDetailSlotDuringInhale({
+                  detailInhalePhase,
+                  isVirtual,
+                  top: cellRect?.top ?? Number.POSITIVE_INFINITY,
+                  bottom: cellRect?.bottom ?? Number.NEGATIVE_INFINITY,
+                  viewportHeight: window.innerHeight,
+                });
 
               return (
                 <div
@@ -1325,10 +1405,10 @@ export function GridView({
                 >
                   {isVirtual ? (
                     /* Virtual cell: detail only when assigned */
-                    showDetail && (
+                    shouldHydrateDetail && (
                       <AnimatePresence>
                         <motion.div
-                          key={`detail-${selectedId}-${plateType}`}
+                          key={`detail-${selectedId}-${index}-${plateType}`}
                           className={`absolute inset-0 z-10 detail-card-slot${detailSlotClassSuffix}`}
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
@@ -1340,7 +1420,7 @@ export function GridView({
                               ease: EXHALE_EASE,
                             },
                           }}
-                          transition={{ duration: 0, delay: detailDelay }}
+                          transition={{ duration: DETAIL_FADE, delay: detailShellDelay, ease: EXHALE_EASE }}
                         >
                           <Suspense fallback={<div className="h-full w-full rounded-xl border border-white/[0.08] bg-[#0a0a0a]" aria-hidden />}>
                             <LazyDetailCard
@@ -1368,6 +1448,7 @@ export function GridView({
                               galleryImages={gallerySlotImages.get(index)}
                               galleryStartIndex={gallerySlotStartIndex.get(index) ?? 0}
                               galleryIndex={index}
+                              youtubeEmbedSlot={youtubeEmbedSlotByCell.get(index) ?? 0}
                             />
                           </Suspense>
                         </motion.div>
@@ -1386,7 +1467,7 @@ export function GridView({
                         <ProfileCard
                           id={fiber.id}
                           name={fiber.name}
-                          image={fiber.image}
+                          image={profileHeroImage}
                           galleryImages={mergedGalleryUrls}
                           galleryPreviewEntries={mergedGallery}
                           crossfadePaused={isDetailMode && !isSelected}
@@ -1405,9 +1486,9 @@ export function GridView({
                       </div>
 
                       <AnimatePresence>
-                        {showDetail && (
+                        {shouldHydrateDetail && (
                           <motion.div
-                            key={`detail-${selectedId}-${plateType}`}
+                            key={`detail-${selectedId}-${index}-${plateType}`}
                             className={`absolute inset-0 z-10 detail-card-slot${detailSlotClassSuffix}`}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
@@ -1419,7 +1500,7 @@ export function GridView({
                                 ease: EXHALE_EASE,
                               },
                             }}
-                            transition={{ duration: 0, delay: detailDelay }}
+                            transition={{ duration: DETAIL_FADE, delay: detailShellDelay, ease: EXHALE_EASE }}
                           >
                             <Suspense fallback={<div className="h-full w-full rounded-xl border border-white/[0.08] bg-[#0a0a0a]" aria-hidden />}>
                               <LazyDetailCard
@@ -1447,6 +1528,7 @@ export function GridView({
                                 galleryImages={gallerySlotImages.get(index)}
                                 galleryStartIndex={gallerySlotStartIndex.get(index) ?? 0}
                                 galleryIndex={index}
+                                youtubeEmbedSlot={youtubeEmbedSlotByCell.get(index) ?? 0}
                               />
                             </Suspense>
                           </motion.div>
@@ -1483,7 +1565,19 @@ export function GridView({
             </div>
           </div>
         )}
+        </div>
       </main>
+
+      {includeSiteFooter && (
+        <>
+          <div className="min-h-0 min-w-0 flex-1 basis-0" aria-hidden />
+          <AtlasSiteFooter
+            cols={cols}
+            columnGap={columnGap}
+            className="shrink-0 px-4 sm:px-[3%]"
+          />
+        </>
+      )}
 
       {/* Lightbox */}
       <AnimatePresence>

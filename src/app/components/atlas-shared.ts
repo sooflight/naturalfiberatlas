@@ -107,7 +107,7 @@ export const ATLAS_GRID_CARD_NAME_FONT_SIZE = "var(--atlas-profile-card-name-siz
 /** TopNav labels under portal thumbs, path segments, children strip (`--atlas-nav-thumb-label` in theme.css). */
 export const ATLAS_NAV_THUMB_LABEL_FONT_SIZE = "var(--atlas-nav-thumb-label)";
 
-export const ATLAS_INACTIVE_LABEL_COLOR = "#737373";
+export const ATLAS_INACTIVE_LABEL_COLOR = "#b8b8b8";
 
 export const ATLAS_SEARCH_WRAPPER_CLASS =
   "relative w-full max-w-[320px]";
