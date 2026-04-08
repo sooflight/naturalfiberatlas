@@ -1,6 +1,12 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
-import { AnatomyPlate, CarePlate, WorldNamesPlate, getSupplementalProfileTags } from "./detail-plates";
+import {
+  AnatomyPlate,
+  CarePlate,
+  InsightPlate,
+  WorldNamesPlate,
+  getSupplementalProfileTags,
+} from "./detail-plates";
 import { dataSource } from "../data/data-provider";
 import type { FiberProfile } from "../data/atlas-data";
 
@@ -130,6 +136,35 @@ describe("getSupplementalProfileTags", () => {
       },
     };
     expect(getSupplementalProfileTags(fiber)).toEqual(["Satin Weave", "Fluid"]);
+  });
+});
+
+describe("InsightPlate with explicit insight data", () => {
+  it("should render custom insight title and content when present", () => {
+    const fiberWithInsight = {
+      ...baseFiber,
+      about: "Fallback text",
+      insight1: {
+        title: "Custom Insight Title",
+        content: "Custom insight content with specific details",
+      },
+    };
+
+    render(<InsightPlate fiber={fiberWithInsight} half={1} />);
+
+    expect(screen.getByText("Custom Insight Title")).toBeInTheDocument();
+    expect(screen.getByText(/Custom insight content/)).toBeInTheDocument();
+  });
+
+  it("should fallback to about text splitting when no explicit insight", () => {
+    const fiberWithoutInsight = {
+      ...baseFiber,
+      about: "First part. Second part. Third part.",
+    };
+
+    render(<InsightPlate fiber={fiberWithoutInsight} half={1} />);
+
+    expect(screen.getByText("Hemp — Origins")).toBeInTheDocument();
   });
 });
 

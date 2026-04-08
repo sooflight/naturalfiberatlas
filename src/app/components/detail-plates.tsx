@@ -29,6 +29,7 @@ import {
   Flame,
   Scissors,
   LayoutGrid,
+  Lightbulb,
   Youtube,
   ExternalLink,
 } from "lucide-react";
@@ -201,8 +202,41 @@ export function PropertiesPlate({ fiber }: { fiber: FiberProfile }) {
   );
 }
 
+type FiberWithOptionalInsights = FiberProfile & {
+  insight1?: { title?: string; content?: string };
+  insight2?: { title?: string; content?: string };
+  insight3?: { title?: string; content?: string };
+};
+
 /* ═══ 1b ─ INSIGHT (Editorial — warm accent) ═══ */
 export function InsightPlate({ fiber, half }: { fiber: FiberProfile; half: 1 | 2 | 3 }) {
+  const insightKey = `insight${half}` as "insight1" | "insight2" | "insight3";
+  const explicitInsight = (fiber as FiberWithOptionalInsights)[insightKey];
+
+  if (
+    explicitInsight &&
+    typeof explicitInsight === "object" &&
+    typeof explicitInsight.title === "string" &&
+    typeof explicitInsight.content === "string" &&
+    explicitInsight.title &&
+    explicitInsight.content
+  ) {
+    const { title, content } = explicitInsight;
+    return (
+      <div className={`h-full flex flex-col min-h-0 ${pad}`}>
+        <SectionLabel icon={Lightbulb}>{title}</SectionLabel>
+        <div className={`w-[${sp.xl}] h-px bg-[${warmA}]/50 mb-[${sp.md}] shrink-0`} />
+        <DetailScrollRegion
+          wrapperClassName="flex-1 min-h-0"
+          scrollClassName={`${T.secondary} detail-prose antialiased [text-wrap:pretty] hyphens-auto`}
+          scrollStyle={{ fontSize: "clamp(12px, 4cqi, 18px)", lineHeight: 1.65 }}
+        >
+          <div className="whitespace-pre-line">{content}</div>
+        </DetailScrollRegion>
+      </div>
+    );
+  }
+
   const parts = splitAboutText(fiber.about, 3);
   const segment = parts[half - 1];
   if (!segment) return null;
