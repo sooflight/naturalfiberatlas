@@ -1173,13 +1173,32 @@ export interface CareData {
   dryMethod: string;
   ironTemp: string;
   specialNotes: string;
+  /** Expanded textile care copy (profile enhancement); optional for legacy entries. */
+  washing?: string;
+  drying?: string;
+  ironing?: string;
+  stainRemoval?: string;
+  storage?: string;
+  specialConsiderations?: string;
 }
 
 const rawCareData: Record<string, CareData> = {
   hemp: { washTemp: "Cold to warm (30-40\u00b0C)", dryMethod: "Line dry or tumble low", ironTemp: "High (200\u00b0C)", specialNotes: "Softens with each wash; may shrink 3-5% on first wash" },
   jute: { washTemp: "Spot clean or dry clean", dryMethod: "Air dry flat", ironTemp: "Low (110\u00b0C)", specialNotes: "Avoid prolonged water exposure; fibers weaken when wet" },
   "flax-linen": { washTemp: "Warm (40\u00b0C)", dryMethod: "Line dry; tumble low briefly", ironTemp: "High (230\u00b0C) while damp", specialNotes: "Iron while slightly damp for best results; wrinkles are part of linen's character" },
-  "organic-cotton": { washTemp: "Warm (30-40\u00b0C)", dryMethod: "Tumble dry medium", ironTemp: "Medium-High (180\u00b0C)", specialNotes: "Pre-shrunk varieties available; separate colors on first wash" },
+  "organic-cotton": {
+    washTemp: "Warm (30-40\u00b0C)",
+    dryMethod: "Tumble dry low or line dry",
+    ironTemp: "Medium-high with steam (cotton setting ~380\u00b0F / 193\u00b0C)",
+    specialNotes: "Expect 3-5% shrinkage on first wash unless preshrunk; separate colors on first wash",
+    washing: "Machine wash warm or cold (60-90\u00b0F / 15-32\u00b0C); hot water (140\u00b0F+) causes excessive shrinkage in untreated fabrics",
+    drying: "Tumble dry low or line dry; high heat degrades cellulose over time and sets wrinkles. Remove while slightly damp to minimize ironing",
+    ironing: "Iron at medium-high heat (cotton setting: 380\u00b0F / 193\u00b0C) with steam; natural fiber responds well to moisture and heat for crease removal",
+    stainRemoval: "Pre-treat oil-based stains with dish soap; use oxygen bleach (sodium percarbonate) for color-safe whitening; avoid chlorine bleach on colors",
+    storage: "Store clean and completely dry in breathable containers; cellulose fibers yellow with exposure to light and acidic conditions (avoid cardboard boxes for long-term storage)",
+    specialConsiderations:
+      "First wash: expect 3-5% shrinkage unless preshrunk or sanforized. Organic cotton softens significantly with repeated washing as natural waxes are removed. Pilling occurs with short-staple fibers; long-staple (Pima, Egyptian) pills less.",
+  },
   silk: { washTemp: "Cold hand wash (20\u00b0C)", dryMethod: "Flat dry in shade", ironTemp: "Low (110\u00b0C) with cloth", specialNotes: "Never wring; use pH-neutral detergent; avoid direct sunlight" },
   bamboo: { washTemp: "Cold to warm (30\u00b0C)", dryMethod: "Line dry or tumble low", ironTemp: "Low (110\u00b0C)", specialNotes: "Avoid bleach; fabric softener not needed due to natural softness" },
   wool: { washTemp: "Cold hand wash (20\u00b0C)", dryMethod: "Flat dry on towel", ironTemp: "Medium (150\u00b0C) with steam", specialNotes: "Superwash merino is machine washable; avoid agitation to prevent felting" },

@@ -1,7 +1,7 @@
 // src/app/data/cotton-enhancement.test.ts
 import { describe, it, expect } from "vitest";
 import { fibers } from "./fibers";
-import { processData, anatomyData } from "./atlas-data";
+import { processData, anatomyData, careData } from "./atlas-data";
 
 describe("Cotton Profile Enhancement", () => {
   const cotton = fibers.find((f) => f.id === "organic-cotton");
@@ -133,5 +133,47 @@ describe("Anatomy Data", () => {
   it("should have moisture regain specification", () => {
     expect(cottonAnatomy.moistureRegain.raw).toBe("8.5% (at 65% RH, 70°F)");
     expect(cottonAnatomy.moistureRegain.percentage).toBe(8.5);
+  });
+});
+
+describe("Care Data", () => {
+  const cottonCare = careData["organic-cotton"];
+
+  it("should have care data defined", () => {
+    expect(cottonCare).toBeDefined();
+  });
+
+  it("should have washing instructions", () => {
+    expect(cottonCare.washing).toBeDefined();
+    expect(cottonCare.washing).toContain("60-90°F");
+    expect(cottonCare.washing).toContain("Machine wash");
+  });
+
+  it("should have drying instructions", () => {
+    expect(cottonCare.drying).toBeDefined();
+    expect(cottonCare.drying).toContain("Tumble dry low");
+    expect(cottonCare.drying).toContain("line dry");
+  });
+
+  it("should have ironing instructions", () => {
+    expect(cottonCare.ironing).toBeDefined();
+    expect(cottonCare.ironing).toContain("380°F");
+    expect(cottonCare.ironing).toContain("steam");
+  });
+
+  it("should have stain removal guidance", () => {
+    expect(cottonCare.stainRemoval).toBeDefined();
+    expect(cottonCare.stainRemoval).toContain("oxygen bleach");
+  });
+
+  it("should have storage instructions", () => {
+    expect(cottonCare.storage).toBeDefined();
+    expect(cottonCare.storage).toContain("breathable");
+  });
+
+  it("should have special considerations", () => {
+    expect(cottonCare.specialConsiderations).toBeDefined();
+    expect(cottonCare.specialConsiderations).toContain("shrinkage");
+    expect(cottonCare.specialConsiderations).toContain("3-5%");
   });
 });
