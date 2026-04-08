@@ -40,6 +40,16 @@
   /* TopNav — wordmark uses --atlas-grid-title; profile count uses --atlas-grid-subhead-muted;
      portal/path/strip labels under thumbnails */
   --atlas-nav-thumb-label: clamp(8px, 1.15svw, 9px);
+
+  /* Scroll padding under overlaid TopNav — fixed so the grid does not shift when chrome height
+     changes (scroll-collapse, L2/L3 drawer, profile detail). Extra nav rows draw on top of content. */
+  --atlas-main-scroll-top-gutter: 10.5rem;
+}
+
+@media (max-width: 767px) {
+  :root {
+    --atlas-main-scroll-top-gutter: 15rem;
+  }
 }
 
 @theme inline {

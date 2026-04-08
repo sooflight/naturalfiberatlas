@@ -422,7 +422,6 @@ function TopNavInner({
   const [childrenOpenOnMobile, setChildrenOpenOnMobile] = useState(false);
   const [atlasScrollPortEl, setAtlasScrollPortEl] = useState<HTMLDivElement | null>(null);
   const navStripMeasureRef = useRef<HTMLDivElement>(null);
-  const topChromeStackRef = useRef<HTMLDivElement>(null);
   const lastScrollTopRef = useRef(0);
   /** Ignore scroll-driven nav hide/show while chrome height is settling (avoids padTop ↔ scrollTop feedback flicker). */
   const scrollNavSuppressedUntilRef = useRef(0);
@@ -501,7 +500,6 @@ function TopNavInner({
 
   const [navStripMeasuredHeight, setNavStripMeasuredHeight] = useState<number | null>(null);
   const [navStripHiddenByScroll, setNavStripHiddenByScroll] = useState(false);
-  const [scrollPadTop, setScrollPadTop] = useState(0);
 
   /** Outer slot height includes L2/L3 (in-flow under L1) so the pointer stays inside one hit box — avoids instant `mouseleave` when moving into the subcategory row. */
   const navStripSlotHeight =
@@ -534,61 +532,6 @@ function TopNavInner({
       }
     };
   }, [isMobile, hasPath, stripHeight]);
-
-  /** Spacer height for overlaid chrome — coalesce ResizeObserver to one `setScrollPadTop` per frame (avoids layout thrash during chrome height changes). */
-  const scrollPadRafRef = useRef<number | null>(null);
-  useLayoutEffect(() => {
-    const stack = topChromeStackRef.current;
-    if (!stack) return;
-    const flushPad = () => {
-      scrollPadRafRef.current = null;
-      setScrollPadTop(stack.offsetHeight);
-    };
-    const schedulePad = () => {
-      if (scrollPadRafRef.current != null) return;
-      scrollPadRafRef.current = requestAnimationFrame(flushPad);
-    };
-    const ro = new ResizeObserver(schedulePad);
-    ro.observe(stack);
-    schedulePad();
-    return () => {
-      ro.disconnect();
-      if (scrollPadRafRef.current != null) {
-        cancelAnimationFrame(scrollPadRafRef.current);
-        scrollPadRafRef.current = null;
-      }
-    };
-  }, []);
-
-  /**
-   * ResizeObserver pad updates are rAF-coalesced above — that can leave the spacer one frame
-   * behind the real chrome height. Measure synchronously after every commit so profile-open
-   * strip removal and similar jumps align spacer + scroll compensation before paint.
-   */
-  useLayoutEffect(() => {
-    const stack = topChromeStackRef.current;
-    if (!stack) return;
-    const next = stack.offsetHeight;
-    setScrollPadTop((prev) => (prev === next ? prev : next));
-  });
-
-  /** When chrome height changes, nudge scrollTop by the same delta. Set suppress **before** `scrollTop` so synchronous scroll handlers don’t toggle nav. */
-  const prevScrollPadTopRef = useRef<number | null>(null);
-  useLayoutEffect(() => {
-    const root = atlasScrollPortEl;
-    if (!root) return;
-    const prev = prevScrollPadTopRef.current;
-    prevScrollPadTopRef.current = scrollPadTop;
-    if (prev === null) return;
-    const delta = scrollPadTop - prev;
-    if (delta === 0) return;
-    if (Math.abs(delta) < 2) return;
-    const maxScroll = Math.max(0, root.scrollHeight - root.clientHeight);
-    const adjusted = Math.min(maxScroll, Math.max(0, root.scrollTop + delta));
-    scrollNavSuppressedUntilRef.current = Date.now() + 550;
-    root.scrollTop = adjusted;
-    lastScrollTopRef.current = adjusted;
-  }, [scrollPadTop, atlasScrollPortEl]);
 
   useEffect(() => {
     if (pinNavStripOnScroll) setNavStripHiddenByScroll(false);
@@ -712,14 +655,14 @@ function TopNavInner({
 
   /* Scroll architecture:
      1) `h-dvh min-h-0` fixes shell height to the viewport.
-     2) Main content scrolls in a full-bleed layer (`absolute inset-0`); a top **spacer** (not
-        container padding) matches chrome height so the first row clears the bars, then scrolls away
-        and tiles pass under the glass wordmark row.
+     2) Main content scrolls in a full-bleed layer (`absolute inset-0`); a **fixed** top spacer
+        (`--atlas-main-scroll-top-gutter`) clears the typical chrome so the first grid row stays
+        readable. Nav height changes (collapse, L2/L3, detail mode) no longer resize the spacer —
+        extra chrome overlays the grid instead of shifting layout.
      3) Wordmark + category strip + subcategory drawer sit in `pointer-events-none` stack; interactive
         rows use `pointer-events-auto`. L1 and L2/L3 share one frosted flex column (single
         `backdrop-filter`) so the drawer matches the category bar; horizontal clip stays on the portal
-        row only. Scroll-collapse uses **instant** height so ResizeObserver + scroll compensation don’t
-        fight each frame. */
+        row only. Scroll-collapse uses **instant** height. */
   return (
     <div
       className="relative h-dvh min-h-0 w-full overflow-hidden"
@@ -738,7 +681,7 @@ function TopNavInner({
         <AtlasScrollPortContext.Provider value={atlasScrollPortEl ?? undefined}>
           <div
             className="shrink-0"
-            style={{ height: scrollPadTop }}
+            style={{ height: "var(--atlas-main-scroll-top-gutter)" }}
             aria-hidden
           />
           {/*
@@ -748,7 +691,7 @@ function TopNavInner({
           <div
             className="flex min-h-[min-content] flex-col"
             style={{
-              minHeight: `calc(100dvh - ${scrollPadTop}px)`,
+              minHeight: "calc(100dvh - var(--atlas-main-scroll-top-gutter))",
               paddingTop: 20,
               paddingBottom: 20,
             }}
@@ -767,10 +710,7 @@ function TopNavInner({
         </AtlasScrollPortContext.Provider>
       </div>
 
-      <div
-        ref={topChromeStackRef}
-        className="pointer-events-none absolute left-0 right-0 top-0 z-[45] flex flex-col overflow-visible"
-      >
+      <div className="pointer-events-none absolute left-0 right-0 top-0 z-[45] flex flex-col overflow-visible">
       <div className="pointer-events-auto shrink-0 border-b border-white/[0.1]" style={atlasChromeGlassRowStyle(prefersReducedMotion)}>
         <div
           className={`flex px-4 sm:px-[3%] ${isMobile ? "flex-col items-stretch gap-2 py-2" : "min-h-14 items-center gap-3 justify-between"}`}
