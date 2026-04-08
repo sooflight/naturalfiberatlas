@@ -1,7 +1,7 @@
 // src/app/data/cotton-enhancement.test.ts
 import { describe, it, expect } from "vitest";
 import { fibers } from "./fibers";
-import { processData, anatomyData, careData, quoteData } from "./atlas-data";
+import { processData, anatomyData, careData, quoteData, worldNames } from "./atlas-data";
 
 describe("Cotton Profile Enhancement", () => {
   const cotton = fibers.find((f) => f.id === "organic-cotton");
@@ -205,5 +205,38 @@ describe("Quote Data", () => {
   it("should include Hobsbawm's Industrial Revolution quote", () => {
     const hobsbawmQuote = cottonQuotes.find((q) => q.attribution.includes("Hobsbawm"));
     expect(hobsbawmQuote?.text).toContain("Industrial Revolution");
+  });
+});
+
+describe("World Names", () => {
+  const cottonNames = worldNames["organic-cotton"];
+
+  it("should have expanded translation count", () => {
+    expect(cottonNames).toBeDefined();
+    expect(cottonNames.length).toBeGreaterThanOrEqual(24);
+  });
+
+  it("should include new Greek translation", () => {
+    expect(cottonNames).toContain("Βαμβάκι (Vamváki)");
+  });
+
+  it("should include new Polish translation", () => {
+    expect(cottonNames).toContain("Bawełna Organiczna");
+  });
+
+  it("should include new Swedish translation", () => {
+    expect(cottonNames).toContain("bomull");
+  });
+
+  it("should include regional Indian languages", () => {
+    expect(cottonNames).toContain("कापूस (Kāpūs)"); // Marathi
+    expect(cottonNames).toContain("పంట (Patti)"); // Telugu
+    expect(cottonNames).toContain("કપાસ (Kapās)"); // Gujarati
+  });
+
+  it("should retain existing translations", () => {
+    expect(cottonNames).toContain("Organic Cotton");
+    expect(cottonNames).toContain("棉花 (Miánhua)");
+    expect(cottonNames).toContain("Coton Bio");
   });
 });
