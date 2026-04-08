@@ -12,6 +12,7 @@ import { MATERIAL_PASSPORTS, TAXONOMY_ALIASES } from '../src/app/data/admin/mate
 import { fibers as bundledFiberCatalog } from '../src/app/data/fibers';
 import { SUPPLIERS, MATERIAL_SUPPLIER_LINKS } from '../src/app/data/admin/supplier-directory';
 import { EVIDENCE_RECORDS } from '../src/app/data/admin/evidence-records';
+import { NEW_IMAGE_PROFILE_ALIASES } from '../src/app/data/navigation-id-registry';
 import {
   buildRestoreGuide,
   collectCloudinaryPublicIds,
@@ -220,12 +221,7 @@ function extractFiberHeroMapFromBundledCatalog(): Map<string, string> {
   return map;
 }
 
-const NEW_IMAGE_ALIASES: Record<string, string> = {
-  'coir-coconut': 'coir',
-  'lyocell-tencel': 'lyocell',
-  'pineapple-pina': 'pineapple',
-  cotton: 'organic-cotton',
-};
+const NEW_IMAGE_ALIASES = NEW_IMAGE_PROFILE_ALIASES;
 
 function reconcileNewImagesWithFiberHeroes(repoRoot: string): { changed: boolean; fixedIds: string[] } {
   const newImagesPath = path.join(repoRoot, 'new-images.json');

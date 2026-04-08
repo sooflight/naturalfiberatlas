@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { atlasNavigation as frontendNavigation } from "./atlas-navigation";
 import { atlasNavigation as adminNavigation } from "./admin/atlas-navigation";
+import { getLegacyToAdminMap } from "./navigation-id-registry";
 
 function flattenIds(
   nodes: Array<{ id: string; children?: Array<{ id: string; children?: unknown[] }> }>,
@@ -16,21 +17,7 @@ function flattenIds(
   return ids;
 }
 
-/**
- * Frontend uses legacy IDs in top-nav; admin sidebar uses newer taxonomy IDs.
- * This mapping captures intentional equivalence so we can detect drift.
- */
-const LEGACY_TO_ADMIN_EQUIVALENT: Record<string, string> = {
-  plant: "plant-cellulose",
-  "bast-fiber": "bast-fibers",
-  "bark-fiber": "bark-fibers",
-  "seed-fiber": "seed-fibers",
-  "leaf-fiber": "leaf-fibers",
-  "grass-fiber": "grass-fibers",
-  "fruit-fiber": "fruit-fibers",
-  animal: "animal-protein",
-  regen: "mineral-regenerated",
-};
+const LEGACY_TO_ADMIN_EQUIVALENT = getLegacyToAdminMap();
 
 describe("navigation parity between frontend layers and admin sidebar", () => {
   it("keeps every frontend node represented in admin navigation", () => {

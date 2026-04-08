@@ -1880,6 +1880,8 @@ export const namedPlates: PlateType[] = [
    ══════════════════════════════════════════════════════════ */
 
 import { fibers } from "./fibers";
+import newImagesRaw from "../../../new-images.json";
+import { NEW_IMAGE_PROFILE_ALIASES } from "./navigation-id-registry";
 
 export const fiberIndex: FiberIndexEntry[] = fibers.map((f) => ({
   id: f.id,
@@ -2470,18 +2472,6 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
    Bulk JSON enrichment is deferred until a fiber gallery is requested.
    ═══════════════════════════════════════════════════════════════════ */
 
-/** Alias map for JSON profileKeys that don't exactly match fiber IDs */
-const jsonKeyAliases: Record<string, string> = {
-  "coir-coconut": "coir",
-  "lyocell-tencel": "lyocell",
-  "pineapple-pina": "pineapple",
-  "cotton": "organic-cotton",
-  /** Profile renamed from crochet; merge disk exports under `knitting`. */
-  crochet: "knitting",
-  /** Legacy nav / disk export id; canonical catalog row is `tussar`. */
-  tussah: "tussar",
-};
-
 interface NewImagesProfile {
   profileKey: string;
   imageLinks: string[];
@@ -2494,7 +2484,6 @@ interface NewImagesPayload {
 const mergedGalleryMap: Record<string, GalleryImageEntry[]> = {};
 const hydratedJsonFibers = new Set<string>();
 let jsonImageMapCache: Map<string, string[]> | null = null;
-let jsonImageMapPromise: Promise<Map<string, string[]>> | null = null;
 
 function createBaseGalleryForFiber(fiberId: string, heroImage: string): GalleryImageEntry[] {
   const curated = galleryMap[fiberId];
@@ -2522,29 +2511,21 @@ function ensureBaseGalleryMap(): void {
   }
 }
 
+function buildJsonImageMap(payload: NewImagesPayload): Map<string, string[]> {
+  const map = new Map<string, string[]>();
+  for (const profile of payload.profiles ?? []) {
+    const resolvedId = NEW_IMAGE_PROFILE_ALIASES[profile.profileKey] ?? profile.profileKey;
+    if (profile.imageLinks?.length) {
+      map.set(resolvedId, profile.imageLinks);
+    }
+  }
+  return map;
+}
+
 async function loadJsonImageMap(): Promise<Map<string, string[]>> {
   if (jsonImageMapCache) return jsonImageMapCache;
-  if (!jsonImageMapPromise) {
-    jsonImageMapPromise = import("../../../new-images.json")
-      .then((mod) => {
-        const payload = (mod.default ?? mod) as NewImagesPayload;
-        const map = new Map<string, string[]>();
-        for (const profile of payload.profiles ?? []) {
-          const resolvedId = jsonKeyAliases[profile.profileKey] ?? profile.profileKey;
-          if (profile.imageLinks?.length) {
-            map.set(resolvedId, profile.imageLinks);
-          }
-        }
-        jsonImageMapCache = map;
-        return map;
-      })
-      .catch(() => {
-        const empty = new Map<string, string[]>();
-        jsonImageMapCache = empty;
-        return empty;
-      });
-  }
-  return jsonImageMapPromise;
+  jsonImageMapCache = buildJsonImageMap((newImagesRaw ?? { profiles: [] }) as NewImagesPayload);
+  return jsonImageMapCache;
 }
 
 function mergeJsonUrlsIntoFiberGallery(fiberId: string, jsonUrls: string[]): void {

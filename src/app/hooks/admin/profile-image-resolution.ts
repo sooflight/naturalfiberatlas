@@ -1,9 +1,6 @@
-const LEGACY_PROFILE_ID_ALIASES: Record<string, string> = {
-  "coir-coconut": "coir",
-  "lyocell-tencel": "lyocell",
-  "pineapple-pina": "pineapple",
-  cotton: "organic-cotton",
-};
+import { NEW_IMAGE_PROFILE_ALIASES } from "../../data/navigation-id-registry";
+
+const LEGACY_PROFILE_ID_ALIASES: Readonly<Record<string, string>> = NEW_IMAGE_PROFILE_ALIASES;
 
 const REVERSE_PROFILE_ID_ALIASES: Record<string, string[]> = Object.entries(
   LEGACY_PROFILE_ID_ALIASES,

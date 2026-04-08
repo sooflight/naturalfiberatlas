@@ -20,9 +20,6 @@
     "industrial-looms": {
       "status": "archived"
     },
-    "plying": {
-      "status": "archived"
-    },
     "organic-cotton": {
       "galleryImages": [
         {
@@ -2720,98 +2717,6 @@
       ],
       "image": "https://www.ericanotebook.com/uploads/1/2/0/7/12079084/s478355235484481921_p514_i1_w480.jpeg",
       "status": "published"
-    },
-    "angora": {
-      "galleryImages": [
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741077/atlas/cyns84qym5shzehdgjft.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741088/atlas/vk0uskoicccdscrbgipu.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/c_crop,x_7,y_6,w_1010,h_669/v1771741074/atlas/disiefaywmksf4hp1occ.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741089/atlas/c9qnhcyy0eo09dy3lcw3.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741074/atlas/gads6lqyezgd0vosv39h.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741078/atlas/a8fzlcvwx5eeutiwzkzb.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741077/atlas/sx88ey2dxemejpdha44s.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741072/atlas/t0rfehhvu68pj0ynj8hd.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741075/atlas/wn4rxgwlhzngztyvsjhw.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741076/atlas/jk5ifvg5yzylsyow5yqp.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741079/atlas/kt33cepkht3fr17xd1ck.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741080/atlas/nuqqrtixu7k2moqdwyjg.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741081/atlas/rpqb4gwapwvpxoulvmbm.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741081/atlas/asaj547h6ukhwfxgc1h3.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741082/atlas/ysmirxigpprf2ncot4to.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741083/atlas/rbojjyysl8ztrvxoknex.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741086/atlas/zpkzzedxngkkykpgw4ws.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741087/atlas/sgbbsnntxtxw6x7s2vt5.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741088/atlas/gpj66qtu5c1c0knihpdw.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741090/atlas/jdif7vqaeecmysf5fzep.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741091/atlas/ijbwbmcfneyllujeymfs.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741092/atlas/iz21uvurpdk8vmo35huw.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741092/atlas/wv0nvsdyelrpnrbcvgix.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741093/atlas/uvijnbspdzxem4dj26st.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741094/atlas/ddh3qaxxx2glluywcgmp.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741095/atlas/k6yqklzbblggeolo6i8f.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741096/atlas/r9lndx7trkc2flykvkth.jpg"
-        },
-        {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741097/atlas/vsqvyzozjutb6yc5thrc.jpg"
-        },
-        {
-          "url": "https://i.pinimg.com/736x/af/49/0b/af490bb693332dc7020166419d46ef59.jpg"
-        }
-      ],
-      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771741077/atlas/cyns84qym5shzehdgjft.jpg"
     },
     "raffia": {
       "galleryImages": [

@@ -1,6 +1,7 @@
 import { isAdminEnabled } from "../config/admin-access";
 import navThumbOverridesRaw from "../data/nav-thumb-overrides.json";
 import { fibers } from "../data/fibers";
+import { getThumbCandidateIds as registryThumbCandidates } from "../data/navigation-id-registry";
 
 const navThumbBundled = navThumbOverridesRaw as Record<string, string>;
 
@@ -186,28 +187,13 @@ const THUMB_IDS: Record<string, string[]> = {
   "bio-dye": ["lyocell", "bamboo"],
 };
 
-/** Admin tree uses plural IDs (seed-fibers, bark-fibers); frontend uses singular (seed-fiber, bark-fiber). */
-const ADMIN_TO_FRONTEND_THUMB_ALIASES: Record<string, string[]> = {
-  "seed-fiber": ["seed-fibers"],
-  "grass-fiber": ["grass-fibers"],
-  "bast-fiber": ["bast-fibers"],
-  "bark-fiber": ["bark-fibers"],
-  "leaf-fiber": ["leaf-fibers"],
-  "fruit-fiber": ["fruit-fibers"],
-  plant: ["plant-cellulose"],
-  animal: ["animal-protein"],
-  regen: ["mineral-regenerated"],
-  /** Public nav id `textile` — editable slot lives under the admin Textile branch */
-  textile: ["textile-portal-thumbnail"],
-};
-
+/**
+ * Delegate to the canonical navigation-id-registry for thumb candidate resolution.
+ * Registry entries prefer admin IDs (e.g. mineral-regenerated, bast-fibers) before
+ * the public nav segment ID so published overrides are not shadowed.
+ */
 function getThumbCandidateIds(nodeId: string): string[] {
-  const aliases = ADMIN_TO_FRONTEND_THUMB_ALIASES[nodeId];
-  if (!aliases?.length) return [nodeId];
-  // Prefer admin / bundled keys (e.g. mineral-regenerated, bast-fibers) before the
-  // public nav segment id so published nav-thumb-overrides and Image DB wins are not
-  // shadowed by a stale `regen` (or other) entry in atlas-images localStorage.
-  return [...aliases, nodeId];
+  return registryThumbCandidates(nodeId);
 }
 
 export function getThumbUrl(nodeId: string): string | null {

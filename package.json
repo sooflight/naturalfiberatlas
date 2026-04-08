@@ -26,6 +26,7 @@
     "ops:invalidate-cache": "node ./scripts/invalidate-upstash-cache.mjs",
     "ops:data-parity": "vitest run src/app/utils/admin/data-freshness-ci.test.ts && node ./scripts/data-freshness-api-parity.mjs",
     "ops:promote-diff": "node ./scripts/promote-atlas-diff.mjs",
+    "ops:reconcile": "npx tsx ./scripts/reconcile-data.ts",
     "ops:data-recovery": "node ./scripts/data-freshness-recovery.mjs",
     "ops:mirror-gallery-cloudinary": "node ./scripts/mirror-profile-gallery-to-cloudinary.mjs",
     "ci:verify": "npm run typecheck && npm run test && npm run build && vitest run src/app/utils/admin/verify-bundle-in-dist.test.ts && npm run audit && npm run check:no-supabase"

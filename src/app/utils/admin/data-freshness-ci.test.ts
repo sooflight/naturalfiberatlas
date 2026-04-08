@@ -6,8 +6,8 @@ import { runCensus } from "./dataCensus";
  * canonical dataset grows or shrinks (see docs/runbooks/data-freshness.md).
  */
 const BUNDLED_CENSUS_BASELINE = {
-  navLeafProfiles: 117,
-  passports: 56,
+  navLeafProfiles: 151,
+  passports: 59,
   /** Bundled catalog + passport merge — published count matches public grid (Git + promoted, no localStorage). */
   unifiedBundledPublishedLive: 79,
   unifiedBundledCatalogRows: 174,

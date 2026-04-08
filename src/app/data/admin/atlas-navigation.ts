@@ -46,10 +46,18 @@ export const atlasNavigation: NavNode[] = [
         n("nettle", "Nettle"),
         n("kenaf", "Kenaf"),
         n("roselle", "Roselle (Hibiscus Fiber)"),
+        n("lotus", "Lotus"),
+        n("sunn-hemp", "Sunn Hemp"),
+        n("sano", "Sano (Himalayan Nettle)"),
+        n("water-hyacinth", "Water Hyacinth"),
       ]),
 
       n("bark-fibers", "Bark Fiber", { description: "Fibers and strips sourced from outer bark layers." }, [
         n("paper-mulberry", "Paper Mulberry"),
+        n("cork", "Cork"),
+        n("lokta", "Lokta"),
+        n("fig-barkcloth", "Fig Barkcloth (Mutuba)"),
+        n("tapa", "Tapa (Paper Mulberry Bark)"),
       ]),
 
       n("seed-fibers", "Seed Fiber", { description: "Fibers that grow as part of plant seeds." }, [
@@ -62,6 +70,8 @@ export const atlasNavigation: NavNode[] = [
         ]),
         n("kapok", "Kapok"),
         n("milkweed", "Milkweed"),
+        n("bombax", "Bombax (Silk Cotton)"),
+        n("loofah", "Loofah (Luffa)"),
       ]),
 
       n("leaf-fibers", "Leaf Fiber", { description: "Fibers extracted from the leaves of tropical plants." }, [
@@ -69,17 +79,34 @@ export const atlasNavigation: NavNode[] = [
         n("abaca", "Abaca"),
         n("henequen", "Henequen"),
         n("pineapple-pina", "Pineapple / Piña"),
+        n("fique", "Fique (Cabuya)"),
+        n("ayate", "Ayate (Maguey)"),
+        n("harakeke", "Harakeke (NZ Flax)"),
+        n("sansevieria", "Sansevieria (Bowstring Hemp)"),
+        n("curaua", "Curauá"),
       ]),
 
       n("grass-fibers", "Grass Fiber", [
         n("bamboo", "Bamboo"),
         n("esparto", "Esparto"),
         n("igusa", "Igusa"),
+        n("sweetgrass", "Sweetgrass"),
+        n("krajood", "Krajood"),
+        n("seagrass", "Seagrass"),
+        n("pandan", "Pandan (Pandanus)"),
+        n("sabai-grass", "Sabai Grass"),
+        n("vetiver", "Vetiver"),
+        n("river-reed", "River Reed"),
+        n("water-lily", "Water Lily Fiber"),
       ]),
 
       n("fruit-fibers", "Fruit Fiber", [
         n("coir-coconut", "Coir (Coconut)"),
         n("banana", "Banana"),
+        n("raffia", "Raffia"),
+        n("palm", "Palm Fiber"),
+        n("piassava", "Piassava"),
+        n("chambira", "Chambira"),
       ]),
     ]),
 
@@ -109,6 +136,7 @@ export const atlasNavigation: NavNode[] = [
         n("bison", "Bison"),
         n("qiviut", "Qiviut"),
         n("horsehair", "Horsehair"),
+        n("vicuna", "Vicuña"),
       ]),
 
       n("silk-fiber", "Silk", { description: "Silk fibers and silkworm-derived variants." }, [
@@ -116,6 +144,7 @@ export const atlasNavigation: NavNode[] = [
           n("tussar", "Tussah"),
           n("peace-silk", "Peace Silk"),
         ]),
+        n("spider-silk", "Spider Silk"),
       ]),
 
     ]),
@@ -163,6 +192,8 @@ export const atlasNavigation: NavNode[] = [
         n("gabardine", "Gabardine"),
         n("muslin", "Muslin"),
         n("broadcloth", "Broadcloth"),
+        n("charmeuse", "Charmeuse"),
+        n("leno-weave", "Leno Weave"),
       ]),
     ]),
 
@@ -183,6 +214,7 @@ export const atlasNavigation: NavNode[] = [
       n("airlaid", "Airlaid"),
       n("tufted", "Tufted"),
       n("braided", "Braided / Plaited"),
+      n("carpet", "Carpet & Rug Weaving"),
     ]),
 
     n("lace", "Lace", { description: "Open-work fabrics made by looping, twisting, or knitting threads." }, [
@@ -194,6 +226,7 @@ export const atlasNavigation: NavNode[] = [
       n("mercerization", "Mercerization"),
       n("dyeing", "Dyeing"),
       n("printing", "Textile Printing"),
+      n("block-print", "Block Printing"),
       n("finishing-chemical", "Chemical Finishing"),
       n("finishing-mechanical", "Mechanical Finishing"),
     ]),

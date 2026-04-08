@@ -18,11 +18,17 @@ import { fileURLToPath } from "node:url";
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const root = path.join(__dirname, "..");
 
-/** Same keys as src/app/data/atlas-data.ts jsonKeyAliases */
+/**
+ * Nav-tree compound IDs → fibers.ts canonical IDs.
+ * Canonical source: src/app/data/navigation-id-registry.ts (NEW_IMAGE_PROFILE_ALIASES).
+ * Keep in sync when adding new aliases to the registry.
+ */
 const JSON_KEY_ALIASES = {
   "coir-coconut": "coir",
   "lyocell-tencel": "lyocell",
   "pineapple-pina": "pineapple",
+  "bamboo-viscose": "bamboo",
+  "sheep-wool": "wool",
   cotton: "organic-cotton",
 };
 

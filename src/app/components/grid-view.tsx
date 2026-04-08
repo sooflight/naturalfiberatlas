@@ -11,6 +11,7 @@ import {
   type PlateType,
 } from "../data/atlas-data";
 import { dataSource } from "../data/data-provider";
+import { isPublicBrowseCatalogProfileId } from "../data/public-catalog-gate";
 import { ProfileCard } from "./profile-card";
 import { useImageAnalysis } from "../hooks/use-image-brightness";
 import { useFiberDetail, prefetchFiberDetails } from "../hooks/use-fiber-detail";
@@ -361,7 +362,8 @@ export function GridView({
   const filtered = useMemo(() => {
     const appliedSearch = selectedId ? search : deferredSearch;
     const nextFiltered = fiberIndex.filter((f) => {
-      const matchesStatus = adminMode || f.status === "published";
+      const matchesStatus =
+        adminMode || isPublicBrowseCatalogProfileId(f.id, f.status);
       const matchesCategory =
         activeCategory === "all" || f.category === activeCategory;
       const matchesFiberSubcategory =
