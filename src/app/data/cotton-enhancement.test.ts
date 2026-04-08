@@ -240,3 +240,37 @@ describe("World Names", () => {
     expect(cottonNames).toContain("Coton Bio");
   });
 });
+
+describe("Data Integration", () => {
+  it("should have all supplementary data references aligned", () => {
+    const cottonId = "organic-cotton";
+
+    // Verify all data tables have entries
+    expect(fibers.find((f) => f.id === cottonId)).toBeDefined();
+    expect(processData[cottonId]).toBeDefined();
+    expect(anatomyData[cottonId]).toBeDefined();
+    expect(careData[cottonId]).toBeDefined();
+    expect(quoteData[cottonId]).toBeDefined();
+    expect(worldNames[cottonId]).toBeDefined();
+  });
+
+  it("should have consistent fiber ID across all data structures", () => {
+    const cottonFiber = fibers.find((f) => f.id === "organic-cotton");
+    expect(cottonFiber).toBeDefined();
+
+    // Process data uses same ID
+    expect(processData["organic-cotton"]).toBeDefined();
+
+    // Anatomy data uses same ID
+    expect(anatomyData["organic-cotton"]).toBeDefined();
+
+    // Care data uses same ID
+    expect(careData["organic-cotton"]).toBeDefined();
+
+    // Quote data uses same ID
+    expect(quoteData["organic-cotton"]).toBeDefined();
+
+    // World names use same ID
+    expect(worldNames["organic-cotton"]).toBeDefined();
+  });
+});
