@@ -109,6 +109,7 @@ export function ProfileCard({
   const [hovered, setHovered] = useState(false);
   const [imageStackRevealed, setImageStackRevealed] = useState(false);
   const [failedLayerMap, setFailedLayerMap] = useState<Record<number, true>>({});
+  const [layerSrcOverrideMap, setLayerSrcOverrideMap] = useState<Record<number, string>>({});
   const primaryImgRef = useRef<HTMLImageElement | null>(null);
   const hasRealHover = useHasRealHover();
   const hoverLogRef = useRef(false);
@@ -144,6 +145,7 @@ export function ProfileCard({
 
   useEffect(() => {
     setFailedLayerMap({});
+    setLayerSrcOverrideMap({});
   }, [id, primarySrc]);
 
   const markLayerFailed = useCallback((layerIndex: number) => {
@@ -152,6 +154,31 @@ export function ProfileCard({
       return { ...prev, [layerIndex]: true };
     });
   }, []);
+
+  const handleLayerError = useCallback(
+    (layerIndex: number) => {
+      const layer = crossfadeLayers[layerIndex];
+      const fallbackSrc = layer?.sourceUrl?.trim();
+      const transformedSrc = layer?.url?.trim();
+      const hasTriedFallback = layerSrcOverrideMap[layerIndex] !== undefined;
+      const canFallback =
+        !!fallbackSrc &&
+        !!transformedSrc &&
+        fallbackSrc !== transformedSrc &&
+        !hasTriedFallback;
+
+      if (canFallback) {
+        setLayerSrcOverrideMap((prev) => {
+          if (prev[layerIndex] !== undefined) return prev;
+          return { ...prev, [layerIndex]: fallbackSrc };
+        });
+        return;
+      }
+
+      markLayerFailed(layerIndex);
+    },
+    [crossfadeLayers, layerSrcOverrideMap, markLayerFailed],
+  );
 
   useEffect(() => {
     if (!primarySrc) {
@@ -307,14 +334,14 @@ export function ProfileCard({
             <img
               key={`${layer.url}-${layerIndex}`}
               ref={layerIndex === 0 ? primaryImgRef : undefined}
-              src={layer.url}
+              src={layerSrcOverrideMap[layerIndex] ?? layer.url}
               alt={name}
               className="absolute inset-0 h-full w-full object-cover"
               style={style}
               loading={eagerLayer ? "eager" : "lazy"}
               decoding="async"
               draggable={false}
-              onError={() => markLayerFailed(layerIndex)}
+              onError={() => handleLayerError(layerIndex)}
               {...(useHighFetch && layerIndex === 0
                 ? ({ fetchpriority: "high" } as Record<string, string>)
                 : {})}

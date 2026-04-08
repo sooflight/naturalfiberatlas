@@ -3,7 +3,11 @@ import { previewFocalToObjectPosition, type PreviewFocalPoint } from "./preview-
 
 export type GridTransform = (src: string | undefined, preset: string) => string | undefined;
 
-export type ProfileCardCrossfadeLayer = { url: string; objectPosition?: string };
+export type ProfileCardCrossfadeLayer = {
+  url: string;
+  sourceUrl?: string;
+  objectPosition?: string;
+};
 
 function isStableCycleUrl(url: string): boolean {
   return !url.trim().toLowerCase().startsWith("blob:");
@@ -60,7 +64,7 @@ export function buildProfileCardCrossfadeLayers(
   };
 
   const layers: ProfileCardCrossfadeLayer[] = [
-    { url: primaryTransformed, objectPosition: focalForPrimaryUrl() },
+    { url: primaryTransformed, sourceUrl: primaryTrim, objectPosition: focalForPrimaryUrl() },
   ];
   const seen = new Set<string>([primaryTransformed]);
 
@@ -72,6 +76,7 @@ export function buildProfileCardCrossfadeLayers(
     seen.add(transformed);
     layers.push({
       url: transformed,
+      sourceUrl: rawUrl,
       objectPosition: previewFocalToObjectPosition(line.previewFocal),
     });
     if (layers.length === 3) break;

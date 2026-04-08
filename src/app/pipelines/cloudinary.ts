@@ -4,11 +4,12 @@
  * Inserts on-the-fly resize/format parameters into Cloudinary URLs
  * so the CDN returns right-sized images instead of full-resolution originals.
  *
- * Remote `http(s)` URLs (Pinimg, shop CDNs, etc.) are resized via Cloudinary **fetch**
- * in **production** builds by default so grid/lightbox presets always receive
- * right-sized bytes. In development, fetch is off unless you set
- * `VITE_CLOUDINARY_FETCH_REMOTE=true` (matches prod) or rely on production mode.
- * Set `VITE_CLOUDINARY_FETCH_REMOTE=false` to force passthrough (e.g. debugging).
+ * Remote `http(s)` URLs (Pinimg, shop CDNs, etc.) can be resized via Cloudinary
+ * **fetch** when `VITE_CLOUDINARY_FETCH_REMOTE=true`.
+ *
+ * Default is passthrough for remote URLs so production does not depend on
+ * Cloudinary fetch allowlists/hotlink rules for third-party hosts.
+ * Set `VITE_CLOUDINARY_FETCH_REMOTE=false` to force passthrough explicitly.
  * Requires remote fetch to be allowed on your Cloudinary cloud. Cloud name defaults
  * to `dawxvzlte` or `VITE_CLOUDINARY_CLOUD_NAME`.
  */
@@ -49,7 +50,7 @@ function fetchRemoteEnabled(): boolean {
     if (t === "false" || t === "0" || t === "off") return false;
     if (t === "true" || t === "1" || t === "on") return true;
   }
-  return import.meta.env.PROD;
+  return false;
 }
 
 /**
