@@ -39,4 +39,24 @@ describe("Cotton Profile Enhancement", () => {
       expect(wordCount).toBeLessThanOrEqual(850);
     });
   });
+
+  describe("Applications", () => {
+    it("should include new application categories", () => {
+      expect(cotton?.applications).toContain("Canvas & Duck Cloth");
+      expect(cotton?.applications).toContain("Upholstery");
+      expect(cotton?.applications).toContain("Industrial Textiles (nonwoven)");
+    });
+
+    it("should retain existing applications", () => {
+      expect(cotton?.applications).toContain("Apparel");
+      expect(cotton?.applications).toContain("Baby Products");
+      expect(cotton?.applications).toContain("Medical Textiles");
+      expect(cotton?.applications).toContain("Home Textiles");
+      expect(cotton?.applications).toContain("Denim Blends");
+    });
+
+    it("should have 8 total applications", () => {
+      expect(cotton?.applications).toHaveLength(8);
+    });
+  });
 });

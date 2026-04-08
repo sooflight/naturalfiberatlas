@@ -177,7 +177,16 @@ Organic cotton is produced from non-genetically modified cotton plants (Gossypiu
     profilePills: { scientificName: "Gossypium Spp.", plantPart: "Seed Boll", handFeel: "Soft", fiberType: "Seed Fiber", era: "~5000 BCE", origin: "Indus Valley" },
     seeAlso: [{ id: "hemp" }, { id: "flax-linen" }, { id: "bamboo" }],
     schemaVersion: 1,
-    applications: ["Apparel", "Baby Products", "Medical Textiles", "Home Textiles", "Denim Blends"],
+    applications: [
+      "Apparel",
+      "Baby Products",
+      "Medical Textiles",
+      "Home Textiles",
+      "Denim Blends",
+      "Canvas & Duck Cloth",
+      "Upholstery",
+      "Industrial Textiles (nonwoven)",
+    ],
     galleryImages: [],
   },
   {
