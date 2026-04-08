@@ -1265,6 +1265,7 @@ export const careData: Record<string, CareData> = rawCareData;
 export interface QuoteEntry {
   text: string;
   attribution: string;
+  context?: string;
 }
 
 export const quoteData: Record<string, QuoteEntry[]> = {
@@ -1284,9 +1285,26 @@ export const quoteData: Record<string, QuoteEntry[]> = {
     { text: "Linen wrinkles nobly.", attribution: "Irish Linen Proverb" },
   ],
   "organic-cotton": [
-    { text: "Cotton is king!", attribution: "David Christy, 1855" },
-    { text: "The organic cotton movement is about more than fiber — it's about rebuilding soil, communities, and trust.", attribution: "Textile Exchange" },
-    { text: "Whoever controls cotton controls the world.", attribution: "Southern Planter Saying, 1850s" },
+    {
+      text: "Cotton is the fabric of our lives — and the foundation of modern civilization.",
+      attribution: "Cotton Incorporated",
+      context: "Industry tagline reflecting cotton's ubiquity in global textile use",
+    },
+    {
+      text: "Whoever says 'Industrial Revolution' says cotton.",
+      attribution: "Eric Hobsbawm, British historian",
+      context: "From 'Industry and Empire' (1968), highlighting cotton's central role in 18th-19th century industrialization",
+    },
+    {
+      text: "The history of cotton is the history of capitalism, colonialism, and the global economy.",
+      attribution: "Sven Beckert, 'Empire of Cotton' (2014)",
+      context: "Acknowledging cotton's complex legacy intertwined with exploitation and trade networks",
+    },
+    {
+      text: "Organic cotton is not just a fiber choice — it's a soil health strategy, a water conservation practice, and a commitment to farmer well-being.",
+      attribution: "Textile Exchange, 2025 Organic Cotton Market Report",
+      context: "Modern perspective on organic cotton as a holistic agricultural system",
+    },
   ],
   silk: [
     { text: "Silk does for the body what diamonds do for the hand.", attribution: "Oscar de la Renta" },

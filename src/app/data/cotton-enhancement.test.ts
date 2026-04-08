@@ -1,7 +1,7 @@
 // src/app/data/cotton-enhancement.test.ts
 import { describe, it, expect } from "vitest";
 import { fibers } from "./fibers";
-import { processData, anatomyData, careData } from "./atlas-data";
+import { processData, anatomyData, careData, quoteData } from "./atlas-data";
 
 describe("Cotton Profile Enhancement", () => {
   const cotton = fibers.find((f) => f.id === "organic-cotton");
@@ -175,5 +175,35 @@ describe("Care Data", () => {
     expect(cottonCare.specialConsiderations).toBeDefined();
     expect(cottonCare.specialConsiderations).toContain("shrinkage");
     expect(cottonCare.specialConsiderations).toContain("3-5%");
+  });
+});
+
+describe("Quote Data", () => {
+  const cottonQuotes = quoteData["organic-cotton"];
+
+  it("should have 4 quotes defined", () => {
+    expect(cottonQuotes).toBeDefined();
+    expect(cottonQuotes).toHaveLength(4);
+  });
+
+  it("should have industry/historical perspective", () => {
+    const attributions = cottonQuotes.map((q) => q.attribution);
+    expect(attributions).toContain("Cotton Incorporated");
+    expect(attributions).toContain("Eric Hobsbawm, British historian");
+    expect(attributions).toContain("Sven Beckert, 'Empire of Cotton' (2014)");
+    expect(attributions).toContain("Textile Exchange, 2025 Organic Cotton Market Report");
+  });
+
+  it("should have context for each quote", () => {
+    cottonQuotes.forEach((quote) => {
+      expect(quote.text).toBeTruthy();
+      expect(quote.attribution).toBeTruthy();
+      expect(quote.context).toBeTruthy();
+    });
+  });
+
+  it("should include Hobsbawm's Industrial Revolution quote", () => {
+    const hobsbawmQuote = cottonQuotes.find((q) => q.attribution.includes("Hobsbawm"));
+    expect(hobsbawmQuote?.text).toContain("Industrial Revolution");
   });
 });
