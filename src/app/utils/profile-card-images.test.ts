@@ -87,9 +87,21 @@ describe("buildProfileCardCrossfadeLayers", () => {
       transform,
     );
     expect(layers).toEqual([
-      { url: "https://cdn.example.com/hero.jpg?preset=grid", objectPosition: "20% 80%" },
-      { url: "https://cdn.example.com/g-1.jpg?preset=grid", objectPosition: "50% 50%" },
-      { url: "https://cdn.example.com/g-2.jpg?preset=grid", objectPosition: undefined },
+      {
+        url: "https://cdn.example.com/hero.jpg?preset=grid",
+        sourceUrl: "https://cdn.example.com/hero.jpg",
+        objectPosition: "20% 80%",
+      },
+      {
+        url: "https://cdn.example.com/g-1.jpg?preset=grid",
+        sourceUrl: "https://cdn.example.com/g-1.jpg",
+        objectPosition: "50% 50%",
+      },
+      {
+        url: "https://cdn.example.com/g-2.jpg?preset=grid",
+        sourceUrl: "https://cdn.example.com/g-2.jpg",
+        objectPosition: undefined,
+      },
     ]);
   });
 
@@ -99,7 +111,13 @@ describe("buildProfileCardCrossfadeLayers", () => {
       [{ url: "https://cdn.example.com/a.jpg" }],
       transform,
     );
-    expect(layers).toEqual([{ url: "https://cdn.example.com/a.jpg?preset=grid", objectPosition: undefined }]);
+    expect(layers).toEqual([
+      {
+        url: "https://cdn.example.com/a.jpg?preset=grid",
+        sourceUrl: "https://cdn.example.com/a.jpg",
+        objectPosition: undefined,
+      },
+    ]);
   });
 
   it("matches hero focal when URL differs only by Shopify _600x suffix", () => {
@@ -110,6 +128,7 @@ describe("buildProfileCardCrossfadeLayers", () => {
     );
     expect(layers[0]).toEqual({
       url: "https://cdn.shopify.com/files/1/x_600x.jpg?preset=grid",
+      sourceUrl: "https://cdn.shopify.com/files/1/x_600x.jpg",
       objectPosition: "10% 90%",
     });
   });

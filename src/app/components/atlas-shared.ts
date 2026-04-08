@@ -1,9 +1,20 @@
 import { isAdminEnabled } from "../config/admin-access";
-import navThumbOverridesRaw from "../data/nav-thumb-overrides.json";
+import promotedOverridesRaw from "../data/promoted-overrides.json";
 import { fibers } from "../data/fibers";
 import { getThumbCandidateIds as registryThumbCandidates } from "../data/navigation-id-registry";
 
-const navThumbBundled = navThumbOverridesRaw as Record<string, string>;
+function navThumbOverridesFromPromoted(raw: unknown): Record<string, string> {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) return {};
+  const block = (raw as { navThumbOverrides?: unknown }).navThumbOverrides;
+  if (!block || typeof block !== "object" || Array.isArray(block)) return {};
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(block)) {
+    if (typeof v === "string" && v.trim().length > 0) out[k] = v;
+  }
+  return out;
+}
+
+const navThumbBundled = navThumbOverridesFromPromoted(promotedOverridesRaw);
 
 export const SECTION_COLORS = {
   fiber: {
@@ -194,6 +205,31 @@ const THUMB_IDS: Record<string, string[]> = {
  */
 function getThumbCandidateIds(nodeId: string): string[] {
   return registryThumbCandidates(nodeId);
+}
+
+/**
+ * For Cloudinary `image/fetch` delivery URLs, return the decoded original remote URL.
+ * Returns null when `url` is not a fetch URL or cannot be decoded safely.
+ */
+export function decodeCloudinaryFetchSourceUrl(url: string): string | null {
+  const match = /^https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/fetch\/(.+)$/i.exec(url.trim());
+  if (!match) return null;
+
+  const encodedTail = match[1];
+  const segments = encodedTail.split("/");
+  const encodedHttpIdx = segments.findIndex(
+    (segment) => segment.startsWith("http%3A") || segment.startsWith("https%3A"),
+  );
+  if (encodedHttpIdx === -1) return null;
+
+  const encodedUrl = segments.slice(encodedHttpIdx).join("/");
+  try {
+    const decoded = decodeURIComponent(encodedUrl);
+    if (/^https?:\/\//i.test(decoded)) return decoded;
+  } catch {
+    return null;
+  }
+  return null;
 }
 
 export function getThumbUrl(nodeId: string): string | null {

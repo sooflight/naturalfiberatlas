@@ -82,7 +82,6 @@ const PUBLISH_FILES = [
   'src/app/data/promoted-overrides.json',
   'new-images.json',
   'src/app/data/fiber-order.json',
-  'src/app/data/nav-thumb-overrides.json',
   'src/app/data/deleted-fiber-ids.json',
   'src/app/utils/admin/data-freshness-ci.test.ts',
 ] as const;
@@ -598,15 +597,27 @@ function adminPlugin(): Plugin {
         typeof payload.navThumbOverrides === 'object' &&
         !Array.isArray(payload.navThumbOverrides)
       ) {
-        const navThumbPath = path.join(repoRoot, 'src/app/data/nav-thumb-overrides.json');
+        const promotedPath = path.join(repoRoot, 'src/app/data/promoted-overrides.json');
         const filtered = Object.fromEntries(
           Object.entries(payload.navThumbOverrides)
             .map(([key, value]) => [key, firstStringFromUnknown(value)] as const)
             .filter(([key, value]) => key.trim().length > 0 && typeof value === 'string' && value.trim().length > 0),
         );
-        rotateJsonBackups(navThumbPath);
-        fs.writeFileSync(navThumbPath, `${JSON.stringify(filtered, null, 2)}\n`, 'utf-8');
-        appendPublishLog(publishState, 'Synced src/app/data/nav-thumb-overrides.json from admin local state.');
+        let po: Record<string, unknown> = {};
+        if (fs.existsSync(promotedPath)) {
+          try {
+            po = JSON.parse(fs.readFileSync(promotedPath, 'utf-8')) as Record<string, unknown>;
+          } catch {
+            po = {};
+          }
+        }
+        po.navThumbOverrides = filtered;
+        rotateJsonBackups(promotedPath);
+        fs.writeFileSync(promotedPath, `${JSON.stringify(po, null, 2)}\n`, 'utf-8');
+        appendPublishLog(
+          publishState,
+          'Synced promoted-overrides.json navThumbOverrides from admin local state.',
+        );
       }
 
       if (Array.isArray(payload.deletedFiberIds)) {

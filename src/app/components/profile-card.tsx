@@ -39,6 +39,7 @@ interface ProfileCardProps {
   isSelected?: boolean;
   onClick: () => void;
   profilePills?: ProfilePills;
+  ambientPills?: boolean;
   /** Earlier grid indices: loading="eager" on the hero layer for better scheduling */
   priority?: boolean;
   /**

@@ -11,14 +11,13 @@ describe("mergeFiberGalleryWithFallback", () => {
     expect(merged).toEqual([]);
   });
 
-  it("still merges baseline URLs when the profile has at least one gallery row", () => {
+  it("keeps override rows authoritative when galleryImages is provided", () => {
     const id = "bamboo";
     const baseline = getGalleryImages(id);
     expect(baseline.length).toBeGreaterThan(1);
 
     const first = baseline[0]!;
     const merged = mergeFiberGalleryWithFallback(id, { galleryImages: [first] });
-    expect(merged.length).toBeGreaterThanOrEqual(1);
-    expect(merged.map((e) => e.url)).toContain(first.url);
+    expect(merged).toEqual([first]);
   });
 });

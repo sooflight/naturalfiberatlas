@@ -593,7 +593,8 @@ describe("ImageDatabaseManager view mode layouts", () => {
     expect(eagerCloudinary!.getAttribute("sizes")).toContain("50vw");
     const eagerSrcset = eagerCloudinary!.getAttribute("srcset");
     expect(eagerSrcset).toBeTruthy();
-    expect(eagerSrcset!).toContain("w_420");
+    // Upload URLs get w_* transforms from buildOptimizedUrl; image/fetch URLs keep full fetch URLs with 420w descriptors.
+    expect(eagerSrcset!).toMatch(/\b420w\b/);
 
     expect(lastPreview.getAttribute("loading")).toBe("lazy");
     expect(lastPreview.getAttribute("fetchpriority")).toBe("auto");

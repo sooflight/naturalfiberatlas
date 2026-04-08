@@ -1963,43 +1963,43 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
   ],
   tussar: [
     img(
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Cocoons_of_Tasar_Silkworm.jpg/1920px-Cocoons_of_Tasar_Silkworm.jpg",
+      "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2Fc%2Fc8%2FCocoons_of_Tasar_Silkworm.jpg%2F1920px-Cocoons_of_Tasar_Silkworm.jpg",
       "Tasar silkworm cocoons",
       "Wikimedia Commons",
     ),
     img(
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/4/43/Tussar_Silk_Moth_Caterpillar_-_Antheraea_mylitta_%288240520369%29.jpg/1920px-Tussar_Silk_Moth_Caterpillar_-_Antheraea_mylitta_%288240520369%29.jpg",
+      "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2F4%2F43%2FTussar_Silk_Moth_Caterpillar_-_Antheraea_mylitta_%25288240520369%2529.jpg%2F1920px-Tussar_Silk_Moth_Caterpillar_-_Antheraea_mylitta_%25288240520369%2529.jpg",
       "Tussar silkworm caterpillar (Antheraea mylitta)",
       "Wikimedia Commons",
     ),
     img(
-      "https://upload.wikimedia.org/wikipedia/commons/a/ae/Tussar_Silk_Moth_Caterpillar_Antheraea_mylitta_yellow_form._%288241589542%29.jpg",
+      "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fa%2Fae%2FTussar_Silk_Moth_Caterpillar_Antheraea_mylitta_yellow_form._%25288241589542%2529.jpg",
       "Tussar caterpillar, yellow form (Antheraea mylitta)",
       "Wikimedia Commons",
     ),
     img(
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Tussar-Silk-Moth.jpg/1920px-Tussar-Silk-Moth.jpg",
+      "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2F1%2F1a%2FTussar-Silk-Moth.jpg%2F1920px-Tussar-Silk-Moth.jpg",
       "Tussar silk moth (adult)",
       "Wikimedia Commons",
     ),
     img(
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/Tasar_Silkworm.jpg/1920px-Tasar_Silkworm.jpg",
+      "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2F3%2F33%2FTasar_Silkworm.jpg%2F1920px-Tasar_Silkworm.jpg",
       "Tasar silkworm",
       "Wikimedia Commons",
     ),
-    img("https://upload.wikimedia.org/wikipedia/commons/d/dc/Tussar_Fabrics.jpg", "Tussar silk fabrics", "Wikimedia Commons"),
+    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fd%2Fdc%2FTussar_Fabrics.jpg", "Tussar silk fabrics", "Wikimedia Commons"),
     img(
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/7/74/Tussar_insects_weaving_up_picture.jpg/1920px-Tussar_insects_weaving_up_picture.jpg",
+      "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2F7%2F74%2FTussar_insects_weaving_up_picture.jpg%2F1920px-Tussar_insects_weaving_up_picture.jpg",
       "Tussar silk production",
       "Wikimedia Commons",
     ),
     img(
-      "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c5/Ghicha_Tasar_Yarn.jpg/1920px-Ghicha_Tasar_Yarn.jpg",
+      "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Fthumb%2Fc%2Fc5%2FGhicha_Tasar_Yarn.jpg%2F1920px-Ghicha_Tasar_Yarn.jpg",
       "Ghicha tasar yarn",
       "Wikimedia Commons",
     ),
     img(
-      "https://inaturalist-open-data.s3.amazonaws.com/photos/612911/original.jpg",
+      "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Finaturalist-open-data.s3.amazonaws.com%2Fphotos%2F612911%2Foriginal.jpg",
       "Wild silkmoth (Antheraea)",
       "iNaturalist",
     ),
@@ -2279,17 +2279,17 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
   ],
   raffia: [
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775506165/atlas/skpmybeuzezhj9yh9eor.jpg", "Raffia — Natural Fiber Atlas"),
-    img("https://helenkaminski.com/cdn/shop/files/process-647x1098_0007_20252506_MADAGASCAR_C3_2739.jpg?v=1765863926", "Raffia craft, Madagascar"),
-    img("https://helenkaminski.com/cdn/shop/files/process-647x1098_0006_20252506_MADAGASCAR_C3_2741.jpg?v=1765863926", "Raffia processing"),
-    img("https://helenkaminski.com/cdn/shop/files/process-647x1098_0004_20252506_MADAGASCAR_DAY3_2317.jpg?v=1765863927", "Raffia harvest"),
-    img("https://helenkaminski.com/cdn/shop/files/1680x1200_0001_20252506_MADAGASCAR_DAY7_5152.jpg?v=1765863927", "Raffia landscape"),
+    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fhelenkaminski.com%2Fcdn%2Fshop%2Ffiles%2Fprocess-647x1098_0007_20252506_MADAGASCAR_C3_2739.jpg%3Fv%3D1765863926", "Raffia craft, Madagascar"),
+    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fhelenkaminski.com%2Fcdn%2Fshop%2Ffiles%2Fprocess-647x1098_0006_20252506_MADAGASCAR_C3_2741.jpg%3Fv%3D1765863926", "Raffia processing"),
+    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fhelenkaminski.com%2Fcdn%2Fshop%2Ffiles%2Fprocess-647x1098_0004_20252506_MADAGASCAR_DAY3_2317.jpg%3Fv%3D1765863927", "Raffia harvest"),
+    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fhelenkaminski.com%2Fcdn%2Fshop%2Ffiles%2F1680x1200_0001_20252506_MADAGASCAR_DAY7_5152.jpg%3Fv%3D1765863927", "Raffia landscape"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619697/atlas/pkqfjcnypmzmnvvzf1fu.jpg", "Raffia fiber"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619703/atlas/ybqb9tetqo5iinmog0gd.jpg", "Raffia weaving"),
-    img("https://helenkaminski.com/cdn/shop/files/process-647x1098_0001_20252506_MADAGASCAR_DAY5_4165.jpg?v=1765863927", "Raffia workshop"),
-    img("https://helenkaminski.com/cdn/shop/articles/blog_tile_c868e9d0-06c8-42bd-8b54-4dc91737cc75_1080x.png", "Raffia heritage"),
-    img("https://helenkaminski.com/cdn/shop/files/double_image_0000_20252506_MADAGASCAR_C2_1558.jpg?v=1765863927", "Raffia in Madagascar"),
-    img("https://helenkaminski.com/cdn/shop/files/1680x1200_0000_20252506_MADAGASCAR_DAY7_5228.jpg?v=1765863927", "Madagascar raffia"),
-    img("https://helenkaminski.com/cdn/shop/files/artisans.png?v=1765863928", "Raffia artisans"),
+    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fhelenkaminski.com%2Fcdn%2Fshop%2Ffiles%2Fprocess-647x1098_0001_20252506_MADAGASCAR_DAY5_4165.jpg%3Fv%3D1765863927", "Raffia workshop"),
+    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fhelenkaminski.com%2Fcdn%2Fshop%2Farticles%2Fblog_tile_c868e9d0-06c8-42bd-8b54-4dc91737cc75_1080x.png", "Raffia heritage"),
+    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fhelenkaminski.com%2Fcdn%2Fshop%2Ffiles%2Fdouble_image_0000_20252506_MADAGASCAR_C2_1558.jpg%3Fv%3D1765863927", "Raffia in Madagascar"),
+    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fhelenkaminski.com%2Fcdn%2Fshop%2Ffiles%2F1680x1200_0000_20252506_MADAGASCAR_DAY7_5228.jpg%3Fv%3D1765863927", "Madagascar raffia"),
+    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fhelenkaminski.com%2Fcdn%2Fshop%2Ffiles%2Fartisans.png%3Fv%3D1765863928", "Raffia artisans"),
   ],
   fique: [
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619742/atlas/d0bh8y4vwf0z96lhl2hk.jpg", "Fique fiber"),
@@ -2414,9 +2414,9 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628755/atlas/fchfpm7iojih7vvsqqcs.jpg", "Knitting — reference"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628788/atlas/cz9w1i3k437lfwgqqncf.jpg", "Knitting — reference"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619379/atlas/jtv4qymbqpncu4dfnjfw.jpg", "Knitting — hero"),
-    img("https://helenkaminski.com/cdn/shop/files/stitches-1080x1350_0001_helen_kaminski_SS25_Kirana_crochet_stitch_612x.jpg?v=1765934435", "Kirana stitch detail"),
-    img("https://helenkaminski.com/cdn/shop/files/stitches-1080x1350_0002_helen_kaminski_SS25_Mala_crochet_stitch_612x.jpg?v=1765934435", "Mala stitch detail"),
-    img("https://media.jamesdunloptextiles.com/image-transform/8cu89TjtOYIFJGZftnClsWL5NRc=/fit=cover,width=563,height=423,format=auto/https://media.jamesdunloptextiles.com/media/news/2022_05/26ea8bc023cf110f9f112c336a2e8315--knit-crochet-spinning_MqRLCCU.jpg", "Knit, crochet, and spinning studio"),
+    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fhelenkaminski.com%2Fcdn%2Fshop%2Ffiles%2Fstitches-1080x1350_0001_helen_kaminski_SS25_Kirana_crochet_stitch_612x.jpg%3Fv%3D1765934435", "Kirana stitch detail"),
+    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fhelenkaminski.com%2Fcdn%2Fshop%2Ffiles%2Fstitches-1080x1350_0002_helen_kaminski_SS25_Mala_crochet_stitch_612x.jpg%3Fv%3D1765934435", "Mala stitch detail"),
+    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fmedia.jamesdunloptextiles.com%2Fimage-transform%2F8cu89TjtOYIFJGZftnClsWL5NRc%3D%2Ffit%3Dcover%2Cwidth%3D563%2Cheight%3D423%2Cformat%3Dauto%2Fhttps%3A%2F%2Fmedia.jamesdunloptextiles.com%2Fmedia%2Fnews%2F2022_05%2F26ea8bc023cf110f9f112c336a2e8315--knit-crochet-spinning_MqRLCCU.jpg", "Knit, crochet, and spinning studio"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619350/atlas/xbyvbhkqvsoodplxb8de.jpg", "Cable knit texture"),
   ],
   "block-print": [
@@ -2559,33 +2559,25 @@ export function getGalleryImages(fiberId: string): GalleryImageEntry[] {
 }
 
 /**
- * Gallery shown in the product UI: fiber overrides (promoted / localStorage) first,
- * then the baseline from curated atlas-data + new-images.json. Dedupes by URL so a
- * partial galleryImages patch cannot hide the rest of the catalog (e.g. after a single
- * upload is synced to promoted-overrides).
+ * Gallery shown in the product UI.
  *
- * When `galleryImages` is an empty array, that means the curator explicitly cleared the
- * gallery (admin save). Do not substitute the baseline catalog — otherwise “deleted”
- * images reappear on the public grid and in crossfade layers.
+ * `galleryImages` in promoted/local overrides is treated as the source of truth:
+ * - `undefined` => use bundled baseline (`atlas-data` + `new-images.json`)
+ * - `[]`        => curator explicitly cleared the gallery
+ * - `[...rows]` => use exactly those rows (deduped)
+ *
+ * This prevents deleted rows from reappearing when a baseline catalog still contains
+ * an older URL for the same profile.
  */
 export function mergeFiberGalleryWithFallback(
   fiberId: string,
   fiber: Pick<FiberProfile, "galleryImages">,
 ): GalleryImageEntry[] {
-  const primary = fiber.galleryImages ?? [];
-  if (primary.length === 0) return [];
-
-  const fallback = getGalleryImages(fiberId);
+  const primary = fiber.galleryImages;
+  const source = primary === undefined ? getGalleryImages(fiberId) : primary;
   const seen = new Set<string>();
   const out: GalleryImageEntry[] = [];
-  for (const e of primary) {
-    const u = e.url?.trim();
-    if (u && !seen.has(u)) {
-      seen.add(u);
-      out.push(e);
-    }
-  }
-  for (const e of fallback) {
+  for (const e of source) {
     const u = e.url?.trim();
     if (u && !seen.has(u)) {
       seen.add(u);

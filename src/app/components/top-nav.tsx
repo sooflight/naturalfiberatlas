@@ -22,6 +22,7 @@ import {
   ATLAS_SEARCH_ICON_CLASS,
   ATLAS_SEARCH_INPUT_CLASS,
   ATLAS_SEARCH_WRAPPER_CLASS,
+  decodeCloudinaryFetchSourceUrl,
   getThumbUrl,
   NAV_FONT_STYLE,
   NAV_FONT_STYLE_MOBILE,
@@ -30,6 +31,7 @@ import { AtlasScrollPortContext } from "../context/atlas-scroll-port-context";
 import { NavFilterProvider, useNavFilter } from "../context/nav-filter-context";
 import { useNfaMarkScrollRotation } from "../hooks/use-nfa-mark-scroll-rotation";
 import { usePrefersReducedMotion } from "../hooks/use-prefers-reduced-motion";
+import { useImagePipeline } from "../context/image-pipeline";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
 import { NfaMark } from "./nfa-mark";
 import { useIsMobile } from "./ui/use-mobile";
@@ -89,9 +91,22 @@ function useAnimatedBorderCSS() {
 
 function FadeImg({ className, style, ...props }: ImgHTMLAttributes<HTMLImageElement>) {
   const [loaded, setLoaded] = useState(false);
+  const pipeline = useImagePipeline();
+  const originalSrc = typeof props.src === "string" ? props.src : undefined;
+  const transformedSrc = pipeline.transform(originalSrc, "filmstrip") ?? originalSrc;
+  const fallbackSrc = (() => {
+    const fromTransformed = transformedSrc ? decodeCloudinaryFetchSourceUrl(transformedSrc) : null;
+    if (fromTransformed && fromTransformed !== transformedSrc) return fromTransformed;
+    const fromOriginal = originalSrc ? decodeCloudinaryFetchSourceUrl(originalSrc) : null;
+    if (fromOriginal && fromOriginal !== transformedSrc) return fromOriginal;
+    if (originalSrc && originalSrc !== transformedSrc) return originalSrc;
+    return undefined;
+  })();
   return (
     <ImageWithFallback
       {...props}
+      src={transformedSrc}
+      fallbackSrc={fallbackSrc}
       className={className}
       style={{ ...style, opacity: loaded ? 1 : 0, transition: "opacity 0.4s ease-in-out" }}
       onLoad={() => setLoaded(true)}

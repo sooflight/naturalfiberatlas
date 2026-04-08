@@ -185,7 +185,13 @@ describe("GridView image sync", () => {
     );
 
     const card = await screen.findByTestId(`profile-card-${sampleFiber.id}`);
-    const initialHero = dataSource.getFiberById(sampleFiber.id)?.image ?? "";
+    const initialFiber = dataSource.getFiberById(sampleFiber.id);
+    const initialGallery = initialFiber?.galleryImages ?? [];
+    const initialHero =
+      initialGallery.find((entry) => /\/image\/upload\//i.test(entry.url))?.url
+      ?? initialGallery[0]?.url
+      ?? initialFiber?.image
+      ?? "";
     expect(card).toHaveAttribute("data-image", initialHero);
 
     act(() => {
@@ -201,6 +207,38 @@ describe("GridView image sync", () => {
       expect(screen.getByTestId(`profile-card-${sampleFiber.id}`)).toHaveAttribute(
         "data-image",
         newHeroUrl,
+      );
+    });
+  });
+
+  it("prefers a Cloudinary upload hero when first gallery entry is remote", async () => {
+    const sampleFiber = bundledFibers[0];
+    const remoteFirst = "https://example.com/slow-remote-hero.jpg";
+    const mirroredUpload = "https://res.cloudinary.com/demo/image/upload/v1/atlas/hero-fast.jpg";
+
+    render(
+      <MemoryRouter>
+        <AtlasDataProvider>
+          <GridView hideHeader externalSearch={sampleFiber.name} />
+        </AtlasDataProvider>
+      </MemoryRouter>,
+    );
+
+    await screen.findByTestId(`profile-card-${sampleFiber.id}`);
+
+    act(() => {
+      dataSource.updateFiber(sampleFiber.id, {
+        galleryImages: [
+          { url: remoteFirst },
+          { url: mirroredUpload },
+        ],
+      });
+    });
+
+    await waitFor(() => {
+      expect(screen.getByTestId(`profile-card-${sampleFiber.id}`)).toHaveAttribute(
+        "data-image",
+        mirroredUpload,
       );
     });
   });

@@ -46,6 +46,7 @@ import {
   shouldHydrateDetailSlotDuringInhale,
 } from "../utils/detail-hydration";
 import { getDetailSlotClassSuffix, computeDetailGridRenderPlan } from "../utils/detail-slot-classes";
+import { isCloudinaryUploadDeliveryUrl } from "../utils/admin/imageUrl";
 import { getAvailablePlates } from "./plate-availability";
 import type { ScreenPlateEntry } from "./screen-plate";
 import { Search, X } from "lucide-react";
@@ -114,6 +115,37 @@ function gridColumnStaggerPx(colIndex: number, cols: number, reducedMotion: bool
   if (cols === 3) return 94;
   if (cols === 4) return 94;
   return 94;
+}
+
+function pickPreferredProfileHeroImage(
+  primaryGallery: readonly GalleryImageEntry[],
+  mergedGallery: readonly GalleryImageEntry[],
+  fallbackImage: string | undefined,
+): string {
+  const fallbackTrim = fallbackImage?.trim() ?? "";
+  const firstPrimaryUrl = primaryGallery[0]?.url?.trim() ?? "";
+
+  if (firstPrimaryUrl) {
+    if (isCloudinaryUploadDeliveryUrl(firstPrimaryUrl)) return firstPrimaryUrl;
+    const firstUploadInPrimary = primaryGallery
+      .map((entry) => entry.url?.trim() ?? "")
+      .find((url) => url && isCloudinaryUploadDeliveryUrl(url));
+    if (firstUploadInPrimary) return firstUploadInPrimary;
+    return firstPrimaryUrl;
+  }
+
+  const firstGalleryUrl = mergedGallery[0]?.url?.trim() ?? "";
+
+  if (firstGalleryUrl && isCloudinaryUploadDeliveryUrl(firstGalleryUrl)) {
+    return firstGalleryUrl;
+  }
+
+  const firstUploadInGallery = mergedGallery
+    .map((entry) => entry.url?.trim() ?? "")
+    .find((url) => url && isCloudinaryUploadDeliveryUrl(url));
+  if (firstUploadInGallery) return firstUploadInGallery;
+
+  return firstGalleryUrl || fallbackTrim;
 }
 
 interface GridViewProps {
@@ -1355,13 +1387,12 @@ export function GridView({
                 ? true
                 : (visibleIds === null || visibleIds.has(fiber.id));
               const profileFull = fiber ? dataSource.getFiberById(fiber.id) : undefined;
+              const primaryGallery = profileFull?.galleryImages ?? [];
               const mergedGallery = profileFull
                 ? mergeFiberGalleryWithFallback(fiber.id, profileFull)
                 : [];
               const mergedGalleryUrls = mergedGallery.map((entry) => entry.url);
-              /** Align hero URL with merged gallery order so grid focal matches `previewFocal` on row 0. */
-              const profileHeroImage =
-                mergedGallery[0]?.url?.trim() || fiber?.image || "";
+              const profileHeroImage = pickPreferredProfileHeroImage(primaryGallery, mergedGallery, fiber?.image);
 
               const colIndex = index % cols;
               const colOffset = gridColumnStaggerPx(colIndex, cols, prefersReducedMotion);

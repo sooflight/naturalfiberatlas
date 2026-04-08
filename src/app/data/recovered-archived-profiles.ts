@@ -47,7 +47,7 @@ const ROWS: Row[] = [
     "bark-fibers",
     "Bark fibers",
     "fiber",
-    "https://i.pinimg.com/1200x/d0/36/0e/d0360e4ac8af842e74f599c3f179fecd.jpg",
+    "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F1200x%2Fd0%2F36%2F0e%2Fd0360e4ac8af842e74f599c3f179fecd.jpg",
     "Bark fiber grouping",
   ],
   [
@@ -117,7 +117,7 @@ const ROWS: Row[] = [
     "fruit-fibers",
     "Fruit fibers",
     "fiber",
-    "https://i.pinimg.com/1200x/87/ed/36/87ed369aa638634ee776388d19633ba7.jpg",
+    "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F1200x%2F87%2Fed%2F36%2F87ed369aa638634ee776388d19633ba7.jpg",
     "Fruit fiber grouping",
   ],
   [
@@ -180,7 +180,7 @@ const ROWS: Row[] = [
     "lyocell-tencel",
     "Lyocell / TENCEL™",
     "fiber",
-    "https://www.pslbg.org/wp-content/uploads/2024/05/Rainbow-Eucalyptus-1-773x1030.jpg",
+    "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fwww.pslbg.org%2Fwp-content%2Fuploads%2F2024%2F05%2FRainbow-Eucalyptus-1-773x1030.jpg",
     "Regenerated cellulose branding",
   ],
   [
@@ -194,7 +194,7 @@ const ROWS: Row[] = [
     "mineral-regenerated",
     "Mineral & regenerated",
     "fiber",
-    "https://2d73cea0.delivery.rocketcdn.me/app/uploads/2022/09/forest-greenery-viscose-630x474.jpg",
+    "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2F2d73cea0.delivery.rocketcdn.me%2Fapp%2Fuploads%2F2022%2F09%2Fforest-greenery-viscose-630x474.jpg",
     "Regenerated & mineral grouping",
   ],
   [
@@ -222,7 +222,7 @@ const ROWS: Row[] = [
     "plant-cellulose",
     "Plant cellulose",
     "fiber",
-    "https://upload.wikimedia.org/wikipedia/commons/f/fb/Snake_Plant_%28Sansevieria_trifasciata_%27Laurentii%27%29.jpg",
+    "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fupload.wikimedia.org%2Fwikipedia%2Fcommons%2Ff%2Ffb%2FSnake_Plant_%2528Sansevieria_trifasciata_%2527Laurentii%2527%2529.jpg",
     "Cellulosic plant grouping",
   ],
   [
@@ -257,7 +257,7 @@ const ROWS: Row[] = [
     "silk-fiber",
     "Silk fiber",
     "fiber",
-    "https://i.pinimg.com/1200x/72/8d/72/728d72f3357a696894fbc7ea93066a0c.jpg",
+    "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F1200x%2F72%2F8d%2F72%2F728d72f3357a696894fbc7ea93066a0c.jpg",
     "Silk grouping",
   ],
   [
@@ -278,7 +278,7 @@ const ROWS: Row[] = [
     "suri",
     "Suri alpaca",
     "fiber",
-    "https://i.pinimg.com/736x/9c/44/75/9c4475f450a7a21a634063c3968166d1.jpg",
+    "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F736x%2F9c%2F44%2F75%2F9c4475f450a7a21a634063c3968166d1.jpg",
     "Suri-type fleece",
   ],
   [
@@ -292,7 +292,7 @@ const ROWS: Row[] = [
     "tussah",
     "Tussah (alt)",
     "fiber",
-    "https://media.licdn.com/dms/image/v2/D4D12AQFs1gGjVAuc4A/article-cover_image-shrink_600_2000/B4DZgOYHmjH8AQ-/0/1752587860839?e=2147483647&v=beta&t=-C6nvVppCfrZrp81M5lpNs_dgRYkDSZ1cQWs5gQuTtM",
+    "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fmedia.licdn.com%2Fdms%2Fimage%2Fv2%2FD4D12AQFs1gGjVAuc4A%2Farticle-cover_image-shrink_600_2000%2FB4DZgOYHmjH8AQ-%2F0%2F1752587860839%3Fe%3D2147483647%26v%3Dbeta%26t%3D-C6nvVppCfrZrp81M5lpNs_dgRYkDSZ1cQWs5gQuTtM",
     "Wild silk reference (alt id)",
   ],
   [

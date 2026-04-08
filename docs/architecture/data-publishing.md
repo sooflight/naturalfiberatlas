@@ -15,9 +15,8 @@ This document defines how **publishable atlas data** flows from editing to **Git
 | Fiber profiles | [`src/app/data/fibers.ts`](../../src/app/data/fibers.ts) | Core `FiberProfile` list |
 | Supplementary tables | [`src/app/data/atlas-data.ts`](../../src/app/data/atlas-data.ts) | `worldNames`, `processData`, `anatomyData`, `careData`, `quoteData`, gallery maps |
 | Bulk gallery URLs | [`new-images.json`](../../new-images.json) | Per-profile `imageLinks` merged at runtime with curated maps |
-| Promoted patches | [`src/app/data/promoted-overrides.json`](../../src/app/data/promoted-overrides.json) | Build-time merge into bundled fibers + supplementary tables (from `ops:promote-diff` or dev autosync) |
+| Promoted patches | [`src/app/data/promoted-overrides.json`](../../src/app/data/promoted-overrides.json) | Build-time merge into bundled fibers + supplementary tables (from `ops:promote-diff` or dev autosync). Optional top-level **`navThumbOverrides`** (`nodeId → imageUrl`) powers **public** nav thumbs when set; omit or use `{}` to fall back to `THUMB_IDS` + bundled heroes. |
 | Grid order | [`src/app/data/fiber-order.json`](../../src/app/data/fiber-order.json) | Canonical `global` / `groups` order — **www** uses this; admin can override via `localStorage` locally, then dev reorder POSTs update the JSON |
-| Nav thumb overrides | [`src/app/data/nav-thumb-overrides.json`](../../src/app/data/nav-thumb-overrides.json) | Optional `nodeId → imageUrl` for **public** nav thumbs (empty `{}` = use `THUMB_IDS` + bundled heroes) |
 | Merge + overrides | [`src/app/data/data-provider.ts`](../../src/app/data/data-provider.ts) | `LocalStorageSource`: bundle + `localStorage` patches |
 
 **Production** serves **bundle only** (no `localStorage`). The app enforces this when `VITE_ENABLE_ADMIN=false`: `atlas:*` draft keys in the browser are ignored so returning visitors are not stuck on old hero images from past sessions. **Local dev** shows bundle + overrides.
@@ -85,7 +84,7 @@ Use **merged catalog export** (`exportEffectiveJSON()` on the data source; Layer
 1. Export diff: Admin **Knowledge** header → **exportDiffJSON** (`atlas-diff-*.json`).
 2. Run **`npm run ops:promote-diff -- path/to/atlas-diff-*.json`** (use `--dry-run` first if unsure).
 3. If you reordered the **grid** in dev, ensure [`fiber-order.json`](../../src/app/data/fiber-order.json) was updated (dev server POSTs on reorder) and is included in the commit.
-4. **`git diff`** — review `promoted-overrides.json`, `new-images.json`, `fiber-order.json`, `nav-thumb-overrides.json` (if used).
+4. **`git diff`** — review `promoted-overrides.json` (including `navThumbOverrides` when present), `new-images.json`, `fiber-order.json`.
 5. **`npm run verify`** — typecheck, tests, production build, bundle-in-dist checks.
 6. Commit, push **`main`**, confirm Vercel Production matches the same commit SHA.
 
