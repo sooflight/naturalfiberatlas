@@ -1,7 +1,7 @@
 // src/app/data/cotton-enhancement.test.ts
 import { describe, it, expect } from "vitest";
 import { fibers } from "./fibers";
-import { processData } from "./atlas-data";
+import { processData, anatomyData } from "./atlas-data";
 
 describe("Cotton Profile Enhancement", () => {
   const cotton = fibers.find((f) => f.id === "organic-cotton");
@@ -92,5 +92,46 @@ describe("Process Data", () => {
   it("should include organic-specific details", () => {
     expect(cottonProcess[0].detail).toContain("non-GMO");
     expect(cottonProcess[1].detail).toContain("beneficial insects");
+  });
+});
+
+describe("Anatomy Data", () => {
+  const cottonAnatomy = anatomyData["organic-cotton"];
+
+  it("should have anatomy data defined", () => {
+    expect(cottonAnatomy).toBeDefined();
+  });
+
+  it("should have correct diameter range", () => {
+    expect(cottonAnatomy.diameter.raw).toBe("12-22 µm");
+    expect(cottonAnatomy.diameter.minUm).toBe(12);
+    expect(cottonAnatomy.diameter.maxUm).toBe(22);
+  });
+
+  it("should describe kidney-bean cross section", () => {
+    expect(cottonAnatomy.crossSection).toContain("Kidney-bean");
+    expect(cottonAnatomy.crossSection).toContain("collapsed lumen");
+  });
+
+  it("should describe twisted ribbon texture", () => {
+    expect(cottonAnatomy.surfaceTexture).toContain("Twisted ribbon");
+    expect(cottonAnatomy.surfaceTexture).toContain("convolutions");
+  });
+
+  it("should have Upland organic staple length", () => {
+    expect(cottonAnatomy.length.raw).toContain("20-40 mm");
+    expect(cottonAnatomy.length.minMm).toBe(20);
+    expect(cottonAnatomy.length.maxMm).toBe(40);
+  });
+
+  it("should have tensile strength range", () => {
+    expect(cottonAnatomy.tensileStrength.raw).toContain("287-597 MPa");
+    expect(cottonAnatomy.tensileStrength.minMPa).toBe(287);
+    expect(cottonAnatomy.tensileStrength.maxMPa).toBe(597);
+  });
+
+  it("should have moisture regain specification", () => {
+    expect(cottonAnatomy.moistureRegain.raw).toBe("8.5% (at 65% RH, 70°F)");
+    expect(cottonAnatomy.moistureRegain.percentage).toBe(8.5);
   });
 });
