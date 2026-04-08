@@ -26,9 +26,9 @@ vi.mock('./views/GridView', () => ({
 vi.mock('@/hooks/domains/useProfiles', () => ({
   useProfiles: () => ({
     profiles: [
-      { id: 'alpaca', node: null, passport: null, status: 'draft' },
-      { id: 'hemp', node: null, passport: null, status: 'draft' },
-      { id: 'flax', node: null, passport: null, status: 'draft' },
+      { id: 'alpaca', node: null, passport: null, status: 'archived' },
+      { id: 'hemp', node: null, passport: null, status: 'archived' },
+      { id: 'flax', node: null, passport: null, status: 'archived' },
     ],
     unifiedProfile: null,
     loading: false,

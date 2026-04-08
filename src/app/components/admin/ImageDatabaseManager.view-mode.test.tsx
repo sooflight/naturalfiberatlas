@@ -206,7 +206,49 @@ describe("ImageDatabaseManager view mode layouts", () => {
     }
   });
 
-  it("hides draft profiles unless selected from the sidebar", async () => {
+  it("hides draft profiles with no images unless selected from the sidebar", async () => {
+    atlasFibersMock = [
+      {
+        id: "draft-only-profile",
+        name: "draft-only-profile",
+        category: "fiber",
+        status: "draft",
+        image: "",
+        galleryImages: [],
+      },
+    ];
+    getFiberByIdMock.mockImplementation((id: string) => atlasFibersMock.find((fiber) => fiber.id === id));
+    const originalScrollIntoView = (
+      HTMLElement.prototype as HTMLElement & {
+        scrollIntoView?: (options?: ScrollIntoViewOptions | boolean) => void;
+      }
+    ).scrollIntoView;
+    Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+      configurable: true,
+      value: vi.fn(),
+    });
+
+    try {
+      const { rerender } = render(<ImageDatabaseManager viewMode="list" />);
+
+      await waitFor(() => {
+        expect(screen.queryByTestId("image-db-profile-draft-only-profile")).toBeNull();
+      });
+
+      rerender(<ImageDatabaseManager viewMode="list" activeNodeId="draft-only-profile" />);
+
+      await waitFor(() => {
+        expect(screen.getByTestId("image-db-profile-draft-only-profile")).toBeTruthy();
+      });
+    } finally {
+      Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+        configurable: true,
+        value: originalScrollIntoView,
+      });
+    }
+  });
+
+  it("shows draft profiles in ImageBase when they still have images", async () => {
     atlasFibersMock = [
       {
         id: "hemp",
@@ -229,14 +271,7 @@ describe("ImageDatabaseManager view mode layouts", () => {
     });
 
     try {
-      const { rerender } = render(<ImageDatabaseManager viewMode="list" />);
-
-      await waitFor(() => {
-        expect(screen.queryByTestId("image-db-profile-hemp")).toBeNull();
-      });
-
-      rerender(<ImageDatabaseManager viewMode="list" activeNodeId="hemp" />);
-
+      render(<ImageDatabaseManager viewMode="list" />);
       await waitFor(() => {
         expect(screen.getByTestId("image-db-profile-hemp")).toBeTruthy();
       });

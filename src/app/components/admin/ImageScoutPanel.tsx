@@ -504,11 +504,6 @@ export default function ImageScoutPanel({
   const [manifestUrl, setManifestUrl] = useState('');
   const [manifestLoading, setManifestLoading] = useState(false);
 
-  useEffect(() => {
-    // #region agent log
-    fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "72f2cc" }, body: JSON.stringify({ sessionId: "72f2cc", runId: "finder-drop-repro-2", hypothesisId: "H7", location: "ImageScoutPanel.tsx:mount", message: "admin-package scout panel mounted", data: { embedded: !!embedded }, timestamp: Date.now() }) }).catch(() => {});
-    // #endregion
-  }, [embedded]);
   const [fileDragOver, setFileDragOver] = useState(false);
 
   const inputRef = useRef<HTMLInputElement>(null);

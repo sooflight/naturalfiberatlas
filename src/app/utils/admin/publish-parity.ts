@@ -3,10 +3,10 @@ import { fibers as bundledProfiles } from "../../data/fibers";
 import deletedFiberIdsBundledRaw from "../../data/deleted-fiber-ids.json";
 import { readPassportStatusOverrides } from "./passportStatusOverrides";
 
-export type AtlasProfileStatus = "draft" | "published" | "archived";
+export type AtlasProfileStatus = "published" | "archived";
 
 export function normalizeAtlasStatus(value: unknown): AtlasProfileStatus {
-  if (value === "draft" || value === "archived") return value;
+  if (value === "archived" || value === "draft") return "archived";
   return "published";
 }
 

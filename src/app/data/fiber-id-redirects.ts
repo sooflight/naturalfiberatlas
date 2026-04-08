@@ -3,6 +3,8 @@
  * resolve to the canonical id (e.g. bookmarks to /fiber/angora → mohair).
  */
 export const CANONICAL_FIBER_ID_REDIRECTS: Readonly<Record<string, string>> = {
+  /** Profile renamed from Crochet to Knitting (technique slot in the knit family). */
+  crochet: "knitting",
   angora: "mohair",
   tussah: "tussar",
   "mulberry-silk": "silk",

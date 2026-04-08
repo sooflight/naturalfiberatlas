@@ -82,10 +82,6 @@ export function AdminProfileStoryboard({
     current: number;
   } | null>(null);
 
-  // #region agent log
-  fetch('http://127.0.0.1:7253/ingest/9274dbe3-8449-4b9c-89d7-9a61d0301d4a',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'1e9d6f'},body:JSON.stringify({sessionId:'1e9d6f',runId:'run1',hypothesisId:'H1',location:'AdminProfileStoryboard.tsx:componentEntry',message:'Storyboard component entered before keyboard effect setup',data:{nodeId,nodeLabel,initialImagesCount:initialImages.length,localUrlsCount:localUrls.length},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
-
   // Active URL for lightbox
   const activeUrl =
     lightboxIndex != null && localUrls[lightboxIndex] ? localUrls[lightboxIndex] : null;
@@ -100,9 +96,6 @@ export function AdminProfileStoryboard({
     });
   }, [activeUrl, selectedPreset, compareMode]);
 
-  // #region agent log
-  fetch('http://127.0.0.1:7253/ingest/9274dbe3-8449-4b9c-89d7-9a61d0301d4a',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'1e9d6f'},body:JSON.stringify({sessionId:'1e9d6f',runId:'run1',hypothesisId:'H1',location:'AdminProfileStoryboard.tsx:beforeKeyboardUseEffect',message:'About to evaluate keyboard effect dependencies',data:{lightboxIndex,localUrlsLength:localUrls.length,selectedIndicesSize:selectedIndices.size,showPresetDropdown},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
   useEffect(() => {
     setLocalUrls(persistedUrls);
   }, [persistedUrls]);
@@ -352,9 +345,6 @@ export function AdminProfileStoryboard({
     setTransformHistory([]);
   }, []);
 
-  // #region agent log
-  fetch('http://127.0.0.1:7253/ingest/9274dbe3-8449-4b9c-89d7-9a61d0301d4a',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'1e9d6f'},body:JSON.stringify({sessionId:'1e9d6f',runId:'run1',hypothesisId:'H2',location:'AdminProfileStoryboard.tsx:beforeHandleApplyTransform',message:'Reached declaration point before handleApplyTransform dependencies',data:{transformTargetIndex,showTransformPanel},timestamp:Date.now()})}).catch(()=>{});
-  // #endregion
   // Handle applying a transform from the preview panel
   const handleApplyTransform = useCallback((recipe: TransformRecipe) => {
     if (transformTargetIndex == null) return;

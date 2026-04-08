@@ -1,6 +1,18 @@
 import { type FiberProfile, type PlateType, worldNames } from "../data/atlas-data";
+import { fibers as bundledFibers } from "../data/fibers";
 import { dataSource } from "../data/data-provider";
 import { getValidYoutubeEmbedEntries, hasAnyValidYoutubeEmbed } from "../utils/youtube-embed-urls";
+
+const bundledFiberIdSet = new Set(bundledFibers.map((f) => f.id));
+
+const SILK_VARIANT_PLATE_TO_PROFILE_ID: Partial<Record<PlateType, string>> = {
+  silkCharmeuse: "charmeuse",
+  silkHabotai: "habotai",
+  silkDupioni: "dupioni",
+  silkTaffeta: "taffeta",
+  silkChiffon: "chiffon",
+  silkOrganza: "organza",
+};
 
 const MOBILE_PLATE_ORDER: PlateType[] = [
   "about",
@@ -60,8 +72,11 @@ function isPlateAvailable(
     case "silkDupioni":
     case "silkTaffeta":
     case "silkChiffon":
-    case "silkOrganza":
-      return fiber.id === "silk";
+    case "silkOrganza": {
+      if (fiber.id !== "silk") return false;
+      const targetId = SILK_VARIANT_PLATE_TO_PROFILE_ID[pt];
+      return !!targetId && bundledFiberIdSet.has(targetId);
+    }
     case "seeAlso":
       return fiber.seeAlso.length > 0;
     case "about":

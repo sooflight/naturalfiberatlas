@@ -24,6 +24,7 @@ const DEFAULT_CLOUD_NAME = "dawxvzlte";
 const PRESET_TRANSFORMS: Record<GlassAtlasPreset, string> = {
   grid:         "w_320,h_427,c_fill,f_auto,q_auto",
   glow:         "w_24,h_32,c_fill,f_auto,q_10",
+  hueProbe:     "w_80,h_107,c_fill,f_auto,q_auto",
   lqip:         "w_60,h_80,c_fill,f_auto,q_20",
   ambient:      "w_400,h_534,c_fill,f_auto,q_60",
   filmstrip:    "w_220,h_293,c_fill,f_auto,q_auto",
@@ -89,7 +90,7 @@ export class CloudinaryPipeline implements ImageTransformPipeline {
       const before = src.slice(0, insertPoint);
       const after = src.slice(insertPoint);
 
-      if (/^[a-z]_/.test(after)) return src;
+      if (after.startsWith(`${transforms}/`)) return src;
 
       return `${before}${transforms}/${after}`;
     }

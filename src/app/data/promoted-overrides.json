@@ -1,7 +1,7 @@
 {
   "fibers": {
     "modal": {
-      "status": "draft",
+      "status": "archived",
       "galleryImages": [
         {
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619281/atlas/arlz1b51vhdn3orb1ry3.jpg",
@@ -15,10 +15,10 @@
       "category": "fiber"
     },
     "looms": {
-      "status": "draft"
+      "status": "archived"
     },
     "industrial-looms": {
-      "status": "draft"
+      "status": "archived"
     },
     "plying": {
       "status": "archived"
@@ -313,6 +313,9 @@
           "url": "https://www.kalendarzrolnikow.pl/upload//image/v1/2020/01/image/konopie-uprawa.jpg"
         },
         {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621143/atlas/vogpa6d4qwg4wqpzcdrn.jpg"
+        },
+        {
           "url": "https://hempeyewear.com/cdn/shop/articles/69cfaa1c-5146-11e9-8617-6babbcfb60eb_image_hires_190614.jpg?v=1611830402"
         },
         {
@@ -325,16 +328,13 @@
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773617761/atlas/kopx9umk0kiraorjmqkz.png"
         },
         {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619070/atlas/dnpcv9iks9nn64cpcbuh.jpg"
-        },
-        {
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619069/atlas/o5brgx3sqnnwbd7re1ic.jpg"
         },
         {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773621194/atlas/q4tyimhvc7lhuzfoe2ux.jpg"
+          "url": "https://www.seed.ab.ca/wp-content/uploads/2024/01/20220812_141839-scaled.jpg"
         },
         {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771633173/atlas/mlapck15btekiyb9wwmi.jpg"
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1773621194/atlas/q4tyimhvc7lhuzfoe2ux.jpg"
         },
         {
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619073/atlas/yta1tistuaszfx9peetu.jpg"
@@ -349,16 +349,16 @@
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619075/atlas/jdsr2nwfbfgyfimudrff.jpg"
         },
         {
-          "url": "https://www.indiahempandco.com/cdn/shop/articles/hemp_farming_900x.jpg?v=1722588711"
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619070/atlas/dnpcv9iks9nn64cpcbuh.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771633173/atlas/mlapck15btekiyb9wwmi.jpg"
         },
         {
           "url": "https://d27p2a3djqwgnt.cloudfront.net/wp-content/uploads/2022/06/14083539/HC-Blab-harvest-day-08.05.2021.jpg"
         },
         {
           "url": "https://heartland.io/wp-content/uploads/2023/06/Palmer-Holland-Hemp-Fiber-Plastic-1210x660.png"
-        },
-        {
-          "url": "https://www.seed.ab.ca/wp-content/uploads/2024/01/20220812_141839-scaled.jpg"
         },
         {
           "url": "https://www.argusleader.com/gcdn/authoring/authoring-images/2024/06/25/PSIF/74205323007-hemp-field.jpg?width=1200&disable=upscale&format=pjpg&auto=webp"
@@ -406,19 +406,25 @@
           "url": "https://cdn.shopify.com/s/files/1/0562/8792/0217/t/7/assets/Group-2-2.jpg?v=1655293552"
         },
         {
-          "url": "https://i.pinimg.com/originals/04/e5/c2/04e5c26f85759591758de800cad90423.jpg"
-        },
-        {
-          "url": "https://www.treehugger.com/thmb/uQTtNfIG31csL-LH2z735DdKaXM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-520378172-bb0c73f6f4954fcea5b620f2119a83e9.jpg"
-        },
-        {
-          "url": "https://lh6.googleusercontent.com/6aZ9MZoPCa8ue1KRQgD_0Y0QIGUY5Ec0dP4WoU4F0s9AASv_bwULNDuAom9JWEtDHz3cd8t_2ggc-KPZRoHa1_qKAPw0uVc4CkzImujxFip_hvSaubnAHV0BJCdZrKpA6w=s800"
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621157/atlas/rkwfiqxsmjvhhrlxobwr.jpg"
         },
         {
           "url": "https://homeofwool.com/wp-content/uploads/2025/09/home-of-wool-100-hemp-fabric-1-main.jpg"
         },
         {
+          "url": "https://www.treehugger.com/thmb/uQTtNfIG31csL-LH2z735DdKaXM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-520378172-bb0c73f6f4954fcea5b620f2119a83e9.jpg"
+        },
+        {
+          "url": "https://i.pinimg.com/originals/04/e5/c2/04e5c26f85759591758de800cad90423.jpg"
+        },
+        {
+          "url": "https://lh6.googleusercontent.com/6aZ9MZoPCa8ue1KRQgD_0Y0QIGUY5Ec0dP4WoU4F0s9AASv_bwULNDuAom9JWEtDHz3cd8t_2ggc-KPZRoHa1_qKAPw0uVc4CkzImujxFip_hvSaubnAHV0BJCdZrKpA6w=s800"
+        },
+        {
           "url": "https://www.jcrafteco.com/upload/categoryimage/thumb-woven-hemp.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621148/atlas/o7trumgok6nnf2hgjltl.jpg"
         },
         {
           "url": "https://lampoonmagazine.com/wp-content/uploads/2025/06/Cutting-hemp-by-hand.webp"
@@ -472,7 +478,40 @@
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775605256/atlas/yvzukexcqubueevpzvm0.webp"
         },
         {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775605256/atlas/udkhuw6d7xb9nbuvvxe2.webp"
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621144/atlas/grfarocqm0rofhbxlzzz.jpg"
+        },
+        {
+          "url": "https://www.indiahempandco.com/cdn/shop/articles/hemp_farming_900x.jpg?v=1722588711"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621140/atlas/ducuzbcqcxyjltoiucfr.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621146/atlas/rau931nv0w2fdag0mcc1.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621145/atlas/mcxp4yrt2baymntp7pk3.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621140/atlas/a4ymrcyeediwse9yul2p.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621142/atlas/vvxs1abhwudketjuogae.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621141/atlas/wfxcvs8n6rmxbc12uvad.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621142/atlas/pvbnuncegb7esonqg5l4.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621169/atlas/xnunirqwuxue5ndj2lqr.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621147/atlas/szxmfbhsa07fgzvxqkxh.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621139/atlas/mdxzvdjxdgmuzh2zkb1u.jpg"
         }
       ],
       "image": "https://www.kalendarzrolnikow.pl/upload//image/v1/2020/01/image/konopie-uprawa.jpg",
@@ -597,16 +636,22 @@
     "felt": {
       "galleryImages": [
         {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619184/atlas/xbtkwreyjuogrzymhkib.jpg"
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624374/atlas/oehtedgv8tg4zjadobfd.jpg"
         },
         {
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619357/atlas/vkzrtpdvm0ajacx3ga8z.jpg"
         },
         {
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619358/atlas/aw9qzjj07zlh0xikcrns.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624407/atlas/wefx9xmfv6ibeik5kwb0.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624475/atlas/hj1dcdquvtrsk28w7z8v.jpg"
         }
       ],
-      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619184/atlas/xbtkwreyjuogrzymhkib.jpg"
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624374/atlas/oehtedgv8tg4zjadobfd.jpg"
     },
     "cork": {
       "galleryImages": [
@@ -1829,7 +1874,7 @@
         }
       ],
       "image": "https://pensamentoverde.com.br/wp-content/uploads/2014/05/img26.jpg",
-      "status": "draft"
+      "status": "archived"
     },
     "vicuna": {
       "galleryImages": [
@@ -2246,7 +2291,7 @@
       "image": "https://www.weberseeds.de/gallery/esparto-grass.jpg"
     },
     "lincoln": {
-      "status": "draft"
+      "status": "archived"
     },
     "chambira": {
       "galleryImages": [
@@ -2302,7 +2347,7 @@
       "image": "https://inaturalist-open-data.s3.amazonaws.com/photos/20337235/large.jpg"
     },
     "bombax": {
-      "status": "draft"
+      "status": "archived"
     },
     "romney": {
       "galleryImages": [
@@ -2465,19 +2510,19 @@
       "image": "https://images.squarespace-cdn.com/content/v1/5349c238e4b0bbdac301dbb0/43e584e5-d5db-49ea-8d61-acb286897b93/ADAM+ROBINSON+DESIGN+Plant+of+The+Month+41.jpg"
     },
     "river-reed": {
-      "status": "draft"
+      "status": "archived"
     },
     "harakeke": {
-      "status": "draft"
+      "status": "archived"
     },
     "sano": {
-      "status": "draft"
+      "status": "archived"
     },
     "lokta": {
-      "status": "draft"
+      "status": "archived"
     },
     "sunn-hemp": {
-      "status": "draft"
+      "status": "archived"
     },
     "piassava": {
       "galleryImages": [
@@ -3307,17 +3352,26 @@
     "lotus": {
       "galleryImages": [
         {
-          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619641/atlas/norl5xkkugaq4ayshyxo.jpg",
-          "previewFocal": {
-            "x": 0.21497584541062803,
-            "y": 0.6166666666666667
-          }
+          "url": "https://img.jakpost.net/c/2020/08/29/2020_08_29_103310_1598682419._large.jpg"
+        },
+        {
+          "url": "https://pearlsmagazine.com/webvieja/wp-content/uploads/2023/05/Fleur-de-lotus-scaled.jpg"
         },
         {
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619639/atlas/ldug89ynybqnhjbjsquf.jpg"
         },
         {
-          "url": "https://pearlsmagazine.com/webvieja/wp-content/uploads/2023/05/Fleur-de-lotus-scaled.jpg"
+          "url": "https://cms.groupeditors.com/img/AFP_b3a3d8603b8e34c4785584a76810f8cd945e856c.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775619720/atlas/mujvrkxtzhovtncoe8fr.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619641/atlas/norl5xkkugaq4ayshyxo.jpg",
+          "previewFocal": {
+            "x": 0.21497584541062803,
+            "y": 0.6166666666666667
+          }
         },
         {
           "url": "https://static.wixstatic.com/media/80cb80_830b8097befb4e08ad89c3887fcf9452~mv2.jpg/v1/fill/w_980,h_994,al_c,q_85,usm_0.66_1.00_0.01,enc_avif,quality_auto/80cb80_830b8097befb4e08ad89c3887fcf9452~mv2.jpg"
@@ -3341,12 +3395,6 @@
           "url": "https://www.ourvadodara.com/wp-content/uploads/2022/07/maxresdefault.jpg"
         },
         {
-          "url": "https://img.jakpost.net/c/2020/08/29/2020_08_29_103310_1598682419._large.jpg"
-        },
-        {
-          "url": "https://cms.groupeditors.com/img/AFP_b3a3d8603b8e34c4785584a76810f8cd945e856c.jpg"
-        },
-        {
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775541232/atlas/aqhxaupeyghxzslueu7i.jpg"
         },
         {
@@ -3363,8 +3411,15 @@
         },
         {
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775615863/atlas/tstjtrfdsvpaynea7g17.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775619506/atlas/spjikgj83djyf7adqtgf.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775619978/atlas/xlqgbs0bupwri3niocfl.png"
         }
-      ]
+      ],
+      "image": "https://img.jakpost.net/c/2020/08/29/2020_08_29_103310_1598682419._large.jpg"
     },
     "banana": {
       "galleryImages": [
@@ -3374,6 +3429,9 @@
         {
           "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775541727/atlas/nj2fazxwyvgvxxe2maqw.jpg"
         }
+      ],
+      "youtubeEmbedUrls": [
+        "https://youtu.be/LyzTz98VlAE"
       ]
     },
     "krajood": {
@@ -3536,6 +3594,38 @@
         }
       ],
       "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775616827/atlas/f6oeori2fmaz3qvwxoan.jpg"
+    },
+    "carpet": {
+      "name": "Carpets & Rugs"
+    },
+    "spinning": {
+      "galleryImages": [
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624684/atlas/dsx4g3yjlhrbqb5wnmqm.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619312/atlas/m2gfnb0ypgvtzixvinxt.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624733/atlas/g78nusgtasosmfptkqfq.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624598/atlas/zqwityl66j5a9veh3na9.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624642/atlas/ozaorkx4qhhy0cy0rl2z.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624759/atlas/v0fcmgd3gukg7dbljjw7.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624810/atlas/vcbwxyokbfrm62b2dk0t.jpg"
+        },
+        {
+          "url": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624819/atlas/kjljss4ll4y6h2xzupj9.jpg"
+        }
+      ],
+      "image": "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624684/atlas/dsx4g3yjlhrbqb5wnmqm.jpg"
     }
   },
   "quoteData": {

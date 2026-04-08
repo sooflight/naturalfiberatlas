@@ -1,7 +1,7 @@
 {
-  "exportedAt": "2026-04-08T04:11:01.033Z",
-  "profileCount": 181,
-  "imageLinkCount": 1283,
+  "exportedAt": "2026-04-08T07:58:53.488Z",
+  "profileCount": 185,
+  "imageLinkCount": 1348,
   "profiles": [
     {
       "profileKey": "abaca",
@@ -215,15 +215,9 @@
     {
       "profileKey": "baobab",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F1200x%2Fa9%2Fed%2F58%2Fa9ed588b22c87de204e058f8d148fb36.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F736x%2F33%2Fc8%2F2b%2F33c82b63ff7aa78f990147649a26a800.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F1200x%2F58%2F09%2Fd1%2F5809d124c3e0b161d8ea99bb201ba545.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F1200x%2Fca%2F06%2F45%2Fca06455310e3e446031ba1e4bfabf23b.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F736x%2Fc8%2Fe1%2F45%2Fc8e145c6da0b1fd1de597f27aa606b66.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F1200x%2F05%2F44%2F54%2F0544541eb399ac32088c9b60b4677f3f.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F736x%2F65%2F72%2Fb4%2F6572b4d3efb64c931006180897f93c44.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F1200x%2Fa9%2Fed%2F58%2Fa9ed588b22c87de204e058f8d148fb36.jpg"
       ],
-      "imageCount": 7
+      "imageCount": 1
     },
     {
       "profileKey": "bark-fibers",
@@ -368,8 +362,8 @@
     {
       "profileKey": "carpet",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619738/atlas/fztbfiyix1yq7l6fihpg.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748833/atlas/fop9ksro9me4e8yhhte2.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619738/atlas/fztbfiyix1yq7l6fihpg.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619740/atlas/a0dis4pmxfjbsvyacd71.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748834/atlas/mmn6l2m6rbdsdzmosqdd.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1771748836/atlas/ccidzzk6t71lphjb8bha.jpg",
@@ -506,11 +500,9 @@
     {
       "profileKey": "comparisons",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619627/atlas/hhkz39drqdkygu1ufk6w.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619628/atlas/tyzguzj7ouzy53e7k5ov.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619629/atlas/pd33ispof9yf4rof0zdk.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619627/atlas/hhkz39drqdkygu1ufk6w.jpg"
       ],
-      "imageCount": 3
+      "imageCount": 1
     },
     {
       "profileKey": "copper",
@@ -571,9 +563,25 @@
     {
       "profileKey": "crochet",
       "imageLinks": [
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628165/atlas/z1yghqwymlr5gjvk7a0j.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628158/atlas/ylpytdyuyh4sjfmgvwh3.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628707/atlas/cleb8cwwctcypwdrnslf.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775627889/atlas/g6ytepocmrgotcyfzmmg.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628115/atlas/iogbrkwye5olyhcekls7.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628243/atlas/aihyqsvv9l9is1gz0yuy.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628100/atlas/u8rqs6xmr2pia397osst.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628108/atlas/f0pfg49truwcu6xc6k5g.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628134/atlas/owgfgwdjfbuyuitr47sn.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628181/atlas/n5zmd8jrsid47ofdqpee.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628239/atlas/sdfw6dpjbp2nqzbdpl5v.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628607/atlas/lmsyblcljfoy0teqc26w.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628680/atlas/vp1torkhdysbtwvll29a.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628741/atlas/s0ugxnzkm9qd3p1tmfcj.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628755/atlas/fchfpm7iojih7vvsqqcs.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628788/atlas/cz9w1i3k437lfwgqqncf.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619379/atlas/jtv4qymbqpncu4dfnjfw.jpg"
       ],
-      "imageCount": 1
+      "imageCount": 17
     },
     {
       "profileKey": "curaua",
@@ -600,16 +608,29 @@
     {
       "profileKey": "denim",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619380/atlas/vejjdsex22esf3i07fsm.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775632907/atlas/lgcxj1335uxi02sketwf.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775632883/atlas/jey7jupntysihilwr4zy.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775632925/atlas/xflypfwgiaatwqaah6ne.png",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775630569/atlas/xjwcklj8ffrkrhfaycla.jpg"
       ],
-      "imageCount": 1
+      "imageCount": 4
     },
     {
       "profileKey": "dobby",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619335/atlas/ia0ujj85h7nbtwjhpzvm.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633709/atlas/fop9nk7vze9wqwagxd6k.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633134/atlas/lhabwubxtjcjo9i4ytmq.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633165/atlas/q34qptz81fnrgobrcyus.png",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633257/atlas/stl7e7oycyuvazbotqfg.png",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633124/atlas/ggxcrfhsgrhoksrhuf8z.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633143/atlas/nazenacjmkcamc93wkqn.webp",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633214/atlas/a6wl6hbqnlznjmgyojox.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633358/atlas/xrdww1exxxueamaaaykv.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633422/atlas/y1bwzjy18nzamrrxvwy8.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633761/atlas/hdl1sukrszobnodps9y3.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633829/atlas/nziecivxhh2hpvza22mu.jpg"
       ],
-      "imageCount": 1
+      "imageCount": 11
     },
     {
       "profileKey": "dupioni",
@@ -621,11 +642,9 @@
     {
       "profileKey": "dye",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619062/atlas/tqyjtstogvvwcapvdkqc.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619387/atlas/aodeqxu6yj60v19qrisg.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619441/atlas/ys3kishpjrmqygxiyjjs.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619062/atlas/tqyjtstogvvwcapvdkqc.jpg"
       ],
-      "imageCount": 3
+      "imageCount": 1
     },
     {
       "profileKey": "dye-gardens",
@@ -660,25 +679,20 @@
     {
       "profileKey": "fabric",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619295/atlas/yd9gicbnz5hqgfidd4j0.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619298/atlas/rmbihi1gat7bqckkqth2.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619300/atlas/qmoonfzk1cxfcurofqn1.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619302/atlas/k2lnhjen87qld9n1jrqh.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619304/atlas/u1mfbmqgy69hovjrjn8l.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619305/atlas/cnfyb1xgm8ew1gznqtdh.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619307/atlas/uf6l7s3bwjhjtqduk3dt.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619309/atlas/b0zt9dl2ljkzw2fxej9b.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619295/atlas/yd9gicbnz5hqgfidd4j0.jpg"
       ],
-      "imageCount": 8
+      "imageCount": 1
     },
     {
       "profileKey": "felt",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619184/atlas/xbtkwreyjuogrzymhkib.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619357/atlas/vkzrtpdvm0ajacx3ga8z.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619358/atlas/aw9qzjj07zlh0xikcrns.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624374/atlas/oehtedgv8tg4zjadobfd.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775627507/atlas/o84uu4r1yapfp8ovjezy.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628349/atlas/xh5smbmmxz63wiuh4ick.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624407/atlas/wefx9xmfv6ibeik5kwb0.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624475/atlas/hj1dcdquvtrsk28w7z8v.jpg"
       ],
-      "imageCount": 3
+      "imageCount": 5
     },
     {
       "profileKey": "fig-barkcloth",
@@ -693,6 +707,7 @@
         "https://weavearealpeace.org/wp-content/uploads/2023/05/Barkcloth-of-Uganda.jpg",
         "https://www.gorillatrackings.com/wp-content/uploads/2023/01/barkcloth-1000x454.jpg",
         "https://pbs.twimg.com/media/GAhztO2WkAAyPqN?format=jpg&name=large",
+        "https://upload.wikimedia.org/wikipedia/commons/f/fb/Ficus_natalensis%2C_lugwortels%2C_Manie_van_der_Schijff_BT%2C_a.jpg",
         "https://sma-search-api.ku.edu/271eaba00a5896ad7d382f6b3cfa5eeedb2599d8ed4071cc8fc9bad7b36fd308/2017.0084.jpg",
         "https://eucarlwears.com/wp-content/uploads/2022/12/1670696521170-768x768.webp",
         "https://eucarlwears.com/wp-content/uploads/2022/12/1670696506361-768x768.webp",
@@ -700,7 +715,6 @@
         "https://instagram.fcxh2-1.fna.fbcdn.net/v/t39.30808-6/468391874_17939460416940738_2924287540398949773_n.jpg?stp=dst-jpg_e35_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InRocmVhZHMuQ0FST1VTRUxfSVRFTS5pbWFnZV91cmxnZW4uMTQ0MHgxODAwLnNkci5mMzA4MDguZGVmYXVsdF9pbWFnZS5jMiJ9&_nc_ht=instagram.fcxh2-1.fna.fbcdn.net&_nc_cat=106&_nc_oc=Q6cZ2gGLJfesC2sQDpSSr-MAZhiKYmMavhfSFBCsuzQLfbxzapljFIKJ9e4oXwfsHWhGtMYoIbolfes3rML7vxcJl79G&_nc_ohc=bgBD2BdGdPoQ7kNvwEy7NTE&_nc_gid=XG5Vp0VhIcf7Fs9mwHYo2w&edm=AKr904kAAAAA&ccb=7-5&ig_cache_key=MzQyMzQxMzA2Nzg5MjUwMDkzMw%3D%3D.3-ccb7-5&oh=00_AfxcgcfQUsnuzocDAJE9hSQmCUKR2o3X-DK5k6ny_BiYcg&oe=69CA07FA&_nc_sid=23467f",
         "https://instagram.fcxh2-1.fna.fbcdn.net/v/t39.30808-6/468448941_17939460221940738_7995358322626120548_n.jpg?stp=dst-jpg_e35_tt6&efg=eyJ2ZW5jb2RlX3RhZyI6InRocmVhZHMuQ0FST1VTRUxfSVRFTS5pbWFnZV91cmxnZW4uMTQ0MHgxODAwLnNkci5mMzA4MDguZGVmYXVsdF9pbWFnZS5jMiJ9&_nc_ht=instagram.fcxh2-1.fna.fbcdn.net&_nc_cat=106&_nc_oc=Q6cZ2gGLJfesC2sQDpSSr-MAZhiKYmMavhfSFBCsuzQLfbxzapljFIKJ9e4oXwfsHWhGtMYoIbolfes3rML7vxcJl79G&_nc_ohc=aS3OvXNzRCQQ7kNvwGrMQrq&_nc_gid=XG5Vp0VhIcf7Fs9mwHYo2w&edm=AKr904kAAAAA&ccb=7-5&ig_cache_key=MzQyMzQxMzA2NDIxODM0MjM3MA%3D%3D.3-ccb7-5&oh=00_AfxABVv7Kgs9BSmRvcn4blR10dl4JsHbPXuHF4RB3xYBnw&oe=69CA0250&_nc_sid=23467f",
         "https://scontent.fyvr1-1.fna.fbcdn.net/v/t39.30808-6/481272039_1706752316905260_4338829477590228719_n.jpg?_nc_cat=107&ccb=1-7&_nc_sid=e06c5d&_nc_ohc=96UNniPVCIUQ7kNvwFOPnoG&_nc_oc=Adpf9V2oLgr8OmRF5b3qpxCzngEf-4RxNBQStCTVTDWKIHkWEjS1eWpeMLJKloTH-q6h-BMGWCYsOcuNf7U8tfg3&_nc_zt=23&_nc_ht=scontent.fyvr1-1.fna&_nc_gid=5ba9OQHbrj45lWNfwIhcVw&_nc_ss=7a30f&oh=00_Afw2HReur4lfIdzApwALmK_MKWbPE446RYGYctKphpMbDQ&oe=69C30400",
-        "https://upload.wikimedia.org/wikipedia/commons/f/fb/Ficus_natalensis%2C_lugwortels%2C_Manie_van_der_Schijff_BT%2C_a.jpg",
         "https://westvilleconservancy.co.za/wp-content/uploads/2023/05/Ficus-Natalensis-scaled.jpg"
       ],
       "imageCount": 19
@@ -797,6 +811,13 @@
       "imageCount": 1
     },
     {
+      "profileKey": "grass-fibers",
+      "imageLinks": [
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619635/atlas/cpiq70rhbutlzou9xbbk.jpg"
+      ],
+      "imageCount": 1
+    },
+    {
       "profileKey": "habotai",
       "imageLinks": [
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619261/atlas/yksbwtxethsok4bxsoix.jpg"
@@ -852,11 +873,13 @@
         "https://projectcbd.org/wp-content/uploads/2023/09/cannabis-vs-hemp.jpg",
         "https://cloudfront-us-east-1.images.arcpublishing.com/gray/4UBYRHFWQVDEZDAV6LBVJNMAUM.jpg",
         "https://cdn.shopify.com/s/files/1/0562/8792/0217/t/7/assets/Group-2-2.jpg?v=1655293552",
-        "https://i.pinimg.com/originals/04/e5/c2/04e5c26f85759591758de800cad90423.jpg",
-        "https://www.treehugger.com/thmb/uQTtNfIG31csL-LH2z735DdKaXM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-520378172-bb0c73f6f4954fcea5b620f2119a83e9.jpg",
-        "https://lh6.googleusercontent.com/6aZ9MZoPCa8ue1KRQgD_0Y0QIGUY5Ec0dP4WoU4F0s9AASv_bwULNDuAom9JWEtDHz3cd8t_2ggc-KPZRoHa1_qKAPw0uVc4CkzImujxFip_hvSaubnAHV0BJCdZrKpA6w=s800",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621157/atlas/rkwfiqxsmjvhhrlxobwr.jpg",
         "https://homeofwool.com/wp-content/uploads/2025/09/home-of-wool-100-hemp-fabric-1-main.jpg",
+        "https://www.treehugger.com/thmb/uQTtNfIG31csL-LH2z735DdKaXM=/1500x0/filters:no_upscale():max_bytes(150000):strip_icc()/GettyImages-520378172-bb0c73f6f4954fcea5b620f2119a83e9.jpg",
+        "https://i.pinimg.com/originals/04/e5/c2/04e5c26f85759591758de800cad90423.jpg",
+        "https://lh6.googleusercontent.com/6aZ9MZoPCa8ue1KRQgD_0Y0QIGUY5Ec0dP4WoU4F0s9AASv_bwULNDuAom9JWEtDHz3cd8t_2ggc-KPZRoHa1_qKAPw0uVc4CkzImujxFip_hvSaubnAHV0BJCdZrKpA6w=s800",
         "https://www.jcrafteco.com/upload/categoryimage/thumb-woven-hemp.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621148/atlas/o7trumgok6nnf2hgjltl.jpg",
         "https://lampoonmagazine.com/wp-content/uploads/2025/06/Cutting-hemp-by-hand.webp",
         "https://upload.wikimedia.org/wikipedia/commons/f/fb/PSM_V54_D031_Spreading_hemp_in_kentucky.jpg",
         "https://static.wixstatic.com/media/554e81_de4579fa5b9a4aa4a87e1763c4e018b7~mv2.jpg/v1/fill/w_962,h_680,al_c/554e81_de4579fa5b9a4aa4a87e1763c4e018b7~mv2.jpg",
@@ -876,7 +899,6 @@
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1775605256/atlas/yvzukexcqubueevpzvm0.webp",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621144/atlas/grfarocqm0rofhbxlzzz.jpg",
         "https://www.indiahempandco.com/cdn/shop/articles/hemp_farming_900x.jpg?v=1722588711",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621139/atlas/mdxzvdjxdgmuzh2zkb1u.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621140/atlas/ducuzbcqcxyjltoiucfr.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621146/atlas/rau931nv0w2fdag0mcc1.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621145/atlas/mcxp4yrt2baymntp7pk3.jpg",
@@ -884,10 +906,9 @@
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621142/atlas/vvxs1abhwudketjuogae.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621141/atlas/wfxcvs8n6rmxbc12uvad.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621142/atlas/pvbnuncegb7esonqg5l4.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621148/atlas/o7trumgok6nnf2hgjltl.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621157/atlas/rkwfiqxsmjvhhrlxobwr.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621169/atlas/xnunirqwuxue5ndj2lqr.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621147/atlas/szxmfbhsa07fgzvxqkxh.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621147/atlas/szxmfbhsa07fgzvxqkxh.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775621139/atlas/mdxzvdjxdgmuzh2zkb1u.jpg"
       ],
       "imageCount": 68
     },
@@ -962,11 +983,9 @@
     {
       "profileKey": "Imagery",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619649/atlas/k8sv4sqhabnzszytn7ij.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619646/atlas/we0zxpjjhcuxdbparwzk.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619647/atlas/u4egum6hpzs2numdpttn.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619649/atlas/k8sv4sqhabnzszytn7ij.jpg"
       ],
-      "imageCount": 3
+      "imageCount": 1
     },
     {
       "profileKey": "indigo",
@@ -990,13 +1009,9 @@
     {
       "profileKey": "industrial-looms",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F474x%2Fe5%2F08%2Fcb%2Fe508cbc37fe18300de26135c1ad28f72.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619432/atlas/gwttv23gaark5rykvxkp.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619430/atlas/hjhhgt81yurk5y56p43i.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619427/atlas/jjnobfbhzi5aaftm5kko.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619426/atlas/a7j5bgqo3hphubqshiza.jpg"
       ],
-      "imageCount": 5
+      "imageCount": 1
     },
     {
       "profileKey": "iron-modifier",
@@ -1015,9 +1030,16 @@
     {
       "profileKey": "jacquard",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619336/atlas/oj0a4hgz7lg1rtmzhayo.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775629677/atlas/oxwwq3vnn6xnbnv1sicy.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775629566/atlas/cpeucdiwy4yde6agvgfd.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775629123/atlas/ofju4gxlbkmziaxooxvf.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775629191/atlas/ope7swpfhshrbydapmzi.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775629737/atlas/k4wh2kt0uqjqmk3ghjhj.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775629770/atlas/yv4wayyww0t6foo3ozcr.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775629496/atlas/fyii3d7ufncuqgnibt6q.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775629203/atlas/jrrlja28mdg0hpzv5vsa.jpg"
       ],
-      "imageCount": 1
+      "imageCount": 8
     },
     {
       "profileKey": "jute",
@@ -1071,6 +1093,28 @@
       "imageCount": 6
     },
     {
+      "profileKey": "knitting",
+      "imageLinks": [
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628165/atlas/z1yghqwymlr5gjvk7a0j.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628158/atlas/ylpytdyuyh4sjfmgvwh3.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628707/atlas/cleb8cwwctcypwdrnslf.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775627889/atlas/g6ytepocmrgotcyfzmmg.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628115/atlas/iogbrkwye5olyhcekls7.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628243/atlas/aihyqsvv9l9is1gz0yuy.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628100/atlas/u8rqs6xmr2pia397osst.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628108/atlas/f0pfg49truwcu6xc6k5g.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628134/atlas/owgfgwdjfbuyuitr47sn.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628181/atlas/n5zmd8jrsid47ofdqpee.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628239/atlas/sdfw6dpjbp2nqzbdpl5v.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628607/atlas/lmsyblcljfoy0teqc26w.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628680/atlas/vp1torkhdysbtwvll29a.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628741/atlas/s0ugxnzkm9qd3p1tmfcj.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628755/atlas/fchfpm7iojih7vvsqqcs.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775628788/atlas/cz9w1i3k437lfwgqqncf.jpg"
+      ],
+      "imageCount": 16
+    },
+    {
       "profileKey": "krajood",
       "imageLinks": [
         "https://upload.wikimedia.org/wikipedia/commons/1/12/Grey_sedge_imported_from_iNaturalist_photo_28072484_on_6_December_2023.jpg",
@@ -1112,9 +1156,12 @@
     {
       "profileKey": "lace",
       "imageLinks": [
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775630514/atlas/nnxxmlhgpzwxarx0r7cj.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775630500/atlas/mwx9off47dnbt3abhm3g.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775630540/atlas/rnoiuepwpp1sk7zn5rbq.webp",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619374/atlas/uznao6jgruscmk5elk8w.jpg"
       ],
-      "imageCount": 1
+      "imageCount": 4
     },
     {
       "profileKey": "leaf-fiber",
@@ -1134,11 +1181,11 @@
       "profileKey": "leno-weave",
       "imageLinks": [
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619672/atlas/ywiwxtgbeos81eqcsj7i.webp",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619678/atlas/yep56issntitkamckuip.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619684/atlas/knrxuq33lzwcjl1wwjxb.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619679/atlas/exfixrapre9dvunfw1dc.webp",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619678/atlas/yep56issntitkamckuip.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619680/atlas/smd8ihre47qiqdzxscqb.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619683/atlas/tne7hfzuvlhzskcckynp.png",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619684/atlas/knrxuq33lzwcjl1wwjxb.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619683/atlas/tne7hfzuvlhzskcckynp.png"
       ],
       "imageCount": 6
     },
@@ -1193,17 +1240,18 @@
       "imageCount": 8
     },
     {
+      "profileKey": "looming",
+      "imageLinks": [
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619721/atlas/hrivjhjeoaevgtxdrhfw.jpg"
+      ],
+      "imageCount": 1
+    },
+    {
       "profileKey": "looms",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619622/atlas/qr8fumuynjhlold3hdpm.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619614/atlas/ncferzvjg7zfsdj3huth.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619616/atlas/oji1uxt65qghrr3jqymr.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619617/atlas/mc2zkuqeuws1wimjpiyu.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619619/atlas/p8ch536ndvq3msdo61n6.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619620/atlas/slx2hncrziirp43swxox.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619626/atlas/pujns372ik9i1sk3z584.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619622/atlas/qr8fumuynjhlold3hdpm.jpg"
       ],
-      "imageCount": 7
+      "imageCount": 1
     },
     {
       "profileKey": "lotus",
@@ -1325,10 +1373,9 @@
     {
       "profileKey": "mills",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619432/atlas/gwttv23gaark5rykvxkp.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F474x%2Fe5%2F08%2Fcb%2Fe508cbc37fe18300de26135c1ad28f72.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619432/atlas/gwttv23gaark5rykvxkp.jpg"
       ],
-      "imageCount": 2
+      "imageCount": 1
     },
     {
       "profileKey": "mineral-regenerated",
@@ -1395,9 +1442,15 @@
     {
       "profileKey": "muslin",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619419/atlas/rg8eyy0xhjyni7qwh7qv.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775632462/atlas/ho1tm3wjgbu9d7pvl7eq.webp",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775632402/atlas/fcckpdtfakrgamoikac9.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775630989/atlas/h8whawgclourmb57hofk.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775630968/atlas/k0urwpfxttt8oyhp2pgj.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775632501/atlas/e0sqoxlcadbpagj3atty.webp",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775632512/atlas/pudii0p55jxfxab0kjqp.webp",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775632532/atlas/uoqxjtqizfmdzvbqv52q.jpg"
       ],
-      "imageCount": 1
+      "imageCount": 7
     },
     {
       "profileKey": "myrobalan",
@@ -1409,13 +1462,9 @@
     {
       "profileKey": "natural-dyes",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619441/atlas/ys3kishpjrmqygxiyjjs.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619439/atlas/v8dczesxoabiwvvopd3l.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619444/atlas/ohplabawujoa7eeapdjl.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Flive.staticflickr.com%2F3085%2F2514670182_f08c01f45c_b.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Flive.staticflickr.com%2F3123%2F2514669334_33b36eb478_b.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619441/atlas/ys3kishpjrmqygxiyjjs.jpg"
       ],
-      "imageCount": 5
+      "imageCount": 1
     },
     {
       "profileKey": "navajo-churro",
@@ -1694,9 +1743,18 @@
     {
       "profileKey": "plain-weave",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619327/atlas/rrkuqtcqijlbgleo8dhd.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775626161/atlas/rerig6xkzm6fdvhhskvn.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625883/atlas/d3rc0jatpdosnfi6kzb1.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625677/atlas/kumx3wpqfldknqktvide.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775626096/atlas/yvjhrpl25hz1wclcngxg.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625861/atlas/zivhsesdj3hc6impy3tn.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775626121/atlas/nophdmlmozh2rdhckch6.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775627623/atlas/pxqj19imxasbngpmknso.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775627639/atlas/uhwq3alhibnn7p9id1vu.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775627680/atlas/attufanxo5en5zxqxfrc.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775627956/atlas/xel4ikyjzgpot85gvhqh.jpg"
       ],
-      "imageCount": 1
+      "imageCount": 10
     },
     {
       "profileKey": "plant-cellulose",
@@ -1710,11 +1768,9 @@
     {
       "profileKey": "plant-fiber",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771714088/atlas/fxdls4dvog3jxhsj5q9i.png",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771714087/atlas/vm96tfgwy69otsdf9ilp.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619063/atlas/cqmlfrhbk3hlnpyllngg.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771714088/atlas/fxdls4dvog3jxhsj5q9i.png"
       ],
-      "imageCount": 3
+      "imageCount": 1
     },
     {
       "profileKey": "pomegranate",
@@ -1935,9 +1991,14 @@
     {
       "profileKey": "satin",
       "imageLinks": [
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633061/atlas/omvtsadn48205woznvtd.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633057/atlas/tlcje6l4zwp1x88xfyhv.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633002/atlas/hhwuxonvo2qpigwpbsjv.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633012/atlas/zjqezx2ayypam9nnlwxq.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775633102/atlas/gqpjlpakftzxfxncyawt.jpg",
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619334/atlas/bhev6asv5y27dupy6vpf.jpg"
       ],
-      "imageCount": 1
+      "imageCount": 6
     },
     {
       "profileKey": "seagrass",
@@ -2062,18 +2123,38 @@
     {
       "profileKey": "spinning",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619312/atlas/m2gfnb0ypgvtzixvinxt.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624684/atlas/dsx4g3yjlhrbqb5wnmqm.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619312/atlas/m2gfnb0ypgvtzixvinxt.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624733/atlas/g78nusgtasosmfptkqfq.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624598/atlas/zqwityl66j5a9veh3na9.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624642/atlas/ozaorkx4qhhy0cy0rl2z.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624759/atlas/v0fcmgd3gukg7dbljjw7.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624810/atlas/vcbwxyokbfrm62b2dk0t.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624819/atlas/kjljss4ll4y6h2xzupj9.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625435/atlas/lqaycicwdg7elndcgtzx.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625440/atlas/hyfjysoll3q2njy7bnkx.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625462/atlas/tmcjy64ht8ucmhfz90re.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625475/atlas/nf231uzkxo1v5st5cdmp.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625480/atlas/kjxq0fs8ujilzspjgtcr.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625495/atlas/bq1arrz0usif969r5qga.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625509/atlas/kbezbhql8atr8kc8bych.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625514/atlas/wbktp5v3fjjs5f5oxft1.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625577/atlas/cw3ns7fvkszi0qasnkoh.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625577/atlas/zhcpf8izfm2uihe9pyyg.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625589/atlas/mg3muuadtaen4k0ku7ap.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625599/atlas/rjlnbukopznb9odi2bsd.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625606/atlas/flmzzece2adn2qykqouu.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775625667/atlas/yponzoslyjmuj2phj1j3.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775627863/atlas/wqgwnoezsvfshgxnj4nk.jpg"
       ],
-      "imageCount": 1
+      "imageCount": 23
     },
     {
       "profileKey": "spinning-systems",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619404/atlas/jorm3fa7yyicidprpibv.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619408/atlas/ivucffvpe8xlq1ixyfe1.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619409/atlas/xonsmbswcg7hywjzup4m.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619404/atlas/jorm3fa7yyicidprpibv.jpg"
       ],
-      "imageCount": 3
+      "imageCount": 1
     },
     {
       "profileKey": "sunn-hemp",
@@ -2125,9 +2206,13 @@
     {
       "profileKey": "tapestry",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619337/atlas/vxgu8wuwgg0nv6qykdin.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775630187/atlas/ya8lx4kofpjrgplit7ef.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775630336/atlas/mmh8wjatbvqrpqvpj600.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775630351/atlas/rpis4num1o07e4514bnv.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775630358/atlas/rhxrz4wdxmc1emopjldc.jpg",
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775630378/atlas/ndxmzzszwx0u2yjznqif.jpg"
       ],
-      "imageCount": 1
+      "imageCount": 5
     },
     {
       "profileKey": "tea-dye",
@@ -2273,11 +2358,9 @@
     {
       "profileKey": "weave-structures",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619412/atlas/zm0iw5qiyzctyzeziamw.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619413/atlas/uvr5httz5cgqnjf5xfbf.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619416/atlas/nxzqe5p23i5zplwhscv7.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619412/atlas/zm0iw5qiyzctyzeziamw.jpg"
       ],
-      "imageCount": 3
+      "imageCount": 1
     },
     {
       "profileKey": "weaving",
@@ -2302,10 +2385,9 @@
     {
       "profileKey": "weaving-process",
       "imageLinks": [
-        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619431/atlas/tnplctqu9iqps4slops5.jpg",
-        "https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fi.pinimg.com%2F1200x%2Fd8%2F1a%2F63%2Fd81a630933e4d664a5154be981d83ca7.jpg"
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1771619431/atlas/tnplctqu9iqps4slops5.jpg"
       ],
-      "imageCount": 2
+      "imageCount": 1
     },
     {
       "profileKey": "weld",
@@ -2342,6 +2424,13 @@
       "profileKey": "wool-fiber",
       "imageLinks": [
         "https://res.cloudinary.com/dawxvzlte/image/upload/v1773764076/atlas/uyrezhpkh4zctzowpkeo.jpg"
+      ],
+      "imageCount": 1
+    },
+    {
+      "profileKey": "woven",
+      "imageLinks": [
+        "https://res.cloudinary.com/dawxvzlte/image/upload/v1775624861/atlas/zhzqfejtq6fim56edjr8.jpg"
       ],
       "imageCount": 1
     },

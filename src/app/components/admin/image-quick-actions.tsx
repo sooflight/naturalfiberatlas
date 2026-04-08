@@ -121,9 +121,6 @@ export function ImageQuickActions({
                     helperText="Uploads to Cloudinary, then stages resulting URLs"
                     onUploadingChange={setIsUploading}
                     onUploaded={(entries) => {
-                      // #region agent log
-                      fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "72f2cc" }, body: JSON.stringify({ sessionId: "72f2cc", runId: "finder-drop-repro", hypothesisId: "H5", location: "image-quick-actions.tsx:onUploaded", message: "dropzone returned uploaded entries", data: { entryCount: entries.length, secureUrls: entries.slice(0, 5).map((entry) => entry.secureUrl) }, timestamp: Date.now() }) }).catch(() => {});
-                      // #endregion
                       appendStagedUrls(entries.map((entry) => entry.secureUrl));
                     }}
                   />
@@ -159,9 +156,6 @@ export function ImageQuickActions({
                   <button
                     onClick={() => {
                       if (stagedUrls.length === 0) return;
-                      // #region agent log
-                      fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "72f2cc" }, body: JSON.stringify({ sessionId: "72f2cc", runId: "finder-drop-repro", hypothesisId: "H5", location: "image-quick-actions.tsx:uploadAndAdd", message: "upload and add clicked", data: { stagedUrlCount: stagedUrls.length, firstUrls: stagedUrls.slice(0, 5) }, timestamp: Date.now() }) }).catch(() => {});
-                      // #endregion
                       onAddImages(stagedUrls, "upload");
                       clearAndClose();
                     }}

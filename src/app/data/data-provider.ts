@@ -28,6 +28,7 @@ import {
   anatomyData as bundledAnatomyData,
   careData as bundledCareData,
   quoteData as bundledQuoteData,
+  getGalleryImages,
 } from "./atlas-data";
 
 /* ══════════════════════════════════════════════════════════
@@ -449,7 +450,21 @@ export class LocalStorageSource implements AtlasDataSource {
     const activeBundledFibers = bundledFibers.filter((fiber) => !deletedFiberIds.has(fiber.id));
     this._fibers = activeBundledFibers.map((f) => {
       const patch = overrides?.[f.id];
-      const merged = patch ? { ...f, ...patch, id: f.id } : f;
+      let merged: FiberProfile = patch ? { ...f, ...patch, id: f.id } : f;
+      // Renamed profile (`crochet` → `knitting`): a stale empty local override should not hide the catalog gallery.
+      if (
+        f.id === "knitting" &&
+        Array.isArray(merged.galleryImages) &&
+        merged.galleryImages.length === 0 &&
+        getGalleryImages("knitting").length > 0
+      ) {
+        const baseline = getGalleryImages("knitting");
+        merged = {
+          ...merged,
+          galleryImages: baseline,
+          image: baseline[0]?.url ?? merged.image,
+        };
+      }
       return stripSustainability(merged as unknown as Record<string, unknown>) as unknown as FiberProfile;
     });
     this._fiberMap = null;

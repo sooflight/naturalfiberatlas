@@ -134,6 +134,11 @@ export const atlasNavigation: NavNode[] = [
   // ══════════════════════════════════════════════
   ni("textile", "Textile", "layers", { shortLabel: "Textile", description: "Fabric profiles — yarn, woven, knit, nonwoven, lace, and finishing." }, [
 
+    n("textile-portal-thumbnail", "Portal thumbnail", {
+      shortLabel: "Nav thumb",
+      description: "Image for the Textile portal in the public top navigation (maps to the site “Textile” segment).",
+    }),
+
     n("yarn", "Yarn", { description: "Yarn-making processes and structures — spinning, plying, weight, twist, and texture." }, [
       n("spinning", "Spinning"),
       n("plying", "Plying"),
@@ -162,6 +167,7 @@ export const atlasNavigation: NavNode[] = [
     ]),
 
     n("knit", "Knit", { description: "Fabrics formed by interlocking loops of yarn." }, [
+      n("knitting", "Knitting"),
       n("stockinette", "Stockinette / Jersey"),
       n("ribbing", "Ribbing / Rib Knit"),
       n("cable-knit", "Cable Knit"),
@@ -182,7 +188,6 @@ export const atlasNavigation: NavNode[] = [
     n("lace", "Lace", { description: "Open-work fabrics made by looping, twisting, or knitting threads." }, [
       n("bobbin-lace", "Bobbin Lace"),
       n("needle-lace", "Needle Lace"),
-      n("crochet", "Crochet"),
     ]),
 
     n("finishing", "Finishing", { description: "Processes that transform raw fabric into finished textile — dyeing, printing, chemical and mechanical treatments." }, [

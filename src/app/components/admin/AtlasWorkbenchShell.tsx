@@ -348,8 +348,12 @@ function AtlasWorkbenchShellContent() {
     for (const [profileId, status] of Object.entries(passportStatusOverrides)) {
       if (!profileId || !status) continue;
       if (!["draft", "published", "archived"].includes(status)) continue;
+      const normalizedStatus = status === "draft" ? "archived" : status;
       const prev = fibersPatch[profileId];
-      fibersPatch[profileId] = { ...(prev && typeof prev === "object" ? prev : {}), status };
+      fibersPatch[profileId] = {
+        ...(prev && typeof prev === "object" ? prev : {}),
+        status: normalizedStatus,
+      };
     }
     const diffJson = JSON.stringify(diffPayload, null, 2);
     const localGlobalOrder = parseJSON<string[]>(localStorage.getItem("atlas:fiber-order"));

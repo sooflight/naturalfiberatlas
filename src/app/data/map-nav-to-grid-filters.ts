@@ -43,10 +43,6 @@ export function mapNavToGridFilters(nodeId: string | null): {
     return { category: "fiber", fiberSubcategory: "regen" };
   }
 
-  if (["woven", "knit", "nonwoven"].includes(nodeId)) {
-    return { category: "textile", fiberSubcategory: null };
-  }
-
   if (["natural-dye", "synthetic-dye", "bio-dye"].includes(nodeId)) {
     return { category: "dye", fiberSubcategory: null };
   }

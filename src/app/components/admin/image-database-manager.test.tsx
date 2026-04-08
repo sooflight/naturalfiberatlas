@@ -7,7 +7,7 @@ let fibersMock = [
   {
     id: "hemp",
     name: "Hemp",
-    status: "draft",
+    status: "published" as const,
     image: "https://example.com/hero.jpg",
     galleryImages: [
       { url: "https://example.com/hero.jpg" },
@@ -31,7 +31,7 @@ describe("ImageDatabaseManager", () => {
       {
         id: "hemp",
         name: "Hemp",
-        status: "draft",
+        status: "published",
         image: "https://example.com/hero.jpg",
         galleryImages: [
           { url: "https://example.com/hero.jpg" },
@@ -42,7 +42,7 @@ describe("ImageDatabaseManager", () => {
     ];
   });
 
-  it("renders a live/draft pill switch and toggles status", () => {
+  it("renders a live/archived status control and toggles status", () => {
     render(
       <ImageDatabaseManager
         onOpenScoutForProfile={() => {}}
@@ -51,8 +51,8 @@ describe("ImageDatabaseManager", () => {
     );
 
     const statusSwitch = screen.getByRole("switch", { name: /set profile status to archived/i });
-    expect(statusSwitch.getAttribute("aria-checked")).toBe("false");
-    expect(screen.getByTestId("workspace-status-circle-hemp").className).toContain("bg-neutral-300");
+    expect(statusSwitch.getAttribute("aria-checked")).toBe("true");
+    expect(screen.getByTestId("workspace-status-circle-hemp").className).toContain("bg-emerald-500");
 
     fireEvent.click(statusSwitch);
     expect(updateFiberMock).toHaveBeenCalledWith("hemp", { status: "archived" });
@@ -75,7 +75,7 @@ describe("ImageDatabaseManager", () => {
       {
         id: "hemp",
         name: "Hemp",
-        status: "draft",
+        status: "published",
         image: "https://example.com/hemp.jpg",
         galleryImages: [{ url: "https://example.com/hemp.jpg" }],
         tags: [],

@@ -47,12 +47,12 @@ describe("profile status derivation helpers", () => {
     expect(toDisplayProfileState("published")).toBe("live");
   });
 
-  it("derives draft-like statuses as draft", () => {
+  it("maps non-published statuses to archived in the two-state display helper", () => {
     expect(isProfileLive("draft")).toBe(false);
     expect(isProfileLive(undefined)).toBe(false);
     expect(isProfileLive(null)).toBe(false);
-    expect(toDisplayProfileState("draft")).toBe("draft");
-    expect(toDisplayProfileState(undefined)).toBe("draft");
+    expect(toDisplayProfileState("draft")).toBe("archived");
+    expect(toDisplayProfileState(undefined)).toBe("archived");
   });
 
   it("derives archived status explicitly", () => {

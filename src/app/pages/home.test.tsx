@@ -91,6 +91,10 @@ describe("HomePage search integration", () => {
     expect(mapNavToGridFilters("specialty-protein")).toEqual({ category: "fiber", fiberSubcategory: "specialty-protein" });
   });
 
+  it("maps Textile root to category textile only", () => {
+    expect(mapNavToGridFilters("textile")).toEqual({ category: "textile", fiberSubcategory: null });
+  });
+
   it("applies Layer 2 click as a GridView fiber subcategory filter", async () => {
     renderHome();
 
@@ -130,6 +134,17 @@ describe("HomePage search integration", () => {
     await waitFor(() => {
       expect(screen.getByTestId("grid-category-prop")).toHaveTextContent("fiber");
       expect(screen.getByTestId("grid-fiber-subcategory-prop")).toHaveTextContent("wool-fiber");
+    });
+  });
+
+  it("applies Textile root click as full textile category filter", async () => {
+    renderHome();
+
+    fireEvent.click(screen.getByRole("button", { name: /Textile Textile/i }));
+
+    await waitFor(() => {
+      expect(screen.getByTestId("grid-category-prop")).toHaveTextContent("textile");
+      expect(screen.getByTestId("grid-fiber-subcategory-prop")).toHaveTextContent("");
     });
   });
 

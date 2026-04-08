@@ -104,7 +104,7 @@ interface ViewPreferences {
     filters: {
       search: string;
       category: string | null;
-      status: "all" | "live" | "draft" | "archived";
+      status: "all" | "live" | "archived";
     };
   };
   editor: {
@@ -238,13 +238,7 @@ export default function Library({ forcedMode }: LibraryProps) {
           hasKnowledge: !!p.passport,
           hasRichContent: !!(p.passport as Record<string, unknown> | null)?.summary,
         },
-        status: (
-          p.status === "published"
-            ? "published"
-            : p.status === "archived"
-              ? "archived"
-              : "draft"
-        ) as "published" | "draft" | "archived",
+        status: (p.status === "published" ? "published" : "archived") as "published" | "archived",
       }));
     }
 
@@ -274,7 +268,7 @@ export default function Library({ forcedMode }: LibraryProps) {
           passportStatus === "published" || passportStatus === "archived" ? passportStatus : null;
         const fs = fiber?.status;
         const fromFiber = fs === "published" || fs === "archived" ? fs : null;
-        const status = (fromPassport ?? fromFiber ?? "draft") as "published" | "draft" | "archived";
+        const status = (fromPassport ?? fromFiber ?? "archived") as "published" | "archived";
 
         return {
           id,
@@ -312,16 +306,9 @@ export default function Library({ forcedMode }: LibraryProps) {
   }, [contentItems, fiberIndex]);
 
   const contentStatusById = useMemo(() => {
-    const next = new Map<string, "published" | "draft" | "archived">();
+    const next = new Map<string, "published" | "archived">();
     orderedContentItems.forEach((item) => {
-      next.set(
-        item.id,
-        item.status === "published"
-          ? "published"
-          : item.status === "archived"
-            ? "archived"
-            : "draft",
-      );
+      next.set(item.id, item.status === "published" ? "published" : "archived");
     });
     return next;
   }, [orderedContentItems]);
@@ -366,13 +353,9 @@ export default function Library({ forcedMode }: LibraryProps) {
         completeness,
         mappedFields,
         totalFields,
-        status: (
-          (profileStatusOverrides[item.id] ?? item.status) === "published"
-            ? "published"
-            : (profileStatusOverrides[item.id] ?? item.status) === "archived"
-              ? "archived"
-              : "draft"
-        ) as "published" | "draft" | "archived",
+        status: ((profileStatusOverrides[item.id] ?? item.status) === "published"
+          ? "published"
+          : "archived") as "published" | "archived",
         lastModified: new Date(),
       };
     });
@@ -382,13 +365,8 @@ export default function Library({ forcedMode }: LibraryProps) {
     (profileId: string) => {
       const currentStatus = profileStatusOverrides[profileId]
         ?? contentStatusById.get(profileId)
-        ?? "draft";
-      const nextStatus =
-        currentStatus === "published"
-          ? "draft"
-          : currentStatus === "draft"
-            ? "archived"
-            : "published";
+        ?? "archived";
+      const nextStatus = currentStatus === "published" ? "archived" : "published";
       const nextRequestVersion = (profileStatusRequestVersionRef.current[profileId] ?? 0) + 1;
       profileStatusRequestVersionRef.current[profileId] = nextRequestVersion;
       const shouldApplyResponse = () => profileStatusRequestVersionRef.current[profileId] === nextRequestVersion;
@@ -949,7 +927,7 @@ interface ContentCardProps {
   item: {
     id: string;
     completion: { hasImages: boolean; hasKnowledge: boolean; hasRichContent: boolean; };
-    status: 'draft' | 'published';
+    status: "published" | "archived";
     images: unknown;
     passport: { summary?: string; performance?: unknown; sourcing?: unknown } | null;
   };

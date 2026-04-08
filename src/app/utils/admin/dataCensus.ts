@@ -126,7 +126,7 @@ export function runCensus(): CensusReport {
   const perProfile: Record<string, number> = {};
   let completenessSum = 0;
   for (const p of passports) {
-    const status = p.status ?? "draft";
+    const status = p.status ?? "archived";
     byStatus[status] = (byStatus[status] || 0) + 1;
     const c = passportCompleteness(p as Record<string, any>);
     const materialId = p.materialId ?? "unknown-material";

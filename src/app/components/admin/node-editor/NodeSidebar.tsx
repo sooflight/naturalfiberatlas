@@ -54,7 +54,6 @@ export function NodeSidebar({ selectedId, onSelect, knowledgeFibers = [] }: Node
   } | null>(null);
   const [expandedSections, setExpandedSections] = useState<Record<string, boolean>>({
     live: true,
-    drafts: false,
     archives: false,
     navNodes: true,
   });
@@ -132,10 +131,9 @@ export function NodeSidebar({ selectedId, onSelect, knowledgeFibers = [] }: Node
       dataSource.getFiberById(id)?.status ??
       profileStatusOverrides[id] ??
       MATERIAL_PASSPORTS[id]?.status ??
-      "draft";
+      "archived";
 
     const live: string[] = [];
-    const drafts: string[] = [];
     const archives: string[] = [];
     const navNodes: string[] = [];
 
@@ -148,15 +146,14 @@ export function NodeSidebar({ selectedId, onSelect, knowledgeFibers = [] }: Node
         if (!dataSource.getFiberById(id)) continue;
         const status = getStatus(id);
         if (status === "published") live.push(id);
-        else if (status === "archived") archives.push(id);
-        else drafts.push(id);
+        else archives.push(id);
       }
     }
 
     const navDisplayOrder = getNavigationNodeDisplayOrder();
     const sortedNavNodes = sortProfileIdsByCanonicalOrder(navNodes, navDisplayOrder);
 
-    return { live, drafts, archives, navNodes: sortedNavNodes };
+    return { live, archives, navNodes: sortedNavNodes };
   }, [filteredSequenceIds, profileStatusOverrides]);
 
   const visibleProfileCount = useMemo(() => {
@@ -193,7 +190,7 @@ export function NodeSidebar({ selectedId, onSelect, knowledgeFibers = [] }: Node
       dataSource.getFiberById(profileId)?.status ??
       profileStatusOverrides[profileId] ??
       MATERIAL_PASSPORTS[profileId]?.status ??
-      "draft",
+      "archived",
     [profileStatusOverrides],
   );
 
@@ -276,27 +273,24 @@ export function NodeSidebar({ selectedId, onSelect, knowledgeFibers = [] }: Node
     };
   }, [contextMenu]);
 
-  // When the selected profile moves to a different section (e.g. after toggling live/draft/archive),
+  // When the selected profile moves to a different section (e.g. after toggling live/archive),
   // auto-expand that section so the profile stays visible and the user doesn't hit "profile not found"
   useEffect(() => {
     if (!selectedId) return;
     const sectionKey =
       sectionGroups.live.includes(selectedId)
         ? "live"
-        : sectionGroups.drafts.includes(selectedId)
-          ? "drafts"
-          : sectionGroups.archives.includes(selectedId)
-            ? "archives"
-            : sectionGroups.navNodes.includes(selectedId)
-              ? "navNodes"
-              : null;
+        : sectionGroups.archives.includes(selectedId)
+          ? "archives"
+          : sectionGroups.navNodes.includes(selectedId)
+            ? "navNodes"
+            : null;
     if (sectionKey && expandedSections[sectionKey] === false) {
       setExpandedSections((prev) => ({ ...prev, [sectionKey]: true }));
     }
   }, [
     selectedId,
     sectionGroups.live,
-    sectionGroups.drafts,
     sectionGroups.archives,
     sectionGroups.navNodes,
     expandedSections,
@@ -423,8 +417,7 @@ export function NodeSidebar({ selectedId, onSelect, knowledgeFibers = [] }: Node
         <div style={{ padding: `${T.space.sm}px ${T.space.sm}px ${T.space.md}px`, display: "flex", flexDirection: "column", gap: T.space.sm }}>
           {[
             { key: "live", label: "Live Profiles", ids: sectionGroups.live, accent: "rgba(34,197,94,0.6)" },
-            { key: "drafts", label: "Drafts", ids: sectionGroups.drafts, accent: "rgba(59,130,246,0.6)" },
-            { key: "archives", label: "Archives", ids: sectionGroups.archives, accent: "rgba(148,163,184,0.6)" },
+            { key: "archives", label: "Archived Profiles", ids: sectionGroups.archives, accent: "rgba(148,163,184,0.6)" },
             { key: "navNodes", label: NAVIGATION_PARENT_LABEL, ids: sectionGroups.navNodes, accent: "rgba(251,146,60,0.65)" },
           ]
             .filter(({ ids }) => ids.length > 0)
@@ -677,7 +670,7 @@ export function NodeSidebar({ selectedId, onSelect, knowledgeFibers = [] }: Node
             }}
             title={profileStatusErrors[contextMenu.fiberId]}
           >
-            {profileStatusSaving[contextMenu.fiberId] ? "Toggling Live/Draft..." : "Toggle Live/Draft"}
+            {profileStatusSaving[contextMenu.fiberId] ? "Toggling Live/Archived..." : "Toggle Live/Archived"}
           </button>
           <button
             type="button"

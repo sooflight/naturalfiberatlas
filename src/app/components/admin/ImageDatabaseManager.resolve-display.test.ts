@@ -106,4 +106,20 @@ describe("resolveDisplayImageEntriesForKey", () => {
     const urls = entries.map((e) => extractImageUrl(e).trim());
     expect(urls).toEqual(["https://cdn.shopify.com/files/1/hero_600x.jpg"]);
   });
+
+  it("falls back to hero image when fiber gallery is empty and no local row exists", () => {
+    const source: ImageMap = {};
+    const getFiberById = (id: string) =>
+      id === testKey
+        ? {
+            id: testKey,
+            image: "https://example.com/hero-only.jpg",
+            galleryImages: [],
+          }
+        : undefined;
+
+    const entries = resolveDisplayImageEntriesForKey(source, testKey, null, getFiberById);
+    const urls = entries.map((e) => extractImageUrl(e).trim());
+    expect(urls).toEqual(["https://example.com/hero-only.jpg"]);
+  });
 });

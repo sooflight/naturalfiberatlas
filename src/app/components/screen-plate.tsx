@@ -157,8 +157,8 @@ export function ScreenPlate({
   const pipeline = useImagePipeline();
 
   /* ── Hue-tinted static frost ── */
-  const glowUrl = pipeline.transform(fiber.image, "glow");
-  const imageAnalysis = useImageAnalysis(glowUrl);
+  const hueProbeUrl = pipeline.transform(fiber.image, "hueProbe");
+  const imageAnalysis = useImageAnalysis(hueProbeUrl);
   const frostFill = useMemo(() => {
     if (!imageAnalysis) return "rgba(18, 18, 18, 0.82)";
     const h = Math.round(imageAnalysis.hue);

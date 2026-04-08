@@ -197,6 +197,8 @@ const ADMIN_TO_FRONTEND_THUMB_ALIASES: Record<string, string[]> = {
   plant: ["plant-cellulose"],
   animal: ["animal-protein"],
   regen: ["mineral-regenerated"],
+  /** Public nav id `textile` — editable slot lives under the admin Textile branch */
+  textile: ["textile-portal-thumbnail"],
 };
 
 function getThumbCandidateIds(nodeId: string): string[] {

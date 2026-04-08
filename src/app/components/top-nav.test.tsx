@@ -57,14 +57,14 @@ describe("TopNav search sync", () => {
     });
   });
 
-  it("does not show archived top-level categories", () => {
+  it("shows Textile top-level when textiles are live; hides Dye while dyes stay archived", () => {
     render(
       <TopNav activeNodeId={null} onNavigate={() => {}}>
         <div>content</div>
       </TopNav>,
     );
 
-    expect(screen.queryByRole("button", { name: /Textile Textile/i })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Textile Textile/i })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Dye Dye/i })).not.toBeInTheDocument();
   });
 

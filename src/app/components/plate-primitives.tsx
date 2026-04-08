@@ -203,13 +203,21 @@ export const plateLabelMap: Partial<Record<PlateType, string>> = {
    §7 — Shared components
    ══════════════════════════════════════════════════════════ */
 
-/** Bottom fade (alpha mask) when a detail plate scroll area has more content below the fold. */
-const DETAIL_SCROLL_BOTTOM_FADE =
-  "linear-gradient(to bottom, #000 0%, #000 calc(100% - 2.25rem), transparent 100%)";
+/** Edge fade height — matches bottom fade; used for top/bottom scroll masks. */
+const DETAIL_SCROLL_FADE = "2.25rem";
+
+/** Bottom-only fade (alpha mask) when more content sits below the fold. */
+const DETAIL_SCROLL_BOTTOM_FADE = `linear-gradient(to bottom, #000 0%, #000 calc(100% - ${DETAIL_SCROLL_FADE}), transparent 100%)`;
+
+/** Top-only fade when more content sits above the visible area. */
+const DETAIL_SCROLL_TOP_FADE = `linear-gradient(to bottom, transparent 0%, #000 ${DETAIL_SCROLL_FADE}, #000 100%)`;
+
+/** Top and bottom fades when scrolled into the middle of overflow content. */
+const DETAIL_SCROLL_TOP_BOTTOM_FADE = `linear-gradient(to bottom, transparent 0%, #000 ${DETAIL_SCROLL_FADE}, #000 calc(100% - ${DETAIL_SCROLL_FADE}), transparent 100%)`;
 
 /**
- * Scrollable region for detail (and screen) plates: soft mask at the bottom edge
- * instead of a hard clip while more content sits below.
+ * Scrollable region for detail (and screen) plates: soft masks at the top and/or bottom
+ * instead of a hard clip when content overflows in that direction.
  */
 export function DetailScrollRegion({
   children,
@@ -225,6 +233,7 @@ export function DetailScrollRegion({
   lang?: string;
 }) {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [fadeTop, setFadeTop] = useState(false);
   const [fadeBottom, setFadeBottom] = useState(false);
 
   const updateFade = useCallback(() => {
@@ -232,7 +241,9 @@ export function DetailScrollRegion({
     if (!el) return;
     const overflowY = el.scrollHeight > el.clientHeight + 1;
     const atBottom = el.scrollTop + el.clientHeight >= el.scrollHeight - 2;
+    const atTop = el.scrollTop <= 2;
     setFadeBottom(overflowY && !atBottom);
+    setFadeTop(overflowY && !atTop);
   }, []);
 
   useLayoutEffect(() => {
@@ -255,10 +266,19 @@ export function DetailScrollRegion({
     };
   }, [updateFade]);
 
-  const fadeStyle: CSSProperties | undefined = fadeBottom
+  const fadeMask =
+    fadeTop && fadeBottom
+      ? DETAIL_SCROLL_TOP_BOTTOM_FADE
+      : fadeTop
+        ? DETAIL_SCROLL_TOP_FADE
+        : fadeBottom
+          ? DETAIL_SCROLL_BOTTOM_FADE
+          : null;
+
+  const fadeStyle: CSSProperties | undefined = fadeMask
     ? {
-        maskImage: DETAIL_SCROLL_BOTTOM_FADE,
-        WebkitMaskImage: DETAIL_SCROLL_BOTTOM_FADE,
+        maskImage: fadeMask,
+        WebkitMaskImage: fadeMask,
       }
     : undefined;
 

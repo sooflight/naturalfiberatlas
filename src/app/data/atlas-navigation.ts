@@ -27,14 +27,10 @@ export const atlasNavigation: NavNode[] = [
     n("hair-fiber", "Hair"),
   ]),
   n("regen", "Rayon"),
+  n("textile", "Textile"),
 ];
 
 export const archivedNavigation: NavNode[] = [
-  n("textile", "Textile", [
-    n("woven", "Woven"),
-    n("knit", "Knit"),
-    n("nonwoven", "Nonwoven"),
-  ]),
   n("dye", "Dye", [
     n("natural-dye", "Natural"),
     n("synthetic-dye", "Synthetic"),

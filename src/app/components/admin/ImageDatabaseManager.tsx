@@ -60,6 +60,7 @@ import {
   partitionByNavigationParent,
   sortProfileIdsByCanonicalOrder,
 } from '../../data/profile-sequencing';
+import { RECOVERED_ARCHIVED_PROFILE_IDS } from '../../data/recovered-archived-profiles';
 import '@/styles/admin.css';
 
 // Extracted modules
@@ -104,9 +105,8 @@ export function isProfileLive(status: string | null | undefined): boolean {
   return status === 'published';
 }
 
-export function toDisplayProfileState(status: string | null | undefined): 'live' | 'draft' | 'archived' {
-  if (status === "archived") return "archived";
-  return isProfileLive(status) ? 'live' : 'draft';
+export function toDisplayProfileState(status: string | null | undefined): "live" | "archived" {
+  return isProfileLive(status) ? "live" : "archived";
 }
 
 function getProfileStatusWithFallback(
@@ -118,7 +118,7 @@ function getProfileStatusWithFallback(
   const fromOverrides = readPassportStatusOverrides()[profileKey];
   if (fromOverrides) return fromOverrides;
   const fromPassports = MATERIAL_PASSPORTS[profileKey]?.status;
-  return fromPassports ?? 'draft';
+  return fromPassports ?? "archived";
 }
 
 function withRecordValue<T>(prev: Record<string, T>, key: string, value: T | undefined): Record<string, T> {
@@ -161,12 +161,7 @@ export async function toggleProfilePublishStatus({
     if (requestVersion === undefined || !isLatestRequestVersion) return true;
     return isLatestRequestVersion(profileKey, requestVersion);
   };
-  const nextStatus =
-    currentStatus === "published"
-      ? "draft"
-      : currentStatus === "draft"
-        ? "archived"
-        : "published";
+  const nextStatus = currentStatus === "published" ? "archived" : "published";
 
   setStatusOverrides((prev) => ({ ...prev, [profileKey]: nextStatus }));
   setSavingByKey((prev) => ({ ...prev, [profileKey]: true }));
@@ -275,7 +270,7 @@ function imageEntryToGalleryImageEntry(e: ImageEntry): GalleryImageEntry {
 function resolveImageEntries(
   source: ImageMap,
   key: string,
-  getFiberById: (id: string) => Pick<FiberProfile, "id" | "galleryImages"> | undefined,
+  getFiberById: (id: string) => Pick<FiberProfile, "id" | "galleryImages" | "image"> | undefined,
 ): ImageEntry[] {
   const raw = source[key];
   if (raw !== undefined) {
@@ -287,7 +282,11 @@ function resolveImageEntries(
   }
   const fiber = getFiberById(key);
   if (fiber && Array.isArray(fiber.galleryImages)) {
-    return mergeFiberGalleryWithFallback(key, fiber as FiberProfile).map(galleryRowToImageEntry);
+    const merged = mergeFiberGalleryWithFallback(key, fiber as FiberProfile)
+      .map(galleryRowToImageEntry)
+      .filter((e) => extractImageUrl(e).trim().length > 0);
+    if (merged.length > 0) return merged;
+    return getFiberImageUrls(fiber).map((url) => url.trim()).filter((url) => url.length > 0);
   }
   return [];
 }
@@ -367,7 +366,9 @@ function buildImageMapFromFibers(
       const mergedEntries = mergeFiberGalleryWithFallback(fp.id, full as FiberProfile)
         .map(galleryRowToImageEntry)
         .filter((e) => extractImageUrl(e).trim().length > 0);
-      next[fp.id] = coerceImageMapValue(mergedEntries);
+      const fallbackEntries =
+        mergedEntries.length > 0 ? mergedEntries : getFiberImageUrls(full).map((url) => url.trim()).filter((url) => url.length > 0);
+      next[fp.id] = coerceImageMapValue(fallbackEntries);
       continue;
     }
     next[fp.id] = getFiberImageUrls(fp);
@@ -387,7 +388,9 @@ function augmentAtlasImageMapWithCatalogFibers(
       const mergedEntries = mergeFiberGalleryWithFallback(f.id, f as FiberProfile)
         .map(galleryRowToImageEntry)
         .filter((e) => extractImageUrl(e).trim().length > 0);
-      next[f.id] = coerceImageMapValue(mergedEntries);
+      const fallbackEntries =
+        mergedEntries.length > 0 ? mergedEntries : getFiberImageUrls(f).map((url) => url.trim()).filter((url) => url.length > 0);
+      next[f.id] = coerceImageMapValue(fallbackEntries);
     } else {
       next[f.id] = getFiberImageUrls(f);
     }
@@ -452,7 +455,8 @@ function shouldPreferLocalFiberImageRow(previousUrls: string[], canonicalUrls: s
   return true;
 }
 
-function mergeAtlasImagesWithNavigationOverrides(
+/** Exported for unit tests — stale `atlas-images` rows must not erase recomputed catalog URLs. */
+export function mergeAtlasImagesWithNavigationOverrides(
   atlasMap: ImageMap,
   previousMap: ImageMap,
   editableNavigationNodeIdSet: Set<string>,
@@ -465,9 +469,11 @@ function mergeAtlasImagesWithNavigationOverrides(
     const canonicalUrls = toUrlArray(atlasMap[id]);
     const previousUrls = toUrlArray(previousMap[id]);
     if (previousUrls.length === 0) {
-      // Explicit empty row (e.g. user removed last image): keep it so atlas re-merge
-      // cannot resurrect the gallery before fiber sync catches up.
-      merged[id] = previousMap[id];
+      // Only keep an explicit empty row when the recomputed atlas map is also empty.
+      // A stale `[]` in localStorage (e.g. after a profile id rename) must not wipe catalog URLs.
+      if (canonicalUrls.length === 0) {
+        merged[id] = previousMap[id];
+      }
       return;
     }
     if (shouldPreferLocalFiberImageRow(previousUrls, canonicalUrls)) {
@@ -1359,7 +1365,7 @@ export function ProfileCard({
                 <Maximize2Icon className="w-4 h-4" />
               </button>
 
-              {/* Draft/Live status */}
+              {/* Live / Archived status */}
               <ProfileStatusCircle
                 status={status}
                 onToggle={onToggleStatus}
@@ -1422,7 +1428,7 @@ export function ProfileCard({
               isLive ? "text-emerald-300" : "text-neutral-500",
               isGridLayout ? "tracking-wide uppercase" : ""
             )}>
-              {isLive ? 'Live' : 'Draft'}
+              {isLive ? "Live" : "Archived"}
             </span>
           </div>
         </div>
@@ -1791,7 +1797,6 @@ export default function ImageDatabaseManager({
 
   const { images, setImages, undo, redo, canUndo, canRedo } = useImageHistory(initial);
   const hasHydratedFiberSyncRef = useRef(false);
-  const hydratingFromAtlasRef = useRef(false);
   const previousImagesRef = useRef<ImageMap>(images);
   const atlasImageMap = useMemo(() => {
     const fromNav = buildImageMapFromFibers(imageBaseProfiles, getFiberById);
@@ -1862,12 +1867,6 @@ export default function ImageDatabaseManager({
       return;
     }
 
-    if (hydratingFromAtlasRef.current) {
-      hydratingFromAtlasRef.current = false;
-      previousImagesRef.current = images;
-      return;
-    }
-
     const previousImages = previousImagesRef.current;
     const keys = new Set([...Object.keys(previousImages), ...Object.keys(images)]);
     let pushedGalleryOverride = false;
@@ -1913,7 +1912,6 @@ export default function ImageDatabaseManager({
         getFiberById,
       );
       if (imageMapsEqualForSync(prev, mergedAtlasMap)) return prev;
-      hydratingFromAtlasRef.current = true;
       return mergedAtlasMap;
     });
   }, [atlasImageMap, editableNavigationNodeIdSet, getFiberById, setImages]);
@@ -2059,7 +2057,11 @@ export default function ImageDatabaseManager({
   // Filtered keys with node scope + search + atlas order
   const filteredKeys = useMemo(() => {
     if (focusProfileId) {
-      if (displayImages[focusProfileId] || getFiberById(focusProfileId)) {
+      if (
+        displayImages[focusProfileId] ||
+        getFiberById(focusProfileId) ||
+        editableNavigationNodeIdSet.has(focusProfileId)
+      ) {
         return [focusProfileId];
       }
       return [];
@@ -2067,11 +2069,15 @@ export default function ImageDatabaseManager({
 
     let keys = allKeys;
 
-    // Hide non-live fiber profiles in ImageBase unless explicitly selected from sidebar.
+    // Hide non-live fiber profiles in ImageBase unless they still carry images
+    // (Knowledge can surface these, so keep cross-view image visibility aligned).
+    // Recovered JSON-library stubs stay archived for the public grid but must remain editable here.
     keys = keys.filter((key) => {
       if (!getFiberById(key)) return true;
+      if (RECOVERED_ARCHIVED_PROFILE_IDS.has(key)) return true;
       const effectiveStatus = profileStatusOverrides[key] ?? getProfileStatusWithFallback(key, getFiberById);
-      return isProfileLive(effectiveStatus);
+      if (isProfileLive(effectiveStatus)) return true;
+      return toUrlArray(displayImages[key]).length > 0;
     });
 
     // Workspace node filter (selected node + all descendants)
@@ -2101,7 +2107,19 @@ export default function ImageDatabaseManager({
     keys = sortFilteredProfileKeys({ keys, canonicalOrder: canonicalProfileOrder });
 
     return keys;
-  }, [allKeys, images, displayImages, searchQuery, nodeScopedProfileIds, canonicalProfileOrder, activeNodeId, focusProfileId, getFiberById, profileStatusOverrides]);
+  }, [
+    allKeys,
+    images,
+    displayImages,
+    searchQuery,
+    nodeScopedProfileIds,
+    canonicalProfileOrder,
+    activeNodeId,
+    focusProfileId,
+    getFiberById,
+    profileStatusOverrides,
+    editableNavigationNodeIdSet,
+  ]);
 
   useEffect(() => {
     if (isCollapseAllActive) return;

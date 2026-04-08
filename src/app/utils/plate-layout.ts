@@ -11,11 +11,17 @@
  */
 
 import {
+  anatomyData,
+  careData,
+  fibers,
   getGalleryImages,
+  processData,
+  quoteData,
+  worldNames,
   type FiberProfile,
+  type FiberIndexEntry,
   type GalleryImageEntry,
   type PlateType,
-  type FiberIndexEntry,
 } from "../data/atlas-data";
 import { dataSource } from "../data/data-provider";
 import { DETAIL_FADE, EXHALE_EASE } from "./detail-motion";
@@ -117,7 +123,16 @@ const PLATE_ZONE_PREFS: [PlateType, Zone[]][] = [
    Data-availability filter — skip plates with no data
    ══════════════════════════════════════════════════════════ */
 
-import { worldNames, processData, anatomyData, careData, quoteData, fibers } from "../data/atlas-data";
+const bundledFiberIdSet = new Set(fibers.map((f) => f.id));
+
+const SILK_VARIANT_PLATE_TO_PROFILE_ID: Partial<Record<PlateType, string>> = {
+  silkCharmeuse: "charmeuse",
+  silkHabotai: "habotai",
+  silkDupioni: "dupioni",
+  silkTaffeta: "taffeta",
+  silkChiffon: "chiffon",
+  silkOrganza: "organza",
+};
 
 /**
  * Profile fields used for plate availability must match the merged runtime catalog
@@ -158,8 +173,11 @@ function filterAvailablePlates(fiberId: string): [PlateType, Zone[]][] {
       case "silkDupioni":
       case "silkTaffeta":
       case "silkChiffon":
-      case "silkOrganza":
-        return fiberId === "silk";
+      case "silkOrganza": {
+        if (fiberId !== "silk") return false;
+        const targetId = SILK_VARIANT_PLATE_TO_PROFILE_ID[pt];
+        return !!targetId && bundledFiberIdSet.has(targetId);
+      }
       case "seeAlso":
         return fiber ? fiber.seeAlso.length > 0 : false;
       default:

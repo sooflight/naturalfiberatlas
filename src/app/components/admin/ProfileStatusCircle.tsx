@@ -1,7 +1,7 @@
 /**
- * ProfileStatusCircle — Single circle status indicator for Live/Draft/Archive.
- * Color indicates status: Live (emerald), Draft (neutral), Archived (amber).
- * Click cycles through: Live → Draft → Archived → Live.
+ * ProfileStatusCircle — Single circle status indicator for Live vs Archived.
+ * Color indicates status: Live (emerald), Archived (amber).
+ * Legacy `draft` is treated as archived. Click toggles: Live ↔ Archived.
  */
 
 import React from "react";
@@ -21,28 +21,24 @@ export interface ProfileStatusCircleProps {
   title?: string;
 }
 
-function toDisplayStatus(status: ProfileStatusValue): "live" | "draft" | "archived" {
-  if (status === "archived") return "archived";
-  return status === "published" ? "live" : "draft";
+function toDisplayStatus(status: ProfileStatusValue): "live" | "archived" {
+  if (status === "published") return "live";
+  return "archived";
 }
 
-function getAriaLabel(displayStatus: "live" | "draft" | "archived"): string {
+function getAriaLabel(displayStatus: "live" | "archived"): string {
   switch (displayStatus) {
     case "live":
-      return "Set profile status to Draft";
-    case "draft":
       return "Set profile status to Archived";
     case "archived":
       return "Set profile status to Live";
   }
 }
 
-function getStatusColorClasses(displayStatus: "live" | "draft" | "archived"): string {
+function getStatusColorClasses(displayStatus: "live" | "archived"): string {
   switch (displayStatus) {
     case "live":
       return "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]";
-    case "draft":
-      return "bg-neutral-300";
     case "archived":
       return "bg-amber-300";
   }
@@ -70,7 +66,7 @@ export function ProfileStatusCircle({
       data-testid={dataTestId}
       disabled={disabled}
       aria-disabled={disabled ? "true" : "false"}
-      title={title ?? (displayStatus === "live" ? "Live" : displayStatus === "archived" ? "Archived" : "Draft")}
+      title={title ?? (displayStatus === "live" ? "Live" : "Archived")}
       onClick={(e) => {
         e.stopPropagation();
         if (!disabled) onToggle();

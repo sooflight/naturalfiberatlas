@@ -91,11 +91,10 @@ export function useAtlasImageMutations(
 
   const removeImage = useCallback(async (key: string, idx: number) => {
     const result = await atomicImageUpdate((diskImages) => {
-      const c = diskImages[key];
-      if (!Array.isArray(c)) return diskImages;
-      const u = [...c];
+      const u = normalizeImageEntries(diskImages[key]);
+      if (u.length === 0 || idx < 0 || idx >= u.length) return diskImages;
       u.splice(idx, 1);
-      return { ...diskImages, [key]: u.length === 1 ? u[0] : u };
+      return { ...diskImages, [key]: u.length === 0 ? [] : (u.length === 1 ? u[0] : u) };
     });
     if (result) setImages(result);
     return result;

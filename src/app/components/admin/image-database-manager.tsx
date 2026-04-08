@@ -87,22 +87,18 @@ export function ImageDatabaseManager({
   );
 
   const activeProfiles = useMemo(() => {
-    const list = filtered.filter((fiber) => fiber.status !== "archived");
+    const list = filtered.filter((fiber) => fiber.status === "published");
     return sortProfilesBySidebarSequence(list, canonicalOrder);
   }, [filtered, canonicalOrder]);
 
   const archivedProfiles = useMemo(() => {
-    const list = filtered.filter((fiber) => fiber.status === "archived");
+    const list = filtered.filter((fiber) => fiber.status !== "published");
     return sortProfilesBySidebarSequence(list, canonicalOrder);
   }, [filtered, canonicalOrder]);
 
   const toggleProfileStatus = (fiberId: string, currentStatus: "draft" | "published" | "archived") => {
-    const nextStatus: "draft" | "published" | "archived" =
-      currentStatus === "published"
-        ? "draft"
-        : currentStatus === "draft"
-          ? "archived"
-          : "published";
+    const nextStatus: "published" | "archived" =
+      currentStatus === "published" ? "archived" : "published";
     updateFiber(fiberId, { status: nextStatus });
   };
 
@@ -205,7 +201,7 @@ export function ImageDatabaseManager({
               </button>
               <ProfileStatusCircle
                 status={fiber.status}
-                onToggle={() => toggleProfileStatus(fiber.id, fiber.status ?? "draft")}
+                onToggle={() => toggleProfileStatus(fiber.id, fiber.status ?? "archived")}
                 dataTestId={`workspace-status-circle-${fiber.id}`}
               />
               <span className="text-white/30 ml-auto" style={{ fontSize: "10px" }}>
@@ -299,7 +295,7 @@ export function ImageDatabaseManager({
                       </button>
                       <ProfileStatusCircle
                         status={fiber.status}
-                        onToggle={() => toggleProfileStatus(fiber.id, fiber.status ?? "draft")}
+                        onToggle={() => toggleProfileStatus(fiber.id, fiber.status ?? "archived")}
                         dataTestId={`workspace-status-circle-${fiber.id}`}
                       />
                       <span className="text-white/30 ml-auto" style={{ fontSize: "10px" }}>

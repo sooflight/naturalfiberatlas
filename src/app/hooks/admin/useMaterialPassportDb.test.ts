@@ -25,7 +25,7 @@ describe("useMaterialPassportDb", () => {
     expect(result.current.passport).toBeNull();
     expect(result.current.loading).toBe(false);
     expect(result.current.error).toBeNull();
-    expect(result.current.status).toBe("draft");
+    expect(result.current.status).toBe("archived");
   });
 
   it("fetches passport from database successfully", async () => {
@@ -150,7 +150,6 @@ describe("useMaterialPassportDb", () => {
       ok: true,
       json: async () => ({
         passport: null,
-        status: "draft",
         material_id: "unknown",
         source: "database",
       }),
@@ -163,7 +162,7 @@ describe("useMaterialPassportDb", () => {
     });
 
     expect(result.current.passport).toBeNull();
-    expect(result.current.status).toBe("draft");
+    expect(result.current.status).toBe("archived");
     expect(result.current.error).toBeNull();
   });
 });

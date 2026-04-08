@@ -13,6 +13,8 @@
 export type GlassAtlasPreset =
   | "grid"         // Profile card thumbnail (3:4, ~320×427)
   | "glow"         // Edge-bleed glow — tiny blurred variant (~24×32)
+  /** Small 3:4 fetch for canvas hue/brightness — higher quality than `glow`, same use as analysis input */
+  | "hueProbe"
   | "lqip"         // Low-quality image placeholder (~60×80, q_20)
   | "ambient"      // GlassCard ambient underlayer (~400×534)
   | "filmstrip"    // Film-strip thumbnails (~220×293)

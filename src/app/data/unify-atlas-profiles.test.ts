@@ -40,7 +40,7 @@ describe("unifyFibersWithPassportRegistry", () => {
       {
         id: "b",
         name: "B",
-        status: "draft",
+        status: "archived",
         image: "",
         category: "fiber",
         subtitle: "",

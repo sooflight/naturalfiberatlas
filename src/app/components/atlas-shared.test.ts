@@ -49,6 +49,21 @@ describe("atlas-shared getThumbUrl", () => {
     expect(getThumbUrl("regen")).toBe("https://example.com/regen-from-imagebase.jpg");
   });
 
+  it("prefers textile-portal-thumbnail over textile in atlas-images when both exist", () => {
+    const getItem = globalThis.localStorage.getItem as unknown as ReturnType<typeof vi.fn>;
+    getItem.mockImplementation((key: string) => {
+      if (key === "atlas-images") {
+        return JSON.stringify({
+          "textile-portal-thumbnail": [{ url: "https://example.com/textile-portal.jpg" }],
+          textile: [{ url: "https://example.com/stale-textile-thumb.jpg" }],
+        });
+      }
+      return null;
+    });
+
+    expect(getThumbUrl("textile")).toBe("https://example.com/textile-portal.jpg");
+  });
+
   it("prefers mineral-regenerated over regen in atlas-images when both exist", () => {
     const getItem = globalThis.localStorage.getItem as unknown as ReturnType<typeof vi.fn>;
     getItem.mockImplementation((key: string) => {

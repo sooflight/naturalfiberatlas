@@ -3,6 +3,7 @@ import path from 'path';
 import fs from 'fs';
 import http from 'http';
 import https from 'https';
+import { createHash } from 'crypto';
 import { spawn } from 'child_process';
 import JSZip from 'jszip';
 import type { IncomingMessage, RequestOptions, ServerResponse } from 'http';
@@ -343,6 +344,15 @@ function fileReadRoute(filepath: string): RouteHandler {
       jsonRes(res, { error: err.message }, 500);
     }
   };
+}
+
+function jsonRevision(raw: string): string {
+  return createHash('sha1').update(raw).digest('hex');
+}
+
+function readJsonWithRevision(filepath: string): { data: unknown; revision: string } {
+  const raw = fs.readFileSync(filepath, 'utf-8');
+  return { data: JSON.parse(raw), revision: jsonRevision(raw) };
 }
 
 function fileWriteRoute(filepath: string, opts?: { backup?: boolean }): RouteHandler {
@@ -842,8 +852,55 @@ function adminPlugin(): Plugin {
       }));
 
       // ── Atlas data CRUD ──
-      use('/__admin/read-atlas-data', fileReadRoute(atlasFile));
-      use('/__admin/save-atlas-data', rawWriteRoute(atlasFile, { backup: true }));
+      use('/__admin/read-atlas-data', (_req, res) => {
+        try {
+          const { data, revision } = readJsonWithRevision(atlasFile);
+          jsonRes(res, { data, revision });
+        } catch (err: any) {
+          jsonRes(res, { error: err.message }, 500);
+        }
+      });
+      use('/__admin/save-atlas-data', async (req, res) => {
+        if (req.method !== 'POST') { postOnly(res); return; }
+        try {
+          const rawBody = await readBody(req);
+          const parsed = JSON.parse(rawBody) as unknown;
+
+          let dataToWrite: unknown = parsed;
+          let expectedRevision: string | null = null;
+          if (parsed && typeof parsed === 'object' && !Array.isArray(parsed) && 'data' in parsed) {
+            const envelope = parsed as { data?: unknown; expectedRevision?: unknown };
+            dataToWrite = envelope.data;
+            if (typeof envelope.expectedRevision === 'string' && envelope.expectedRevision.trim().length > 0) {
+              expectedRevision = envelope.expectedRevision.trim();
+            }
+          }
+
+          const nextOut = `${JSON.stringify(dataToWrite, null, 2)}\n`;
+          JSON.parse(nextOut); // validate
+
+          const currentRaw = fs.readFileSync(atlasFile, 'utf-8');
+          const currentRevision = jsonRevision(currentRaw);
+          if (expectedRevision && expectedRevision !== currentRevision) {
+            jsonRes(
+              res,
+              { error: 'atlas-data revision conflict', conflict: true, revision: currentRevision },
+              409,
+            );
+            return;
+          }
+
+          rotateJsonBackups(atlasFile);
+          fs.writeFileSync(atlasFile, nextOut, 'utf-8');
+          jsonRes(res, {
+            ok: true,
+            bytes: nextOut.length,
+            revision: jsonRevision(nextOut),
+          });
+        } catch (err: any) {
+          jsonRes(res, { error: err.message }, 500);
+        }
+      });
       const newImagesFile = path.join(repoRoot, 'new-images.json');
       use('/__admin/sync-image-catalog', postRoute(async (body, res) => {
         const imagesPatch = body?.images;
@@ -1407,7 +1464,7 @@ function adminPlugin(): Plugin {
       use('/__admin/update-passport-status', postRoute(async (body, res) => {
         const { materialId, status } = body;
         if (!materialId || !status) { jsonRes(res, { error: 'materialId and status required' }, 400); return; }
-        const valid = ['draft', 'reviewed', 'verified', 'published'];
+        const valid = ['published', 'archived', 'reviewed', 'verified', 'draft'];
         if (!valid.includes(status)) { jsonRes(res, { error: 'Invalid status' }, 400); return; }
         const nextState: PassportModulePayload = {
           passports: { ...passportState.passports },

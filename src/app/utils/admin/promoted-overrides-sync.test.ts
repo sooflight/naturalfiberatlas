@@ -47,8 +47,8 @@ describe("buildPromotedOverridesWritePayload", () => {
     const next = JSON.stringify(
       {
         fibers: {
-          modal: { status: "draft" },
-          looms: { status: "draft" },
+          modal: { status: "archived" },
+          looms: { status: "archived" },
         },
       },
       null,
@@ -59,7 +59,7 @@ describe("buildPromotedOverridesWritePayload", () => {
     expect(out).not.toBeNull();
     const parsed = JSON.parse(out ?? "{}") as Record<string, any>;
     expect(parsed.fibers["organic-cotton"]).toEqual({ name: "Cotton", status: "published" });
-    expect(parsed.fibers.modal).toEqual({ status: "draft" });
-    expect(parsed.fibers.looms).toEqual({ status: "draft" });
+    expect(parsed.fibers.modal).toEqual({ status: "archived" });
+    expect(parsed.fibers.looms).toEqual({ status: "archived" });
   });
 });

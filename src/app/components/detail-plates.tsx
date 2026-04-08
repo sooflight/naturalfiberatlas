@@ -277,14 +277,18 @@ export function InsightPlate({ fiber, half }: { fiber: FiberProfile; half: 1 | 2
   );
 }
 
-const SILK_VARIANT_BY_PLATE = {
+/** Maps silk hero “variant” detail plates to standalone textile profile ids (when present). */
+const SILK_VARIANT_BY_PLATE: Partial<Record<
+  | "silkCharmeuse"
+  | "silkHabotai"
+  | "silkDupioni"
+  | "silkTaffeta"
+  | "silkChiffon"
+  | "silkOrganza",
+  string
+>> = {
   silkCharmeuse: "charmeuse",
-  silkHabotai: "habotai",
-  silkDupioni: "dupioni",
-  silkTaffeta: "taffeta",
-  silkChiffon: "chiffon",
-  silkOrganza: "organza",
-} as const;
+};
 
 export function SilkVariantPlate({
   plateType,
@@ -298,6 +302,7 @@ export function SilkVariantPlate({
     | "silkOrganza";
 }) {
   const variantId = SILK_VARIANT_BY_PLATE[plateType];
+  if (!variantId) return null;
   const variant = dataSource.getFiberById(variantId);
   if (!variant) return null;
   const applications = (variant.applications ?? []).slice(0, 3).join(" · ");

@@ -26,7 +26,7 @@ export function buildEditorState(
     passport:
       passport ?? {
         materialId: nodeId,
-        status: "draft",
+        status: "archived",
         lastUpdated: new Date().toISOString().slice(0, 10),
         performance: {},
         process: {},

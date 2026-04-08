@@ -10,7 +10,7 @@ const baseItem = {
   completeness: 80,
   mappedFields: 4,
   totalFields: 5,
-  status: "draft" as const,
+  status: "archived" as const,
   lastModified: new Date("2026-03-16T00:00:00.000Z"),
 };
 
@@ -31,7 +31,7 @@ describe("GridView status switch", () => {
       />,
     );
 
-    const statusSwitch = screen.getByRole("switch", { name: /set profile status to archived/i });
+    const statusSwitch = screen.getByRole("switch", { name: /set profile status to live/i });
     expect(statusSwitch.getAttribute("aria-checked")).toBe("false");
 
     fireEvent.click(statusSwitch);
@@ -77,7 +77,7 @@ describe("GridView status switch", () => {
       />,
     );
 
-    const statusSwitch = screen.getAllByRole("switch", { name: /set profile status to draft/i })[0];
+    const statusSwitch = screen.getAllByRole("switch", { name: /set profile status to archived/i })[0];
     expect(statusSwitch.hasAttribute("disabled")).toBe(true);
     fireEvent.click(statusSwitch);
     expect(onToggleStatus).not.toHaveBeenCalled();

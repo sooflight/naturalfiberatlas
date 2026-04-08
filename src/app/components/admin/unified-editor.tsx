@@ -237,6 +237,25 @@ function InlineQuoteCard({ fiber, sectionId }: { fiber: FiberProfile; sectionId?
 
 /* Grid cell size for compact Knowledge panel (ImageBase uses 120px) */
 const IMAGEBASE_EMBED_ZOOM = 40;
+const ATLAS_IMAGES_STORAGE_KEY = "atlas-images";
+
+function resolveUnifiedImageBaseUrls(fiber: FiberProfile): string[] {
+  const fallback = toUrlArray(mergeFiberGalleryWithFallback(fiber.id, fiber))
+    .map((url) => url.trim())
+    .filter((url) => url.length > 0);
+  if (typeof window === "undefined") return fallback;
+  try {
+    const raw = localStorage.getItem(ATLAS_IMAGES_STORAGE_KEY);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    if (!Object.prototype.hasOwnProperty.call(parsed, fiber.id)) return fallback;
+    return toUrlArray(parsed[fiber.id] as never)
+      .map((url) => url.trim())
+      .filter((url) => url.length > 0);
+  } catch {
+    return fallback;
+  }
+}
 
 function InlineImageBaseProfileBox({
   fiber,
@@ -247,7 +266,7 @@ function InlineImageBaseProfileBox({
 }) {
   const navigate = useNavigate();
   const urls = useMemo(
-    () => toUrlArray(mergeFiberGalleryWithFallback(fiber.id, fiber)),
+    () => resolveUnifiedImageBaseUrls(fiber),
     [fiber],
   );
   const elRef = useRef<HTMLDivElement>(null);

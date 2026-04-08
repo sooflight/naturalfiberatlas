@@ -6,7 +6,11 @@
  */
 
 import { useEffect, useSyncExternalStore } from "react";
-import { analyzeImageElement, type ImageAnalysis } from "../utils/analyze-image";
+import {
+  analyzeImageElement,
+  DEFAULT_IMAGE_ANALYSIS_FALLBACK,
+  type ImageAnalysis,
+} from "../utils/analyze-image";
 import { precomputeFrostParams } from "../utils/frost-cache";
 
 export type { ImageAnalysis } from "../utils/analyze-image";
@@ -71,9 +75,8 @@ export function useImageAnalysis(src: string | undefined): ImageAnalysis | null 
         };
 
         img.onerror = () => {
-          const fallback = { brightness: 0.5, hue: 0 };
-          cache.set(src, fallback);
-          resolve(fallback);
+          cache.set(src, DEFAULT_IMAGE_ANALYSIS_FALLBACK);
+          resolve(DEFAULT_IMAGE_ANALYSIS_FALLBACK);
           notify();
         };
       });

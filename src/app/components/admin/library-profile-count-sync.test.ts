@@ -41,9 +41,9 @@ describe("buildKnowledgeFibers", () => {
     const contentItems = [{ id: "fiber" }, { id: "textile" }, { id: "hemp" }];
     const result = buildKnowledgeFibers(fibers, contentItems, []);
 
-    // fiber is nav parent in admin atlas (fiber branch) → navigation-parent; textile is skipped in ROOT_NAV_IDS so stays textile
+    // Top-level atlas roots (fiber, textile) are navigation parents in ROOT_NAV_IDS
     expect(result.find((item) => item.id === "fiber")?.category).toBe("navigation-parent");
-    expect(result.find((item) => item.id === "textile")?.category).toBe("textile");
+    expect(result.find((item) => item.id === "textile")?.category).toBe("navigation-parent");
     expect(result.find((item) => item.id === "hemp")?.category).toBe("fiber");
   });
 
@@ -63,8 +63,8 @@ describe("buildKnowledgeFibers", () => {
 
     const result = buildKnowledgeFibers(fibers, contentItems, []);
     expect(result.find((item) => item.id === "madder")?.category).toBe("dye");
-    // textile: content-only with no nodeData/passport → fallbackCategory "fiber"
-    expect(result.find((item) => item.id === "textile")?.category).toBe("fiber");
+    // textile: content-only but listed in admin nav → category textile, then navigation-parent as atlas root
+    expect(result.find((item) => item.id === "textile")?.category).toBe("navigation-parent");
     expect(result.some((item) => item.category === "uncategorized")).toBe(false);
   });
 });

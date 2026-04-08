@@ -70,6 +70,7 @@ describe.skipIf(!distReady)("production bundle includes Git catalog (dist)", () 
     const byFiberId = readNewImagesProfileMap();
     const stale: string[] = [];
     for (const fiber of fibers) {
+      if (fiber.status === "archived") continue;
       const links = byFiberId.get(fiber.id);
       if (!links || links.length === 0) continue;
       if (!links.includes(fiber.image)) stale.push(fiber.id);

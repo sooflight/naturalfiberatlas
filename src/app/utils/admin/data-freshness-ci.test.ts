@@ -9,10 +9,10 @@ const BUNDLED_CENSUS_BASELINE = {
   navLeafProfiles: 117,
   passports: 56,
   /** Bundled catalog + passport merge — published count matches public grid (Git + promoted, no localStorage). */
-  unifiedBundledPublishedLive: 60,
-  unifiedBundledCatalogRows: 134,
+  unifiedBundledPublishedLive: 79,
+  unifiedBundledCatalogRows: 174,
   /** Passport registry keys with no bundled catalog row (legacy / staging); drive toward 0 over time. */
-  unifiedOrphanPassportKeys: 13,
+  unifiedOrphanPassportKeys: 5,
   suppliers: 5,
   evidence: 9,
   supplierLinks: 11,

@@ -71,7 +71,7 @@ describe("NodeSidebar knowledge fibers", () => {
     );
 
     fireEvent.contextMenu(screen.getAllByTitle("Alpaca (animal)")[0]);
-    fireEvent.click(screen.getByRole("button", { name: "Toggle Live/Draft" }));
+    fireEvent.click(screen.getByRole("button", { name: "Toggle Live/Archived" }));
 
     expect(toggleProfilePublishStatus).toHaveBeenCalledWith(
       expect.objectContaining({
@@ -81,7 +81,7 @@ describe("NodeSidebar knowledge fibers", () => {
     );
   });
 
-  it("shows inline live/draft switch and toggles status", () => {
+  it("shows inline live/archived switch and toggles status", () => {
     const onSelect = vi.fn();
 
     render(
@@ -131,7 +131,7 @@ describe("NodeSidebar knowledge fibers", () => {
     expect(thumbnail.parentElement?.style.display).toBe("block");
   });
 
-  it("starts with Drafts and Archives collapsed by default", () => {
+  it("starts with Archived Profiles collapsed by default", () => {
     const onSelect = vi.fn();
     const getFiberByIdSpy = vi.spyOn(dataSource, "getFiberById").mockImplementation((id: string) => {
       if (id === "jute") {
@@ -145,7 +145,7 @@ describe("NodeSidebar knowledge fibers", () => {
       return {
         id,
         name: "Hemp",
-        status: "draft",
+        status: "archived",
         category: "fiber",
       } as ReturnType<typeof dataSource.getFiberById>;
     });
@@ -166,10 +166,8 @@ describe("NodeSidebar knowledge fibers", () => {
     expect(screen.queryByTitle("Hemp (fiber)")).toBeNull();
     expect(screen.queryByTitle("Jute (fiber)")).toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: /drafts/i }));
+    fireEvent.click(screen.getByRole("button", { name: /archived profiles/i }));
     expect(screen.getByTitle("Hemp (fiber)")).toBeTruthy();
-
-    fireEvent.click(screen.getByRole("button", { name: /archives/i }));
     expect(screen.getByTitle("Jute (fiber)")).toBeTruthy();
 
     getFiberByIdSpy.mockRestore();

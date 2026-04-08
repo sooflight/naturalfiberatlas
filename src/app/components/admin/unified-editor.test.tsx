@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { MemoryRouter } from "react-router";
 import { UnifiedEditor } from "./unified-editor";
@@ -93,6 +93,10 @@ vi.mock("./image-quick-actions", () => ({
 }));
 
 describe("UnifiedEditor", () => {
+  afterEach(() => {
+    localStorage.removeItem("atlas-images");
+  });
+
   it("renders ImageBase profile box at top and removes Gallery Studio section", () => {
     const { container } = render(
       <MemoryRouter>
@@ -106,5 +110,22 @@ describe("UnifiedEditor", () => {
       node.getAttribute("data-editor-section"),
     );
     expect(sectionOrder[0]).toBe("ImageBase");
+  });
+
+  it("uses atlas-images local row so Knowledge ImageBase box matches ImageBase visibility", () => {
+    localStorage.setItem(
+      "atlas-images",
+      JSON.stringify({
+        cotton: [],
+      }),
+    );
+
+    render(
+      <MemoryRouter>
+        <UnifiedEditor fiberId="cotton" />
+      </MemoryRouter>,
+    );
+
+    expect(screen.getByText("No profile images")).toBeTruthy();
   });
 });

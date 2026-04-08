@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   getCloudinaryConfig,
   uploadImageFilesToCloudinary,
@@ -32,12 +32,6 @@ export function CloudinaryDropzone({
   const [isDragging, setIsDragging] = useState(false);
   const [uploadError, setUploadError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-
-  useEffect(() => {
-    // #region agent log
-    fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "72f2cc" }, body: JSON.stringify({ sessionId: "72f2cc", runId: "finder-drop-repro-2", hypothesisId: "H6", location: "cloudinary-dropzone.tsx:mount", message: "src/app cloudinary dropzone mounted", data: { dropLabel }, timestamp: Date.now() }) }).catch(() => {});
-    // #endregion
-  }, [dropLabel]);
 
   const extractDroppedImageUrls = (event: React.DragEvent<HTMLElement>): string[] => {
     const dataTransfer = event.dataTransfer;
@@ -75,15 +69,9 @@ export function CloudinaryDropzone({
   };
 
   const uploadFiles = async (files: File[]) => {
-    // #region agent log
-    fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "72f2cc" }, body: JSON.stringify({ sessionId: "72f2cc", runId: "finder-drop-repro", hypothesisId: "H3", location: "cloudinary-dropzone.tsx:uploadFiles:start", message: "uploadFiles invoked", data: { fileCount: files.length, files: files.slice(0, 5).map((f) => ({ name: f.name, type: f.type, size: f.size })) }, timestamp: Date.now() }) }).catch(() => {});
-    // #endregion
     if (files.length === 0) return;
     const config = getCloudinaryConfig();
     if (!config) {
-      // #region agent log
-      fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "72f2cc" }, body: JSON.stringify({ sessionId: "72f2cc", runId: "finder-drop-repro", hypothesisId: "H3", location: "cloudinary-dropzone.tsx:uploadFiles:noConfig", message: "cloudinary config missing for dropped files", data: { hasConfig: false }, timestamp: Date.now() }) }).catch(() => {});
-      // #endregion
       setUploadError("Cloudinary settings missing (cloud name or upload preset).");
       return;
     }
@@ -92,15 +80,9 @@ export function CloudinaryDropzone({
     onUploadingChange?.(true);
     try {
       const uploaded = await uploadImageFilesToCloudinary(files, config);
-      // #region agent log
-      fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "72f2cc" }, body: JSON.stringify({ sessionId: "72f2cc", runId: "finder-drop-repro", hypothesisId: "H4", location: "cloudinary-dropzone.tsx:uploadFiles:success", message: "cloudinary file upload succeeded", data: { uploadedCount: uploaded.length, secureUrls: uploaded.slice(0, 5).map((u) => u.secureUrl) }, timestamp: Date.now() }) }).catch(() => {});
-      // #endregion
       onUploaded(uploaded);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Upload failed";
-      // #region agent log
-      fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "72f2cc" }, body: JSON.stringify({ sessionId: "72f2cc", runId: "finder-drop-repro", hypothesisId: "H4", location: "cloudinary-dropzone.tsx:uploadFiles:error", message: "cloudinary file upload failed", data: { errorMessage: message }, timestamp: Date.now() }) }).catch(() => {});
-      // #endregion
       setUploadError(message);
     } finally {
       onUploadingChange?.(false);
@@ -122,13 +104,7 @@ export function CloudinaryDropzone({
       onDrop={(event) => {
         event.preventDefault();
         setIsDragging(false);
-        // #region agent log
-        fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "72f2cc" }, body: JSON.stringify({ sessionId: "72f2cc", runId: "finder-drop-repro", hypothesisId: "H1", location: "cloudinary-dropzone.tsx:onDrop:entry", message: "drop event received", data: { fileCount: event.dataTransfer.files?.length ?? 0, itemCount: event.dataTransfer.items?.length ?? 0, itemTypes: Array.from(event.dataTransfer.items ?? []).slice(0, 8).map((i) => ({ kind: i.kind, type: i.type })) }, timestamp: Date.now() }) }).catch(() => {});
-        // #endregion
         const files = Array.from(event.dataTransfer.files ?? []).filter(isImageFile);
-        // #region agent log
-        fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "72f2cc" }, body: JSON.stringify({ sessionId: "72f2cc", runId: "finder-drop-repro", hypothesisId: "H2", location: "cloudinary-dropzone.tsx:onDrop:fileFilter", message: "drop files filtered for upload", data: { rawFiles: Array.from(event.dataTransfer.files ?? []).slice(0, 8).map((f) => ({ name: f.name, type: f.type, size: f.size })), acceptedFiles: files.slice(0, 8).map((f) => ({ name: f.name, type: f.type, size: f.size })) }, timestamp: Date.now() }) }).catch(() => {});
-        // #endregion
         if (files.length > 0) {
           void uploadFiles(files);
           return;
@@ -137,9 +113,6 @@ export function CloudinaryDropzone({
         if (urls.length === 0) return;
         const config = getCloudinaryConfig();
         if (!config) {
-          // #region agent log
-          fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "72f2cc" }, body: JSON.stringify({ sessionId: "72f2cc", runId: "finder-drop-repro", hypothesisId: "H3", location: "cloudinary-dropzone.tsx:onDrop:urlPathNoConfig", message: "cloudinary config missing for dropped URLs", data: { droppedUrlCount: urls.length }, timestamp: Date.now() }) }).catch(() => {});
-          // #endregion
           setUploadError("Cloudinary settings missing (cloud name or upload preset).");
           return;
         }
@@ -147,16 +120,10 @@ export function CloudinaryDropzone({
         onUploadingChange?.(true);
         void uploadImageUrlsToCloudinary(urls, config)
           .then((uploaded) => {
-            // #region agent log
-            fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "72f2cc" }, body: JSON.stringify({ sessionId: "72f2cc", runId: "finder-drop-repro", hypothesisId: "H4", location: "cloudinary-dropzone.tsx:onDrop:urlUploadSuccess", message: "cloudinary URL upload succeeded", data: { droppedUrlCount: urls.length, uploadedCount: uploaded.length }, timestamp: Date.now() }) }).catch(() => {});
-            // #endregion
             onUploaded(uploaded);
           })
           .catch((error) => {
             const message = error instanceof Error ? error.message : "Upload failed";
-            // #region agent log
-            fetch("http://127.0.0.1:7614/ingest/a3513545-33f8-4a04-a31f-147729a5d466", { method: "POST", headers: { "Content-Type": "application/json", "X-Debug-Session-Id": "72f2cc" }, body: JSON.stringify({ sessionId: "72f2cc", runId: "finder-drop-repro", hypothesisId: "H4", location: "cloudinary-dropzone.tsx:onDrop:urlUploadError", message: "cloudinary URL upload failed", data: { errorMessage: message, droppedUrlCount: urls.length }, timestamp: Date.now() }) }).catch(() => {});
-            // #endregion
             setUploadError(message);
           })
           .finally(() => onUploadingChange?.(false));

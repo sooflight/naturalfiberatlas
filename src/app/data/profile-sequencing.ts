@@ -1,6 +1,7 @@
 import { atlasNavigation } from "./atlas-navigation";
 import { atlasNavigation as adminAtlasNavigation } from "./admin/atlas-navigation";
 import { fibers } from "./fibers";
+import { RECOVERED_ARCHIVED_PROFILE_IDS } from "./recovered-archived-profiles";
 
 export const NAVIGATION_PARENT_CATEGORY = "navigation-parent";
 export const NAVIGATION_PARENT_LABEL = "Navigation Nodes";
@@ -19,6 +20,11 @@ function collectNavigationNodeIds(nodes: typeof atlasNavigation): string[] {
 
 const TEXTILE_DYE_IDS = new Set(["textile", "dyes"]);
 
+/** True when id is a real leaf profile in the admin tree (excludes recovered JSON stubs that mirror nav buckets). */
+function isBundledFiberProfileForAdminTree(fiberIds: Set<string>, id: string): boolean {
+  return fiberIds.has(id) && !RECOVERED_ARCHIVED_PROFILE_IDS.has(id);
+}
+
 /** Collect category node IDs from admin tree (nodes with children that aren't fiber profiles). Fiber branch only; textile and dyes excluded for now. */
 function collectAdminCategoryNodeIds(
   nodes: typeof adminAtlasNavigation,
@@ -29,7 +35,7 @@ function collectAdminCategoryNodeIds(
     items.forEach((node) => {
       if (TEXTILE_DYE_IDS.has(node.id)) return;
       const hasChildren = (node.children?.length ?? 0) > 0;
-      const isFiberProfile = fiberIds.has(node.id);
+      const isFiberProfile = isBundledFiberProfileForAdminTree(fiberIds, node.id);
       if (hasChildren && !isFiberProfile) {
         ids.push(node.id);
       }
@@ -50,7 +56,7 @@ function collectNavigationNodeDisplayOrder(
     items.forEach((node) => {
       if (TEXTILE_DYE_IDS.has(node.id)) return;
       const hasChildren = (node.children?.length ?? 0) > 0;
-      const isFiberProfile = fiberIds.has(node.id);
+      const isFiberProfile = isBundledFiberProfileForAdminTree(fiberIds, node.id);
       if (hasChildren && !isFiberProfile) {
         ids.push(node.id);
       }
@@ -75,8 +81,11 @@ const ROOT_NAV_IDS = new Set<string>([
   ...ADMIN_CATEGORY_IDS,
 ]);
 
+/** Nav nodes used only for portal thumbnails (not in the simplified public nav tree). */
+const PORTAL_THUMB_NAV_IDS = new Set<string>(["textile-portal-thumbnail"]);
+
 export function isNavigationParentProfileId(id: string): boolean {
-  return ROOT_NAV_IDS.has(id);
+  return ROOT_NAV_IDS.has(id) || PORTAL_THUMB_NAV_IDS.has(id);
 }
 
 export function classifyProfileCategory(id: string, category: string): string {

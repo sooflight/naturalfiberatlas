@@ -197,7 +197,7 @@ function transformApiToNodeData(apiData: any): NodeData {
     },
 
     // Metadata
-    variety: passport?.status || "draft",
+    variety: passport?.status || "archived",
     source: "api",
   };
 }
@@ -263,7 +263,7 @@ async function fetchFromJSON(slug: string): Promise<NodeData | null> {
       dyeCompatibility: passport?.dyeing || {},
 
       crossReferences: { suppliers: [] },
-      variety: passport?.status || "draft",
+      variety: passport?.status || "archived",
       source: "json",
     };
   } catch (err) {

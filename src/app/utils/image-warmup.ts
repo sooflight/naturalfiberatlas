@@ -97,38 +97,62 @@ export function warmUpImageAnalysis(imageUrls: string[], pipeline: ImageTransfor
   const policy = getWarmupPolicy();
   if (policy.skip) return;
 
-  // Generate glow-preset URLs (24x32 — same as useImageBrightness uses)
-  // Skip any URLs already in the cache (e.g. from prior analysis)
+  // Glow URLs (24×32) — same as useImageBrightness; drives frost params (brightness).
   const glowUrls = imageUrls
     .map((url) => pipeline.transform(url, "glow"))
     .filter((url): url is string => !!url && !isCached(url));
 
-  let index = 0;
+  let glowIndex = 0;
 
-  function processBatch() {
-    if (index >= glowUrls.length) return;
+  function processGlowBatch() {
+    if (glowIndex >= glowUrls.length) return;
 
-    const batch = glowUrls.slice(index, index + policy.analysisBatchSize);
-    index += policy.analysisBatchSize;
+    const batch = glowUrls.slice(glowIndex, glowIndex + policy.analysisBatchSize);
+    glowIndex += policy.analysisBatchSize;
 
-    // Process batch in parallel
     Promise.all(
       batch.map((url) =>
         analyzeImageUrl(url).then((analysis) => {
           populateCache(url, analysis);
-          // Technique #1: Pre-compute frost params for all density values
           precomputeFrostParams(url, analysis);
         }),
       ),
     ).then(() => {
-      if (index < glowUrls.length) {
-        scheduleIdle(processBatch, { timeout: 5000, fallbackMs: 100 });
+      if (glowIndex < glowUrls.length) {
+        scheduleIdle(processGlowBatch, { timeout: 5000, fallbackMs: 100 });
       }
     });
   }
 
-  // Start the first batch during idle time
-  scheduleIdle(processBatch, { timeout: 3000, fallbackMs: 1000 });
+  scheduleIdle(processGlowBatch, { timeout: 3000, fallbackMs: 1000 });
+
+  // Hue probe URLs — higher quality; same analysis path as grid ambient / screen-plate tint.
+  const hueProbeUrls = imageUrls
+    .map((url) => pipeline.transform(url, "hueProbe"))
+    .filter((url): url is string => !!url && !isCached(url));
+
+  let probeIndex = 0;
+
+  function processHueProbeBatch() {
+    if (probeIndex >= hueProbeUrls.length) return;
+
+    const batch = hueProbeUrls.slice(probeIndex, probeIndex + policy.analysisBatchSize);
+    probeIndex += policy.analysisBatchSize;
+
+    Promise.all(
+      batch.map((url) =>
+        analyzeImageUrl(url).then((analysis) => {
+          populateCache(url, analysis);
+        }),
+      ),
+    ).then(() => {
+      if (probeIndex < hueProbeUrls.length) {
+        scheduleIdle(processHueProbeBatch, { timeout: 5000, fallbackMs: 100 });
+      }
+    });
+  }
+
+  scheduleIdle(processHueProbeBatch, { timeout: 3800, fallbackMs: 1200 });
 
   // Technique #3: Pre-decode ambient-preset images during idle time.
   // This primes the browser's image decoder cache so that when detail

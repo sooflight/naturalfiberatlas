@@ -54,21 +54,21 @@ describe("ProfileCard status controls", () => {
 
     const statusSwitch = screen.getByRole("switch");
     expect(statusSwitch.getAttribute("aria-checked")).toBe("true");
-    expect(statusSwitch.getAttribute("aria-label")).toContain("Draft");
+    expect(statusSwitch.getAttribute("aria-label")).toContain("Archived");
     expect(statusSwitch.getAttribute("data-status")).toBe("live");
     expect(statusSwitch.hasAttribute("disabled")).toBe(false);
     expect(statusSwitch.className).toContain("bg-emerald-500");
   });
 
-  it("renders a minimal draft switch icon for non-published profiles", () => {
+  it("renders legacy draft status as archived appearance", () => {
     renderProfileCardWithStatus("draft");
 
     const statusSwitch = screen.getByRole("switch");
     expect(statusSwitch.getAttribute("aria-checked")).toBe("false");
-    expect(statusSwitch.getAttribute("aria-label")).toContain("Archived");
-    expect(statusSwitch.getAttribute("data-status")).toBe("draft");
+    expect(statusSwitch.getAttribute("aria-label")).toContain("Live");
+    expect(statusSwitch.getAttribute("data-status")).toBe("archived");
     expect(statusSwitch.hasAttribute("disabled")).toBe(false);
-    expect(statusSwitch.className).toContain("bg-neutral-300");
+    expect(statusSwitch.className).toContain("bg-amber-300");
   });
 
   it("renders archived state with archived semantics", () => {
@@ -86,19 +86,19 @@ describe("ProfileCard status controls", () => {
 
     const statusSwitch = screen.getByRole("switch");
     expect(statusSwitch.getAttribute("aria-checked")).toBe("false");
-    expect(statusSwitch.getAttribute("data-status")).toBe("draft");
+    expect(statusSwitch.getAttribute("data-status")).toBe("archived");
     expect(screen.queryByTestId("profile-status-footer")).toBeNull();
   });
 
-  it("treats undefined and null statuses as Draft semantics", () => {
+  it("treats undefined and null statuses as archived semantics", () => {
     renderProfileCardWithStatus(undefined);
     expect(screen.getByRole("switch").getAttribute("aria-checked")).toBe("false");
-    expect(screen.getByRole("switch").getAttribute("data-status")).toBe("draft");
+    expect(screen.getByRole("switch").getAttribute("data-status")).toBe("archived");
     cleanup();
 
     renderProfileCardWithStatus(null);
     expect(screen.getByRole("switch").getAttribute("aria-checked")).toBe("false");
-    expect(screen.getByRole("switch").getAttribute("data-status")).toBe("draft");
+    expect(screen.getByRole("switch").getAttribute("data-status")).toBe("archived");
   });
 
   it("disables switch semantics while statusSaving is true", () => {
@@ -268,7 +268,7 @@ describe("toggleProfilePublishStatus", () => {
     };
   }
 
-  it("cycles Draft -> Archived", async () => {
+  it("legacy draft toggles to published (live)", async () => {
     const statusState = createRecordState<string>();
     const savingState = createRecordState<boolean>();
     const errorState = createRecordState<string>();
@@ -289,12 +289,12 @@ describe("toggleProfilePublishStatus", () => {
     expect(mutateStatus).toHaveBeenCalledWith({
       type: "passport",
       id: "hemp",
-      status: "archived",
+      status: "published",
     });
-    expect(statusState.getState().hemp).toBe("archived");
+    expect(statusState.getState().hemp).toBe("published");
     expect(savingState.getState().hemp).toBe(false);
     expect(errorState.getState().hemp).toBeUndefined();
-    expect(persistStatusOverride).toHaveBeenCalledWith("hemp", "archived");
+    expect(persistStatusOverride).toHaveBeenCalledWith("hemp", "published");
   });
 
   it("persists optimistic status immediately before API resolves", async () => {
@@ -321,7 +321,7 @@ describe("toggleProfilePublishStatus", () => {
       persistStatusOverride,
     });
 
-    expect(persistStatusOverride).toHaveBeenCalledWith("hemp", "draft");
+    expect(persistStatusOverride).toHaveBeenCalledWith("hemp", "archived");
     expect(savingState.getState().hemp).toBe(true);
 
     resolveMutation();
@@ -357,7 +357,7 @@ describe("toggleProfilePublishStatus", () => {
     expect(persistStatusOverride).toHaveBeenCalledWith("hemp", "published");
   });
 
-  it("cycles Live -> Draft", async () => {
+  it("cycles Live -> Archived", async () => {
     const statusState = createRecordState<string>();
     const savingState = createRecordState<boolean>();
     const errorState = createRecordState<string>();
@@ -378,11 +378,11 @@ describe("toggleProfilePublishStatus", () => {
     expect(mutateStatus).toHaveBeenCalledWith({
       type: "passport",
       id: "hemp",
-      status: "draft",
+      status: "archived",
     });
-    expect(statusState.getState().hemp).toBe("draft");
+    expect(statusState.getState().hemp).toBe("archived");
     expect(savingState.getState().hemp).toBe(false);
-    expect(persistStatusOverride).toHaveBeenCalledWith("hemp", "draft");
+    expect(persistStatusOverride).toHaveBeenCalledWith("hemp", "archived");
   });
 
   it("keeps optimistic status as local fallback on failure", async () => {
@@ -404,10 +404,10 @@ describe("toggleProfilePublishStatus", () => {
       persistStatusOverride,
     });
 
-    expect(statusState.getState().hemp).toBe("draft");
+    expect(statusState.getState().hemp).toBe("archived");
     expect(errorState.getState().hemp).toBeUndefined();
     expect(savingState.getState().hemp).toBe(false);
-    expect(persistStatusOverride).toHaveBeenCalledWith("hemp", "draft");
+    expect(persistStatusOverride).toHaveBeenCalledWith("hemp", "archived");
   });
 
   it("does not let stale overlapping requests clobber latest state", async () => {
@@ -469,7 +469,7 @@ describe("toggleProfilePublishStatus", () => {
     rejectSecond(new Error("latest failed"));
     await secondToggle;
 
-    expect(statusState.getState().hemp).toBe("draft");
+    expect(statusState.getState().hemp).toBe("archived");
     expect(errorState.getState().hemp).toBeUndefined();
     expect(savingState.getState().hemp).toBe(false);
   });
@@ -493,7 +493,7 @@ describe("toggleProfilePublishStatus", () => {
 
     expect(errorState.setState).toHaveBeenCalled();
     expect(errorState.getState().hemp).toBeUndefined();
-    expect(statusState.getState().hemp).toBe("draft");
+    expect(statusState.getState().hemp).toBe("archived");
   });
 });
 

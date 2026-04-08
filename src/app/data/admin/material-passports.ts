@@ -1117,7 +1117,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
   },
   "dyes": {
     "materialId": "dyes",
-    "status": "draft",
+    "status": "archived",
     "lastUpdated": "2026-02-28",
     "performance": {},
     "process": {},
@@ -1146,7 +1146,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "archived"
   },
   "industrial-looms": {
     "materialId": "industrial-looms",
@@ -1157,11 +1157,11 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "archived"
   },
   "plant-cellulose": {
     "materialId": "plant-cellulose",
-    "status": "draft",
+    "status": "archived",
     "lastUpdated": "2026-02-28",
     "performance": {},
     "process": {},
@@ -1172,7 +1172,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
   },
   "mineral-regenerated": {
     "materialId": "mineral-regenerated",
-    "status": "draft",
+    "status": "archived",
     "lastUpdated": "2026-02-28",
     "performance": {},
     "process": {},
@@ -1399,7 +1399,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "archived"
   },
   "yarn-weight": {
     "materialId": "yarn-weight",
@@ -1410,7 +1410,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "archived"
   },
   "curaua": {
     "materialId": "curaua",
@@ -1421,7 +1421,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "archived"
   },
   "lincoln": {
     "materialId": "lincoln",
@@ -1432,7 +1432,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "archived"
   },
   "bombax": {
     "materialId": "bombax",
@@ -1443,7 +1443,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "archived"
   },
   "viscose-rayon": {
     "materialId": "viscose-rayon",
@@ -1465,7 +1465,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "archived"
   },
   "harakeke": {
     "materialId": "harakeke",
@@ -1476,7 +1476,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "archived"
   },
   "sano": {
     "materialId": "sano",
@@ -1487,7 +1487,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "archived"
   },
   "lokta": {
     "materialId": "lokta",
@@ -1498,7 +1498,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "archived"
   },
   "sunn-hemp": {
     "materialId": "sunn-hemp",
@@ -1509,7 +1509,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "archived"
   },
   "modal": {
     "materialId": "modal",
@@ -1520,7 +1520,7 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sustainability": {},
     "sourcing": {},
     "endUse": {},
-    "status": "draft"
+    "status": "archived"
   },
   "columbia": {
     "materialId": "columbia",
@@ -1554,6 +1554,128 @@ export const MATERIAL_PASSPORTS: MaterialPassportRegistry = {
     "sourcing": {},
     "endUse": {},
     "status": "published"
+  },
+  "flannel": {
+    "materialId": "flannel",
+    "lastUpdated": "2026-04-08",
+    "performance": {},
+    "process": {},
+    "dyeing": {},
+    "sustainability": {},
+    "sourcing": {},
+    "endUse": {},
+    "status": "archived"
+  },
+  "knitting": {
+    "materialId": "knitting",
+    "status": "published",
+    "lastUpdated": "2026-04-07",
+    "performance": {
+      "elasticity": {
+        "rating": 5,
+        "label": "Very High",
+        "confidence": "verified",
+        "source": "Loop structure"
+      },
+      "drape": {
+        "rating": 4,
+        "label": "High",
+        "confidence": "estimated"
+      },
+      "breathability": {
+        "rating": 4,
+        "label": "High",
+        "confidence": "estimated"
+      },
+      "durability": {
+        "rating": 3,
+        "label": "Moderate",
+        "confidence": "estimated"
+      }
+    },
+    "process": {
+      "spinning": {
+        "value": "Requires spun yarn (any staple or filament system)",
+        "confidence": "verified"
+      },
+      "weaving": {
+        "value": "N/A — distinct interlacement family",
+        "confidence": "verified"
+      },
+      "knitting": {
+        "value": "Core construction: hand needles, circular frames, or industrial weft / warp knitting",
+        "confidence": "verified"
+      },
+      "finishing": {
+        "value": "Blocking, steaming, seaming, fulling — fiber-dependent",
+        "confidence": "estimated"
+      },
+      "specialProcesses": {
+        "value": [
+          "cast-on and bind-off",
+          "knit / purl structures",
+          "increases, decreases, short rows",
+          "stranded and intarsia colorwork",
+          "fully fashioned machine shaping"
+        ],
+        "confidence": "verified"
+      }
+    },
+    "dyeing": {
+      "compatibility": {
+        "value": "excellent",
+        "confidence": "estimated"
+      },
+      "notes": "Knitwear is dyed in the yarn, in greige pieces, or as finished garments depending on fiber and supply chain."
+    },
+    "sustainability": {},
+    "sourcing": {
+      "primaryRegions": {
+        "value": [
+          "Global domestic hand-knitting",
+          "East Asia knitwear manufacturing",
+          "European wool-knit heritage regions",
+          "Andean alpaca traditions"
+        ],
+        "confidence": "estimated"
+      },
+      "historicalContext": {
+        "value": "Fine knitted socks and liturgical gloves anchor the craft in medieval North Africa and Europe; stocking frames industrialized shaped knit tubes from the 16th century onward.",
+        "confidence": "draft"
+      }
+    },
+    "endUse": {
+      "apparel": {
+        "value": true,
+        "confidence": "verified"
+      },
+      "accessories": {
+        "value": true,
+        "confidence": "verified"
+      },
+      "interiors": {
+        "value": true,
+        "confidence": "verified"
+      },
+      "bestFor": [
+        "sweaters and cardigans",
+        "socks and hosiery",
+        "hats and gloves",
+        "shawls and blankets",
+        "technical stretch panels"
+      ]
+    }
+  },
+  "cable-knit": {
+    "materialId": "cable-knit",
+    "lastUpdated": "2026-04-08",
+    "performance": {},
+    "process": {},
+    "dyeing": {},
+    "sustainability": {},
+    "sourcing": {},
+    "endUse": {},
+    "status": "archived"
   }
 };
 

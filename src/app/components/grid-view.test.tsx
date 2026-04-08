@@ -359,7 +359,7 @@ describe("GridView image sync", () => {
     const sampleFiber = bundledFibers[0];
 
     act(() => {
-      dataSource.updateFiber(sampleFiber.id, { status: "draft" });
+      dataSource.updateFiber(sampleFiber.id, { status: "archived" });
     });
 
     render(
@@ -427,7 +427,7 @@ describe("GridView image sync", () => {
     window.history.pushState({}, "", "/?admin");
 
     act(() => {
-      dataSource.updateFiber(sampleFiber.id, { status: "draft" });
+      dataSource.updateFiber(sampleFiber.id, { status: "archived" });
     });
 
     render(

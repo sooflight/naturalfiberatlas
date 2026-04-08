@@ -30,14 +30,14 @@ export function useMaterialPassportDb(materialId: string | undefined): UseMateri
   const [passport, setPassport] = useState<PassportData | null>(null);
   const [loading, setLoading] = useState(!!materialId);
   const [error, setError] = useState<Error | null>(null);
-  const [status, setStatus] = useState<string>("draft");
+  const [status, setStatus] = useState<string>("archived");
 
   useEffect(() => {
     if (!materialId) {
       setPassport(null);
       setLoading(false);
       setError(null);
-      setStatus("draft");
+      setStatus("archived");
       return;
     }
     const requestedId = materialId;
@@ -62,7 +62,7 @@ export function useMaterialPassportDb(materialId: string | undefined): UseMateri
 
         const data = await response.json();
         setPassport(data.passport);
-        setStatus(data.status || "draft");
+        setStatus(data.status || "archived");
       } catch (err) {
         console.warn(`[useMaterialPassportDb] Failed for ${requestedId}:`, err);
         setError(err instanceof Error ? err : new Error(String(err)));

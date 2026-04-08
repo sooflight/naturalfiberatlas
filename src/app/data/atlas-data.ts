@@ -66,7 +66,7 @@ export interface FiberIndexEntry {
   id: string;
   name: string;
   image: string;
-  status: "draft" | "published" | "archived";
+  status: "published" | "archived";
   category: "fiber" | "textile" | "dye" | "navigation-parent";
   /** Profile tags (e.g. Wool, Bast) — used for nav subcategory matching on the grid. */
   tags: string[];
@@ -119,11 +119,6 @@ export const worldNames: Record<string, string[]> = {
   ],
   silk: ["Silk", "丝绸 (Sīchóu)", "रेशम (Resham)", "ابریشم (Abrisham)", "Seda", "Soie", "Seide", "Шёлк (Shyolk)", "絹 (Kinu)", "حرير (Ḥarīr)", "비단 (Bidan)", "İpek", "Lụa", "ไหม (Mai)", "پارچه ابریشم (Parcha Abrisham)", "Silk", "キヌ (Kinu)", "Q'aytu"],
   charmeuse: ["Charmeuse", "Satin Silk", "Charmeuse Silk", "シルクシャルムーズ (Shiruku Sharumuzu)", "Шармез (Sharmez)", "Charmeuse de Soie", "Seda Charmeuse"],
-  habotai: ["Habotai", "Habutae", "Pongee Silk", "羽二重 (Habutae)", "Хаботай (Khabotay)", "Soie Habotai", "Seda Habotai"],
-  dupioni: ["Dupioni", "Dupion", "Raw Silk Dupioni", "デュピオン (Dyupion)", "Дюпиони (Dyupioni)", "Soie Dupioni", "Seda Dupioni"],
-  taffeta: ["Taffeta", "Tafetta", "Silk Taffeta", "タフタ (Tafuta)", "Тафта (Tafta)", "Taffetas", "Tafetán"],
-  chiffon: ["Chiffon", "Silk Chiffon", "Chiffon de Soie", "シフォン (Shifon)", "Шифон (Shifon)", "Gasa de Seda", "شيفون (Shifūn)"],
-  organza: ["Organza", "Silk Organza", "Organdi", "オーガンザ (Oganza)", "Органза (Organza)", "Organza de Soie", "Organza de Seda"],
   bamboo: ["Bamboo", "竹 (Zhú)", "वेणु (Veṇu)", "بامبو (Bāmbū)", "Bambu", "Bambou", "Бамбук (Bambuk)", "竹 (Take)", "대나무 (Daenamu)", "बाँस (Baans)", "Bambus", "چوب بامبو (Chub-e Bambu)", "Fibra de Bambú", "タケ (Take)", "Q'aytu"],
   wool: ["Wool", "羊毛 (Yángmáo)", "ऊर्णा (Ūrṇā)", "پشم (Pashm)", "Lana", "Laine", "Wolle", "Шерсть (Sherst)", "ウール (Ūru)", "صوف (Ṣūf)", "양모 (Yangmo)", "Ull", "Yün", "Lana", "Wool", "Millma", "Fibra de Lana"],
   coir: ["Coir", "椰壳纤维 (Yēké Xiānwéi)", "Fibre de Coco", "Kokosfaser", "Fibra de Coco", "Кокосовое волокно", "コイア (Koia)", "నారికేళం (Nārikēḷaṁ)", "नारियल रेशा (Nāriyal Reshā)", "پوست نارگیل (Pust-e Nargil)", "Coir", "ليف جوز الهند (Līf Jawz al-Hind)", "Q'aytu"],
@@ -257,7 +252,7 @@ export const worldNames: Record<string, string[]> = {
   jacquard: ["Jacquard", "提花 (Tíhuā)", "ジャカード (Jakādo)", "자카드 (Jakadeu)", "Jacquard", "Jacquard-Weberei", "Жаккард (Zhakkard)"],
   tapestry: ["Tapestry", "挂毯 (Guàtǎn)", "タペストリー (Tapesutorī)", "태피스트리 (Taepiseutoeri)", "Tapisserie", "Tapisserie / Bildweberei", "Tapiz", "Гобелен (Gobelen)"],
   lace: ["Lace", "花边 (Huābiān)", "レース (Rēsu)", "레이스 (Reiseu)", "Dentelle", "Spitze", "Encaje", "Кружево (Kruzhevo)", "Dantel"],
-  crochet: ["Crochet", "钩编 (Gōubiān)", "かぎ針編み (Kagibari-ami)", "코바늘 (Kobaneul)", "Crochet", "Häkeln", "Ganchillo", "Вязание крючком"],
+  knitting: ["Knitting", "编织 (Biānzhī)", "編み物 (Amimono)", "니트 (Niteu)", "Tricot", "Stricken", "Tejido de punto", "Вязание спицами"],
   carpet: ["Carpet / Rug", "地毯 (Dìtǎn)", "カーペット (Kāpetto)", "카펫 (Kapet)", "Tapis", "Teppich", "Alfombra", "Ковёр (Kovyor)", "Halı"],
   spinning: ["Spinning", "纺纱 (Fǎngshā)", "紡績 (Bōseki)", "방적 (Bangjeok)", "Filage", "Spinnen", "Hilado", "Прядение (Pryadeniye)"],
   "cable-knit": ["Cable Knit", "绞花编织 (Jiǎohuā Biānzhī)", "ケーブル編み (Kēburu-ami)", "Tricot Torsadé", "Zopfmuster", "Punto de Cable"],
@@ -266,7 +261,6 @@ export const worldNames: Record<string, string[]> = {
   flannel: ["Flannel", "法兰绒 (Fǎlánróng)", "フランネル (Furanneru)", "플란넬 (Peullanel)", "Flanelle", "Flanell", "Franela", "Фланель (Flanel')"],
   "block-print": ["Block Print", "木刻印花 (Mùkè Yìnhuā)", "ブロックプリント (Burokku Purinto)", "Impression au Bloc", "Blockdruck", "Estampado"],
   "leno-weave": ["Leno Weave", "纱罗 (Shāluó)", "紗 (Sha)", "Gaze / Leno", "Drehergewebe", "Gasa"],
-  acetate: ["Acetate", "醋酸纤维 (Cùsuān Xiānwéi)", "アセテート (Asetēto)", "아세테이트 (Aseteiteu)", "Acétate", "Acetat", "Acetato", "Ацетат (Atsetat)"],
 };
 
 /* ═══ PROCESS STEPS ═══ */
@@ -556,7 +550,7 @@ export const processData: Record<string, ProcessStep[]> = {
     { name: "Drying", detail: "Strips sun-dried to pale straw color; width 1-3cm, length up to 1.5m" },
     { name: "Sorting", detail: "Graded by width, length, and uniformity for weaving or tying" },
     { name: "Dyeing", detail: "Natural raffia accepts plant dyes readily; often dyed before weaving" },
-    { name: "Weaving / Crocheting", detail: "Woven on looms or crocheted into hats, bags, mats, and textiles" },
+    { name: "Weaving / Knitting", detail: "Woven on looms or knitted into hats, bags, mats, and textiles" },
   ],
   loofah: [
     { name: "Growing", detail: "Luffa gourd left on vine past edibility until fully mature and dry" },
@@ -1057,13 +1051,13 @@ export const processData: Record<string, ProcessStep[]> = {
     { name: "Advancing", detail: "Completed sections unpinned; pattern advanced for next repeat" },
     { name: "Finishing", detail: "Completed lace removed from pillow; stiffened, pressed, or blocked" },
   ],
-  crochet: [
-    { name: "Yarn Selection", detail: "Yarn chosen for weight, fiber content, and intended project" },
-    { name: "Foundation", detail: "Chain stitches created as foundation row for the piece" },
-    { name: "Stitch Work", detail: "Hook pulls loops of yarn through existing loops to build fabric" },
-    { name: "Shaping", detail: "Increases and decreases shape the fabric in 2D or 3D" },
-    { name: "Joining", detail: "Separate pieces joined by slip stitch, whip stitch, or seamless methods" },
-    { name: "Blocking", detail: "Finished piece pinned to measurements and steamed or wet-blocked" },
+  knitting: [
+    { name: "Yarn & Needles", detail: "Yarn weight, fiber, and needle size chosen to hit gauge for the pattern" },
+    { name: "Casting On", detail: "First row of live stitches placed on one or two needles (or machine set up with loops)" },
+    { name: "Row Formation", detail: "Knit and purl stitches worked through active loops, building courses of intermeshed loops" },
+    { name: "Shaping", detail: "Increases, decreases, and short rows sculpt fabric in flat, circular, or modular pieces" },
+    { name: "Assembly", detail: "Pieces seamed or joined with kitchener graft, three-needle bind-off, or picked-up borders" },
+    { name: "Finishing", detail: "Ends woven in; fabric blocked to dimensions with steam or wet blocking" },
   ],
   carpet: [
     { name: "Loom Setup", detail: "Vertical or horizontal loom strung with cotton or wool warp threads" },
@@ -1280,7 +1274,6 @@ const rawCareData: Record<string, CareData> = {
   "bamboo-viscose": { washTemp: "Cold to warm (30°C)", dryMethod: "Line dry or tumble low", ironTemp: "Low (110°C)", specialNotes: "Avoid bleach; fabric softener not needed due to natural softness" },
   "viscose-rayon": { washTemp: "Cold hand wash (20°C) or dry clean", dryMethod: "Flat dry; do not wring", ironTemp: "Low (110°C) while damp", specialNotes: "Weakens when wet — handle gently; may shrink if machine washed; iron on reverse" },
   cupro: { washTemp: "Cold hand wash (20°C) or dry clean", dryMethod: "Flat dry in shade", ironTemp: "Low (110°C) with cloth", specialNotes: "Similar care to silk; weakens when wet; excellent drape recovers on drying" },
-  acetate: { washTemp: "Cold hand wash (20°C) or dry clean", dryMethod: "Flat dry or drip dry", ironTemp: "Very low (100°C) on reverse", specialNotes: "Dissolves in acetone/nail polish remover; never use chlorine bleach; heat-sensitive" },
   muslin: { washTemp: "Warm (30-40°C)", dryMethod: "Line dry or tumble low", ironTemp: "Medium-High (180°C) while damp", specialNotes: "Machine washable for commercial muslin; heritage muslin treated like finest silk" },
   flannel: { washTemp: "Warm (30-40°C)", dryMethod: "Tumble low; remove promptly", ironTemp: "Medium (150°C) with steam", specialNotes: "Pill-prone — wash inside-out; wool flannel may need dry cleaning; avoid high heat" },
 };
@@ -1700,9 +1693,10 @@ export const quoteData: Record<string, QuoteEntry[]> = {
     { text: "A single collar of Venetian needle lace could cost more than a merchant's house — luxury measured in knots per centimeter.", attribution: "Santina Levey, Lace: A History" },
     { text: "To make bobbin lace is to conduct an orchestra of threads — each bobbin a musician, each crossing a note.", attribution: "Bruges Lace School" },
   ],
-  crochet: [
-    { text: "Irish crochet lace fed families during the Great Famine — beauty born from desperation saved lives.", attribution: "Irish Textile History" },
-    { text: "Crochet can create any three-dimensional shape — it is the only textile technique that can model hyperbolic geometry.", attribution: "Daina Taimina, Crocheting Adventures with Hyperbolic Planes" },
+  knitting: [
+    { text: "Properly practiced, knitting soothes the troubled spirit — and it doesn't hurt the untroubled spirit either.", attribution: "Elizabeth Zimmermann, Knitting Without Tears" },
+    { text: "The stocking frame did not kill hand knitting; it proved that even socks could be an industry.", attribution: "Textile Industrial History" },
+    { text: "A knit fabric is a reservoir of air — warmth is the architecture of loops.", attribution: "Knitwear Design Practice" },
   ],
   carpet: [
     { text: "A Persian carpet is a garden you can roll up and carry — paradise woven in wool and silk.", attribution: "Persian Cultural Saying" },
@@ -1737,6 +1731,18 @@ export const quoteData: Record<string, QuoteEntry[]> = {
   muslin: [
     { text: "Dhaka muslin was so fine it was called 'woven air' — a sari could pass through a finger ring.", attribution: "Bengali Textile Heritage" },
     { text: "The British destroyed India's muslin industry to protect Lancashire cotton — the first act of industrial textile warfare.", attribution: "Sven Beckert, Empire of Cotton" },
+    {
+      text: "Jamdani* is a Persian word. Jam means flower in Farsi language. Dani means container. The idea was that, because this [fabric] is very transparent, when the woman wears it, with the patterns on her body, she looks like flowers in a container.",
+      attribution: "Saiful Islam, Artist / Bengal Muslin",
+    },
+    {
+      text: "I talked to many researchers and craftsmen, and realized that there hasn't been much research done on this famed piece of fabric. This isn't just a fabric for us, it is our culture and history, and the knowledge about it is at the risk of becoming obsolete.",
+      attribution: "Saiful Islam, head of Bengal Muslin, to Rafi Hossain, The Daily Star",
+    },
+    {
+      text: "The trade was built up and destroyed by the British East India Company. They really put a stranglehold on its production and came to control the whole trade.",
+      attribution: "Sonia Ashmore, author of Muslin, BBC Future",
+    },
   ],
   flannel: [
     { text: "Welsh flannel warmed the miners, the shepherds, and the babies — soft cloth for hard lives.", attribution: "Welsh Textile History" },
@@ -1757,10 +1763,6 @@ export const quoteData: Record<string, QuoteEntry[]> = {
   cupro: [
     { text: "Cupro is made from cotton linter — the fuzz too short to spin, reborn as a fabric that drapes like silk.", attribution: "Bemberg by Asahi Kasei" },
     { text: "A waste product from the cotton gin becomes a luxury lining — cupro is the circular economy avant la lettre.", attribution: "Regenerated Fiber History" },
-  ],
-  acetate: [
-    { text: "Acetate is the Cinderella fiber — always the lining, never the gown, yet every fine garment depends on its drape.", attribution: "Celanese Corporation" },
-    { text: "Cellulose acetate gave us photographic film, then eyeglass frames, then fabric — one molecule, three industries.", attribution: "Polymer History" },
   ],
   dobby: [
     { text: "Dobby is Jacquard's little brother — simpler, faster, and responsible for every Oxford shirt and waffle towel you own.", attribution: "Weaving Technology" },
@@ -1922,12 +1924,7 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619073/atlas/yta1tistuaszfx9peetu.jpg", "Hemp fiber bundle"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619075/atlas/jdsr2nwfbfgyfimudrff.jpg", "Hemp rope texture"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619067/atlas/uktcb2if8u7z0eoaqdrz.jpg", "Hemp cultivation"),
-    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771704609/atlas/ipu8hfghkme5ivqldwgf.jpg", "Filipino woman weaving hemp fiber", "Openverse", "portrait"),
-    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771704611/atlas/z14xiyt0nunef3yrcgeb.jpg", "Assorting Manila hemp fiber", "Openverse"),
-    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771704612/atlas/xwqgbtwyq3s9t4hdcwct.jpg", "Bundles of Manila hemp fiber", "Openverse"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619080/atlas/uhtds8mgv6pw3fcgetvd.png", "Hemp uses diagram"),
-    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771704613/atlas/tstnpra6vhhwmbmxp2pt.jpg", "Manila hemp bundles for market", "Openverse"),
-    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771704615/atlas/qcfwzrckokhwgwvbc01l.jpg", "Filipino rope factory, cleaning hemp", "Openverse"),
   ],
   jute: [
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619095/atlas/iwpky4ruxdodh64nldsc.jpg", "Jute fiber processing"),
@@ -2287,8 +2284,6 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619697/atlas/pkqfjcnypmzmnvvzf1fu.jpg", "Raffia fiber"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619703/atlas/ybqb9tetqo5iinmog0gd.jpg", "Raffia weaving"),
     img("https://helenkaminski.com/cdn/shop/files/process-647x1098_0001_20252506_MADAGASCAR_DAY5_4165.jpg?v=1765863927", "Raffia workshop"),
-    img("https://helenkaminski.com/cdn/shop/files/stitches-1080x1350_0001_helen_kaminski_SS25_Kirana_crochet_stitch_612x.jpg?v=1765934435", "Kirana crochet stitch"),
-    img("https://helenkaminski.com/cdn/shop/files/stitches-1080x1350_0002_helen_kaminski_SS25_Mala_crochet_stitch_612x.jpg?v=1765934435", "Mala crochet stitch"),
     img("https://helenkaminski.com/cdn/shop/articles/blog_tile_c868e9d0-06c8-42bd-8b54-4dc91737cc75_1080x.png", "Raffia heritage"),
     img("https://helenkaminski.com/cdn/shop/files/double_image_0000_20252506_MADAGASCAR_C2_1558.jpg?v=1765863927", "Raffia in Madagascar"),
     img("https://helenkaminski.com/cdn/shop/files/1680x1200_0000_20252506_MADAGASCAR_DAY7_5228.jpg?v=1765863927", "Madagascar raffia"),
@@ -2393,6 +2388,35 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771748836/atlas/ccidzzk6t71lphjb8bha.jpg", "Antique Persian carpet"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771748837/atlas/elf2gctf6ty231kt2cru.jpg", "Swedish carpet exhibition"),
   ],
+  spinning: [
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771657863/atlas/gegjkntl1jdwbktwtxji.jpg", "Hand and wheel spinning wool"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619404/atlas/jorm3fa7yyicidprpibv.jpg", "Ring spinning"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619408/atlas/ivucffvpe8xlq1ixyfe1.jpg", "Rotor (open-end) spinning"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619409/atlas/xonsmbswcg7hywjzup4m.jpg", "Air-jet spinning"),
+  ],
+  knitting: [
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628165/atlas/z1yghqwymlr5gjvk7a0j.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628158/atlas/ylpytdyuyh4sjfmgvwh3.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628707/atlas/cleb8cwwctcypwdrnslf.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775627889/atlas/g6ytepocmrgotcyfzmmg.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628115/atlas/iogbrkwye5olyhcekls7.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628243/atlas/aihyqsvv9l9is1gz0yuy.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628100/atlas/u8rqs6xmr2pia397osst.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628108/atlas/f0pfg49truwcu6xc6k5g.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628134/atlas/owgfgwdjfbuyuitr47sn.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628181/atlas/n5zmd8jrsid47ofdqpee.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628239/atlas/sdfw6dpjbp2nqzbdpl5v.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628607/atlas/lmsyblcljfoy0teqc26w.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628680/atlas/vp1torkhdysbtwvll29a.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628741/atlas/s0ugxnzkm9qd3p1tmfcj.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628755/atlas/fchfpm7iojih7vvsqqcs.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628788/atlas/cz9w1i3k437lfwgqqncf.jpg", "Knitting — reference"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619379/atlas/jtv4qymbqpncu4dfnjfw.jpg", "Knitting — hero"),
+    img("https://helenkaminski.com/cdn/shop/files/stitches-1080x1350_0001_helen_kaminski_SS25_Kirana_crochet_stitch_612x.jpg?v=1765934435", "Kirana stitch detail"),
+    img("https://helenkaminski.com/cdn/shop/files/stitches-1080x1350_0002_helen_kaminski_SS25_Mala_crochet_stitch_612x.jpg?v=1765934435", "Mala stitch detail"),
+    img("https://media.jamesdunloptextiles.com/image-transform/8cu89TjtOYIFJGZftnClsWL5NRc=/fit=cover,width=563,height=423,format=auto/https://media.jamesdunloptextiles.com/media/news/2022_05/26ea8bc023cf110f9f112c336a2e8315--knit-crochet-spinning_MqRLCCU.jpg", "Knit, crochet, and spinning studio"),
+    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619350/atlas/xbyvbhkqvsoodplxb8de.jpg", "Cable knit texture"),
+  ],
   "block-print": [
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619651/atlas/dxneiijpebu9cqqvnxfj.jpg", "Block printing"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619654/atlas/pd51lqlvtleqqliogsgz.jpg", "Block print fabric"),
@@ -2452,6 +2476,8 @@ const jsonKeyAliases: Record<string, string> = {
   "lyocell-tencel": "lyocell",
   "pineapple-pina": "pineapple",
   "cotton": "organic-cotton",
+  /** Profile renamed from crochet; merge disk exports under `knitting`. */
+  crochet: "knitting",
   /** Legacy nav / disk export id; canonical catalog row is `tussar`. */
   tussah: "tussar",
 };

@@ -30,10 +30,14 @@ describe("isNavigationParentProfileId", () => {
     expect(isNavigationParentProfileId("bamboo")).toBe(false);
     expect(isNavigationParentProfileId("kapok")).toBe(false);
   });
+
+  it("treats textile portal thumbnail slot as a navigation parent for Image Base", () => {
+    expect(isNavigationParentProfileId("textile-portal-thumbnail")).toBe(true);
+  });
 });
 
 describe("getNavigationNodeDisplayOrder", () => {
-  it("returns nav nodes in frontend display order (fiber → plant subcats → animal → regen); textile and dyes excluded", () => {
+  it("returns nav nodes in frontend display order (legacy tree → admin fiber categories); textile root included, dyes admin root excluded", () => {
     const order = getNavigationNodeDisplayOrder();
     const fiberIdx = order.indexOf("fiber");
     const plantIdx = order.indexOf("plant-cellulose");
@@ -43,6 +47,7 @@ describe("getNavigationNodeDisplayOrder", () => {
     const grassIdx = order.indexOf("grass-fibers");
     const animalIdx = order.indexOf("animal-protein");
     const regenIdx = order.indexOf("mineral-regenerated");
+    const regenLegacyIdx = order.indexOf("regen");
     const textileIdx = order.indexOf("textile");
     const dyesIdx = order.indexOf("dyes");
 
@@ -54,7 +59,9 @@ describe("getNavigationNodeDisplayOrder", () => {
     expect(grassIdx).toBeGreaterThan(seedIdx);
     expect(animalIdx).toBeGreaterThan(grassIdx);
     expect(regenIdx).toBeGreaterThan(animalIdx);
-    expect(textileIdx).toBe(-1);
+    expect(regenLegacyIdx).toBeGreaterThanOrEqual(0);
+    expect(textileIdx).toBeGreaterThan(regenLegacyIdx);
+    expect(fiberIdx).toBeGreaterThan(textileIdx);
     expect(dyesIdx).toBe(-1);
   });
 

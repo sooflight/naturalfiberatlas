@@ -102,7 +102,7 @@ export function AtlasSiteFooter({ cols, columnGap, className }: AtlasSiteFooterP
                       lineHeight: 1.6,
                     }}
                   >
-                    A public image & knowledge platform studying material culture in the natural fiber ecosystem. It covers profiles on plant fibers, animal fibers, rayon fibers, textile techniques & traditions, and dye profiles. Built as an offering for designers, textile professionals, students, educators, and researchers seeking an artful learning experience.
+                    A public image & knowledge resource studying material cultures of the earth. It covers profiles on natural plant fibers, animal fibers, rayons, textile techniques, and natural dye. Built as an offering for designers, textile professionals, students, educators, and researchers seeking an artful learning experience.
                     <br /><br />
                     Designed, developed and researched by <a href="https://sooflight.studio" target="_blank" rel="noopener noreferrer" className="text-white/90 transition-colors hover:text-white/30">sooflight.studio</a>
                   </p>

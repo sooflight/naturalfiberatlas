@@ -897,7 +897,7 @@ export function GridView({
   }, []);
 
   /* ── Ambient color temperature ── */
-  const imageAnalysis = useImageAnalysis(pipeline.transform(selectedFiber?.image, "glow"));
+  const imageAnalysis = useImageAnalysis(pipeline.transform(selectedFiber?.image, "hueProbe"));
   const ambientBg = useMemo(() => {
     if (!selectedFiber || !imageAnalysis) return "#111111";
     return `hsl(${Math.round(imageAnalysis.hue)}, 39%, 13%)`;

@@ -27,6 +27,6 @@ export type ContentItem = {
   totalFields: number;         // Total expected fields
 
   // Common metadata
-  status: 'published' | 'draft' | 'archived';
+  status: "published" | "archived";
   lastModified: Date;
 };
