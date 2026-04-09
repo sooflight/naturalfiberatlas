@@ -32,6 +32,12 @@ interface GlassCardProps {
    * leave a transparent gap (dark scrim visible) along the bottom edge on mobile.
    */
   fillContainer?: boolean;
+  /**
+   * Corner radius for the glass shell (Tag, frost layers, bevel, border ring).
+   * When the parent uses `overflow-hidden` + border-radius, this must match that radius
+   * or the animated border ring is clipped at the corners.
+   */
+  shellRoundClass?: string;
 }
 
 /**
@@ -60,8 +66,11 @@ export function GlassCard({
   tabIndex,
   dataAtlasFiberId,
   fillContainer = false,
+  shellRoundClass,
 }: GlassCardProps) {
   const Tag = as;
+  const shellRound = shellRoundClass ?? "rounded-xl";
+  const glowRound = shellRoundClass ?? "rounded-2xl";
   const pipeline = useImagePipeline();
 
   /* Randomised animation offsets so cards don't orbit/breathe in sync */
@@ -138,7 +147,7 @@ export function GlassCard({
             alt=""
             aria-hidden
             loading="lazy"
-            className="w-full h-full object-cover rounded-2xl"
+            className={`w-full h-full object-cover ${glowRound}`}
             style={{
               filter: "blur(50px) saturate(1.5) brightness(0.55)",
             }}
@@ -155,7 +164,7 @@ export function GlassCard({
         {...(dataAtlasFiberId ? { "data-atlas-fiber-id": dataAtlasFiberId } : {})}
         {...(as === "button" ? { type: "button" as const } : {})}
         className={`
-          relative w-full overflow-hidden rounded-xl p-0 pointer-events-auto
+          relative w-full overflow-hidden ${shellRound} p-0 pointer-events-auto
           ${fillContainer ? "h-full min-h-0" : "aspect-[3/4]"}
           transition-[opacity] duration-400 ease-out
           ${isHoverable ? "cursor-pointer" : ""}
@@ -172,7 +181,7 @@ export function GlassCard({
             alt=""
             skipLqip={false}
             loading="lazy"
-            className="pointer-events-none absolute inset-0 w-full h-full object-cover rounded-xl z-0 transition-opacity duration-200"
+            className={`pointer-events-none absolute inset-0 w-full h-full object-cover ${shellRound} z-0 transition-opacity duration-200`}
             style={{
               filter: frostParams
                 ? `blur(${frostParams.blur}px) saturate(${frostParams.saturate}) brightness(${frostParams.brightness})`
@@ -186,7 +195,7 @@ export function GlassCard({
         {/* ── Glass background layer — graduated frost via mask ── */}
         <div
           className={`
-            absolute inset-0 rounded-xl transition-[background-color] duration-400
+            absolute inset-0 ${shellRound} transition-[background-color] duration-400
             ${ambientImage
               ? frostParams
                 ? "backdrop-blur-2xl"
@@ -217,7 +226,7 @@ export function GlassCard({
              eliminating a separate DOM element. */}
         <div
           className={`
-            pointer-events-none absolute inset-0 z-20 rounded-xl transition-[box-shadow] duration-400 glass-bevel
+            pointer-events-none absolute inset-0 z-20 ${shellRound} transition-[box-shadow] duration-400 glass-bevel
             ${isSelected ? "is-selected" : ""}
           `}
           style={{
@@ -237,7 +246,7 @@ export function GlassCard({
         {/* ── Inner ambient vignette ── */}
         {ambientImage && (
           <div
-            className="pointer-events-none absolute inset-0 z-[2] rounded-xl"
+            className={`pointer-events-none absolute inset-0 z-[2] ${shellRound}`}
             style={{
               background:
                 "radial-gradient(ellipse at 50% 40%, transparent 30%, rgba(0,0,0,0.2) 100%)",
@@ -248,7 +257,7 @@ export function GlassCard({
         {/* ── SVG noise/grain texture for tactile realism ── */}
         {/* Filter is defined once in GridView; we reference the shared ID here */}
         <div
-          className="pointer-events-none absolute inset-0 z-[3] rounded-xl mix-blend-overlay"
+          className={`pointer-events-none absolute inset-0 z-[3] ${shellRound} mix-blend-overlay`}
           style={{
             filter: `url(#glass-noise)`,
             opacity: 0.035,
@@ -256,7 +265,7 @@ export function GlassCard({
         />
 
         {/* ── Specular sweep — animated diagonal highlight on hover
-             #8: Collapsed from 2 elements to 1. Tag's overflow-hidden + rounded-xl
+             #8: Collapsed from 2 elements to 1. Tag's overflow-hidden + shell radius
              provides the clipping that the former outer container duplicated. */}
         <div
           ref={sweepRef}
@@ -270,7 +279,7 @@ export function GlassCard({
             width: "67%",
             height: "140%",
             background:
-              "linear-gradient(105deg, transparent 0%, transparent 30%, rgba(255,255,255,0.06) 38%, rgba(255,255,255,0.14) 48%, rgba(255,255,255,0.14) 52%, rgba(255,255,255,0.06) 62%, transparent 70%, transparent 100%)",
+              "linear-gradient(105deg, transparent 0%, transparent 22%, rgba(255,255,255,0.02) 30%, rgba(255,255,255,0.07) 38%, rgba(255,255,255,0.12) 45%, rgba(255,255,255,0.14) 50%, rgba(255,255,255,0.12) 55%, rgba(255,255,255,0.07) 62%, rgba(255,255,255,0.02) 70%, transparent 78%, transparent 100%)",
             transform: "skewX(-10deg)",
           }}
         />
@@ -286,7 +295,7 @@ export function GlassCard({
            is not clipped at the rounded corners.
            #8: ::before pseudo-element provides the hover variant (warm tones). */}
       <div
-        className={`pointer-events-none absolute inset-0 z-30 rounded-xl glass-border-ring ${isSelected ? "is-selected" : ""}`}
+        className={`pointer-events-none absolute inset-0 z-30 ${shellRound} glass-border-ring ${isSelected ? "is-selected" : ""}`}
         style={{
           padding: "1px",
           background: isSelected

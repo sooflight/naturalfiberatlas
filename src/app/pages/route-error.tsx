@@ -15,7 +15,7 @@ export function RouteErrorPage() {
   const message = getErrorMessage(error);
 
   return (
-    <div className="min-h-dvh bg-[#111111] text-white flex items-center justify-center p-6">
+    <div className="min-h-atlas-vvh bg-[#111111] text-white flex items-center justify-center p-6">
       <div className="max-w-md text-center space-y-4">
         <p className="text-white/20 tracking-[0.2em] uppercase text-xs">Navigation error</p>
         <p className="text-white/70 text-sm">{message}</p>

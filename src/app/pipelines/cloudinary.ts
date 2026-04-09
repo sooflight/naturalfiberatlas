@@ -4,14 +4,17 @@
  * Inserts on-the-fly resize/format parameters into Cloudinary URLs
  * so the CDN returns right-sized images instead of full-resolution originals.
  *
- * Remote `http(s)` URLs (Pinimg, shop CDNs, etc.) can be resized via Cloudinary
- * **fetch** when `VITE_CLOUDINARY_FETCH_REMOTE=true`.
+ * **Stored `image/fetch/…` URLs:** Many clouds return 401 with
+ * `x-cld-error: Images of type fetch are restricted in this account`.
+ * By default this pipeline **decodes** those URLs to the underlying `https://` source
+ * so the browser loads the origin CDN directly (same behavior as passthrough remotes).
+ * Set `VITE_CLOUDINARY_PREFER_FETCH_DELIVERY=true` only if your Cloudinary account
+ * allows remote fetch and you want delivery + transforms through `image/fetch/`.
  *
- * Default is passthrough for remote URLs so production does not depend on
- * Cloudinary fetch allowlists/hotlink rules for third-party hosts.
- * Set `VITE_CLOUDINARY_FETCH_REMOTE=false` to force passthrough explicitly.
- * Requires remote fetch to be allowed on your Cloudinary cloud. Cloud name defaults
- * to `dawxvzlte` or `VITE_CLOUDINARY_CLOUD_NAME`.
+ * Remote `http(s)` URLs can be resized via Cloudinary **fetch** when
+ * `VITE_CLOUDINARY_FETCH_REMOTE=true` **and** fetch is allowed on the account.
+ * Default is passthrough for bare remote URLs. Cloud name defaults to `dawxvzlte`
+ * or `VITE_CLOUDINARY_CLOUD_NAME`.
  */
 
 import type { ImageTransformPipeline, GlassAtlasPreset } from "./types";
@@ -29,6 +32,7 @@ const PRESET_TRANSFORMS: Record<GlassAtlasPreset, string> = {
   lqip:         "w_60,h_80,c_fill,f_auto,q_20",
   ambient:      "w_400,h_534,c_fill,f_auto,q_60",
   filmstrip:    "w_220,h_293,c_fill,f_auto,q_auto",
+  navThumb:     "w_144,h_108,c_fill,f_auto,q_auto",
   seeAlso:      "w_80,h_80,c_fill,f_auto,q_auto",
   solo:         "w_320,h_427,c_fill,f_auto,q_auto",
   duo:          "w_320,h_200,c_fill,f_auto,q_auto",
@@ -53,6 +57,41 @@ function fetchRemoteEnabled(): boolean {
   return false;
 }
 
+/** When true, keep rebuilding `image/fetch/` URLs with transform segments (requires fetch enabled on the Cloudinary account). */
+function preferFetchUrlDelivery(): boolean {
+  const raw = import.meta.env.VITE_CLOUDINARY_PREFER_FETCH_DELIVERY;
+  if (typeof raw === "string" && raw.trim() !== "") {
+    const t = raw.trim().toLowerCase();
+    return t === "true" || t === "1" || t === "on";
+  }
+  return false;
+}
+
+/**
+ * For Cloudinary `image/fetch` delivery URLs, return the decoded original remote URL.
+ * Mirrors {@link decodeCloudinaryFetchSourceUrl} in atlas-shared (kept here to avoid import cycles).
+ */
+function decodeFetchSourceHttpsUrl(url: string): string | null {
+  const match = /^https?:\/\/res\.cloudinary\.com\/[^/]+\/image\/fetch\/(.+)$/i.exec(url.trim());
+  if (!match) return null;
+
+  const encodedTail = match[1];
+  const segments = encodedTail.split("/");
+  const encodedHttpIdx = segments.findIndex(
+    (segment) => segment.startsWith("http%3A") || segment.startsWith("https%3A"),
+  );
+  if (encodedHttpIdx === -1) return null;
+
+  const encodedUrl = segments.slice(encodedHttpIdx).join("/");
+  try {
+    const decoded = decodeURIComponent(encodedUrl);
+    if (/^https?:\/\//i.test(decoded)) return decoded;
+  } catch {
+    return null;
+  }
+  return null;
+}
+
 /**
  * Re-apply delivery transforms to a stored `image/fetch/` URL (canonical data may omit
  * transforms). Drops any prior comma-separated transform segment(s) before the
@@ -73,13 +112,33 @@ function rebuildFetchUrlWithTransforms(src: string, transforms: string): string 
 }
 
 export class CloudinaryPipeline implements ImageTransformPipeline {
-  transform(src: string | undefined, preset: string): string | undefined {
+  /** Arrow so `pipeline.transform` can be passed as a callback without losing `this`. */
+  transform = (src: string | undefined, preset: string): string | undefined => {
+    return this.transformImpl(src, preset, false);
+  };
+
+  /**
+   * @param fromDecodedFetch — inner URL after unwrapping `image/fetch/`; do not wrap again in Cloudinary fetch
+   *   (avoids 401 when the account restricts fetch, and avoids useless double-fetch).
+   */
+  private transformImpl(
+    src: string | undefined,
+    preset: string,
+    fromDecodedFetch: boolean,
+  ): string | undefined {
     if (!src) return src;
 
     const transforms = PRESET_TRANSFORMS[preset as GlassAtlasPreset];
     if (!transforms) return src;
 
     if (src.includes(FETCH_SEGMENT)) {
+      if (preferFetchUrlDelivery()) {
+        return rebuildFetchUrlWithTransforms(src, transforms) ?? src;
+      }
+      const decoded = decodeFetchSourceHttpsUrl(src);
+      if (decoded) {
+        return this.transformImpl(decoded, preset, true);
+      }
       return rebuildFetchUrlWithTransforms(src, transforms) ?? src;
     }
 
@@ -98,6 +157,7 @@ export class CloudinaryPipeline implements ImageTransformPipeline {
 
     if (
       fetchRemoteEnabled() &&
+      !fromDecodedFetch &&
       /^https?:\/\//i.test(src) &&
       !src.startsWith("data:") &&
       !src.startsWith("blob:")

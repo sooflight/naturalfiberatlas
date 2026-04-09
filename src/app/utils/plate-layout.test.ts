@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildLayoutCandidatePool,
   chunkGalleryForContactSheets,
   computePlateLayout,
   classifyZone,
@@ -47,6 +48,20 @@ describe("computePlateLayout", () => {
     expect(result.plateAssignments.size).toBe(0);
   });
 
+  it("places Identity (about) immediately left or right of the hero when the grid has 2+ columns", () => {
+    const cols = 4;
+    const filtered = fiberIndex.slice(0, 16);
+    const visibility = makeVisibility(Array.from({ length: filtered.length + 40 }, (_, i) => i));
+    for (let selectedIndex = 0; selectedIndex < filtered.length; selectedIndex++) {
+      const selectedId = filtered[selectedIndex]!.id;
+      const result = computePlateLayout(selectedId, filtered, cols, visibility);
+      const aboutCell = [...result.plateAssignments.entries()].find(([, pt]) => pt === "about")?.[0];
+      expect(aboutCell, `about missing for ${selectedId}`).toBeDefined();
+      const zone = classifyZone(aboutCell!, selectedIndex, cols);
+      expect(zone === "right" || zone === "left").toBe(true);
+    }
+  });
+
   it("assigns detail plates only to a row-major pool prefix (fill rows L→R before deeper rows)", () => {
     const cols = 4;
     const filtered = fiberIndex.slice(0, 8);
@@ -73,7 +88,10 @@ describe("computePlateLayout", () => {
       if (row >= selRow - 1) virtual.push(next);
       next += 1;
     }
-    const expectedPool = [...real, ...virtual].sort((a, b) => a - b).slice(0, poolSize);
+    const allCandidates = [...real, ...virtual].sort((a, b) => a - b);
+    const expectedPool = [...buildLayoutCandidatePool(allCandidates, poolSize, selectedIndex, cols)].sort(
+      (a, b) => a - b,
+    );
 
     const assigned = [...result.plateAssignments.keys()].sort((a, b) => a - b);
     expect(assigned).toEqual(expectedPool);
@@ -98,12 +116,31 @@ describe("computePlateLayout", () => {
     dataSource.resetToDefaults();
   });
 
+  it("assigns one quote cell per 3 quotes with distinct chunk slot indices", () => {
+    dataSource.resetToDefaults();
+    dataSource.updateQuoteData("lotus", [
+      { text: "Quote one.", attribution: "A" },
+      { text: "Quote two.", attribution: "B" },
+      { text: "Quote three.", attribution: "C" },
+      { text: "Quote four.", attribution: "D" },
+    ]);
+    const cols = 4;
+    const filtered = fiberIndex;
+    const visibility = makeVisibility(Array.from({ length: filtered.length + 40 }, (_, i) => i));
+    const result = computePlateLayout("lotus", filtered, cols, visibility);
+    const quoteCells = [...result.plateAssignments.entries()].filter(([, pt]) => pt === "quote");
+    expect(quoteCells.length).toBe(2);
+    const slots = quoteCells.map(([cell]) => result.quoteChunkSlotByCell.get(cell)).sort();
+    expect(slots).toEqual([0, 1]);
+    dataSource.resetToDefaults();
+  });
+
   it("places one contactSheet cell per 12-image gallery chunk with correct global offsets", () => {
     const cols = 4;
     const filtered = fiberIndex.filter((f) => ["hemp", "jute", "flax-linen"].includes(f.id));
     const selectedId = "hemp";
     const visibility = makeVisibility(Array.from({ length: 40 }, (_, i) => i));
-    const many: GalleryImageEntry[] = Array.from({ length: 25 }, (_, i) => ({
+    const many: GalleryImageEntry[] = Array.from({ length: 27 }, (_, i) => ({
       url: `https://example.com/x/${i}.jpg`,
     }));
     const result = computePlateLayout(selectedId, filtered, cols, visibility, many);
@@ -112,23 +149,79 @@ describe("computePlateLayout", () => {
     const starts = [...result.gallerySlotStartIndex.values()].sort((a, b) => a - b);
     expect(starts).toEqual([0, 12, 24]);
     const totalThumbs = [...result.gallerySlotImages.values()].reduce((n, imgs) => n + imgs.length, 0);
-    expect(totalThumbs).toBe(25);
+    expect(totalThumbs).toBe(27);
+  });
+
+  it("omits a final contactSheet when the gallery tail is 1–2 images after full dozens", () => {
+    const cols = 4;
+    const filtered = fiberIndex.filter((f) => ["hemp", "jute", "flax-linen"].includes(f.id));
+    const selectedId = "hemp";
+    const visibility = makeVisibility(Array.from({ length: 40 }, (_, i) => i));
+    const twentyFive: GalleryImageEntry[] = Array.from({ length: 25 }, (_, i) => ({
+      url: `https://example.com/x/${i}.jpg`,
+    }));
+    const r25 = computePlateLayout(selectedId, filtered, cols, visibility, twentyFive);
+    expect(
+      [...r25.plateAssignments.values()].filter((pt) => pt === "contactSheet").length,
+    ).toBe(2);
+    expect(
+      [...r25.gallerySlotImages.values()].reduce((n, imgs) => n + imgs.length, 0),
+    ).toBe(24);
+
+    const twentySix: GalleryImageEntry[] = Array.from({ length: 26 }, (_, i) => ({
+      url: `https://example.com/y/${i}.jpg`,
+    }));
+    const r26 = computePlateLayout(selectedId, filtered, cols, visibility, twentySix);
+    expect(
+      [...r26.plateAssignments.values()].filter((pt) => pt === "contactSheet").length,
+    ).toBe(2);
+    expect(
+      [...r26.gallerySlotImages.values()].reduce((n, imgs) => n + imgs.length, 0),
+    ).toBe(24);
   });
 });
 
 describe("chunkGalleryForContactSheets", () => {
   it(`splits into chunks of up to ${CONTACT_SHEET_MAX_IMAGES_PER_CARD} with correct startIndex`, () => {
-    const imgs: GalleryImageEntry[] = Array.from({ length: 25 }, (_, i) => ({
+    const imgs: GalleryImageEntry[] = Array.from({ length: 27 }, (_, i) => ({
       url: `https://example.com/g/${i}.jpg`,
     }));
     const q = chunkGalleryForContactSheets(imgs);
     expect(q.length).toBe(3);
     expect(q[0]!.images.length).toBe(12);
     expect(q[1]!.images.length).toBe(12);
-    expect(q[2]!.images.length).toBe(1);
+    expect(q[2]!.images.length).toBe(3);
     expect(q[0]!.startIndex).toBe(0);
     expect(q[1]!.startIndex).toBe(12);
     expect(q[2]!.startIndex).toBe(24);
+  });
+
+  it("drops a 1–2 image tail after full cards (lightbox-only)", () => {
+    const twentyFive: GalleryImageEntry[] = Array.from({ length: 25 }, (_, i) => ({
+      url: `https://example.com/g/${i}.jpg`,
+    }));
+    const q25 = chunkGalleryForContactSheets(twentyFive);
+    expect(q25.length).toBe(2);
+    expect(q25[0]!.images.length).toBe(12);
+    expect(q25[1]!.images.length).toBe(12);
+    expect(q25[1]!.startIndex).toBe(12);
+
+    const twentySix: GalleryImageEntry[] = Array.from({ length: 26 }, (_, i) => ({
+      url: `https://example.com/h/${i}.jpg`,
+    }));
+    const q26 = chunkGalleryForContactSheets(twentySix);
+    expect(q26.length).toBe(2);
+    expect(q26[1]!.images.length).toBe(12);
+  });
+
+  it("still shows a single partial card when there is no prior full dozen", () => {
+    const two: GalleryImageEntry[] = [
+      { url: "https://example.com/a.jpg" },
+      { url: "https://example.com/b.jpg" },
+    ];
+    const q = chunkGalleryForContactSheets(two);
+    expect(q.length).toBe(1);
+    expect(q[0]!.images.length).toBe(2);
   });
 });
 

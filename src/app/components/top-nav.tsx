@@ -93,7 +93,7 @@ function FadeImg({ className, style, ...props }: ImgHTMLAttributes<HTMLImageElem
   const [loaded, setLoaded] = useState(false);
   const pipeline = useImagePipeline();
   const originalSrc = typeof props.src === "string" ? props.src : undefined;
-  const transformedSrc = pipeline.transform(originalSrc, "filmstrip") ?? originalSrc;
+  const transformedSrc = pipeline.transform(originalSrc, "navThumb") ?? originalSrc;
   const fallbackSrc = (() => {
     const fromTransformed = transformedSrc ? decodeCloudinaryFetchSourceUrl(transformedSrc) : null;
     if (fromTransformed && fromTransformed !== transformedSrc) return fromTransformed;
@@ -118,6 +118,10 @@ const STRIP_THUMB_GAP = 8;
 const CHILDREN_STRIP_HEIGHT = 88;
 const TRANSITION_EASE = "cubic-bezier(0.4, 0, 0.2, 1)";
 const TRANSITION_MS = 350;
+/** Category strip scroll-collapse: slightly longer than L2/L3 drawer so height + fade read as one motion. */
+const NAV_CATEGORY_SCROLL_COLLAPSE_MS = 380;
+/** Subtle lift while collapsing so the strip eases upward instead of only squashing. */
+const NAV_CATEGORY_SCROLL_COLLAPSE_LIFT_PX = 10;
 const PORTAL_FULL = { width: 72, borderRadius: 8, imgRadius: 7 };
 /** Min border-box height for the primary nav row on mobile so portal strip and breadcrumb share the same row size (no CLS). */
 const MOBILE_PRIMARY_NAV_STRIP_MIN_HEIGHT = Math.ceil(
@@ -422,11 +426,9 @@ function TopNavInner({
   const [childrenOpenOnMobile, setChildrenOpenOnMobile] = useState(false);
   const [atlasScrollPortEl, setAtlasScrollPortEl] = useState<HTMLDivElement | null>(null);
   const navStripMeasureRef = useRef<HTMLDivElement>(null);
-  const lastScrollTopRef = useRef(0);
-  /** Ignore scroll-driven nav hide/show while chrome height is settling (avoids padTop ↔ scrollTop feedback flicker). */
-  const scrollNavSuppressedUntilRef = useRef(0);
+  const mainScrollTopGutterRef = useRef<HTMLDivElement>(null);
   const scrollNavRafRef = useRef<number | null>(null);
-  const prevNavStripHiddenByScrollRef = useRef<boolean | null>(null);
+  const [navHideScrollThresholdPx, setNavHideScrollThresholdPx] = useState(0);
   const l1LeaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const leaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hasPath = selectedPath.length > 0;
@@ -484,7 +486,10 @@ function TopNavInner({
     : 0;
 
   const prefersReducedMotion = usePrefersReducedMotion();
-  const { nfaMarkStyle } = useNfaMarkScrollRotation(atlasScrollPortEl, prefersReducedMotion);
+  const { nfaMarkTransformHostRef, nfaMarkHostStyle } = useNfaMarkScrollRotation(
+    atlasScrollPortEl,
+    prefersReducedMotion,
+  );
   /** Drawer height only — frosted glass is on the parent column so one `backdrop-filter` covers L1 + L2/L3. */
   const childrenStripDrawerStyle = useMemo((): CSSProperties => {
     const base: CSSProperties = {
@@ -500,14 +505,46 @@ function TopNavInner({
 
   const [navStripMeasuredHeight, setNavStripMeasuredHeight] = useState<number | null>(null);
   const [navStripHiddenByScroll, setNavStripHiddenByScroll] = useState(false);
+  const navCategoryScrollCollapsed = navStripHiddenByScroll && !pinNavStripOnScroll;
 
   /** Outer slot height includes L2/L3 (in-flow under L1) so the pointer stays inside one hit box — avoids instant `mouseleave` when moving into the subcategory row. */
   const navStripSlotHeight =
-    navStripHiddenByScroll && !pinNavStripOnScroll
+    navCategoryScrollCollapsed
       ? 0
       : navStripMeasuredHeight != null
         ? navStripMeasuredHeight + stripHeight
         : undefined;
+
+  const categoryNavSlotStyle = useMemo((): CSSProperties => {
+    const style: CSSProperties = {
+      height: navStripSlotHeight,
+      minHeight: navCategoryScrollCollapsed ? 0 : undefined,
+      pointerEvents: hideCategoryNavStrip || navCategoryScrollCollapsed ? "none" : undefined,
+    };
+    if (!prefersReducedMotion && navStripMeasuredHeight != null) {
+      style.transition = `height ${NAV_CATEGORY_SCROLL_COLLAPSE_MS}ms ${TRANSITION_EASE}`;
+    }
+    return style;
+  }, [
+    hideCategoryNavStrip,
+    navCategoryScrollCollapsed,
+    navStripMeasuredHeight,
+    navStripSlotHeight,
+    prefersReducedMotion,
+  ]);
+
+  const categoryNavChromeColumnStyle = useMemo((): CSSProperties => {
+    const glass = atlasChromeGlassRowStyle(prefersReducedMotion, { omitTopInset: true });
+    if (prefersReducedMotion) return glass;
+    return {
+      ...glass,
+      opacity: navCategoryScrollCollapsed ? 0 : 1,
+      transform: navCategoryScrollCollapsed
+        ? `translateY(-${NAV_CATEGORY_SCROLL_COLLAPSE_LIFT_PX}px)`
+        : "translateY(0)",
+      transition: `${glass.transition}, opacity ${NAV_CATEGORY_SCROLL_COLLAPSE_MS}ms ${TRANSITION_EASE}, transform ${NAV_CATEGORY_SCROLL_COLLAPSE_MS}ms ${TRANSITION_EASE}`,
+    };
+  }, [navCategoryScrollCollapsed, prefersReducedMotion]);
 
   const navStripMeasureRafRef = useRef<number | null>(null);
   useLayoutEffect(() => {
@@ -533,6 +570,17 @@ function TopNavInner({
     };
   }, [isMobile, hasPath, stripHeight]);
 
+  /** Matches `--atlas-main-scroll-top-gutter` in px — scroll past this once and the category strip stays hidden until the user returns to the top. */
+  useLayoutEffect(() => {
+    const el = mainScrollTopGutterRef.current;
+    if (!el) return;
+    const update = () => setNavHideScrollThresholdPx(el.offsetHeight);
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    update();
+    return () => ro.disconnect();
+  }, [isMobile]);
+
   useEffect(() => {
     if (pinNavStripOnScroll) setNavStripHiddenByScroll(false);
   }, [pinNavStripOnScroll]);
@@ -542,60 +590,29 @@ function TopNavInner({
   }, [hideCategoryNavStrip]);
 
   useEffect(() => {
-    if (hideCategoryNavStrip || pinNavStripOnScroll) {
-      prevNavStripHiddenByScrollRef.current = navStripHiddenByScroll;
-      return;
-    }
-    const prev = prevNavStripHiddenByScrollRef.current;
-    prevNavStripHiddenByScrollRef.current = navStripHiddenByScroll;
-    if (prev !== null && prev !== navStripHiddenByScroll) {
-      scrollNavSuppressedUntilRef.current = Date.now() + 550;
-    }
-  }, [navStripHiddenByScroll, hideCategoryNavStrip, pinNavStripOnScroll]);
-
-  useEffect(() => {
     const root = atlasScrollPortEl;
     if (!root) return;
-    const DOWN_DELTA = 36;
-    const UP_DELTA = 24;
     const TOP_EPSILON = 8;
 
     const processScroll = () => {
       const st = root.scrollTop;
-      if (Date.now() < scrollNavSuppressedUntilRef.current) {
-        lastScrollTopRef.current = st;
-        return;
-      }
       if (hideCategoryNavStrip || pinNavStripOnScroll) {
         setNavStripHiddenByScroll(false);
-        lastScrollTopRef.current = st;
         return;
       }
-      const prev = lastScrollTopRef.current;
-      lastScrollTopRef.current = st;
+      const threshold = navHideScrollThresholdPx;
+      if (threshold <= 0) return;
 
       if (st <= TOP_EPSILON) {
         setNavStripHiddenByScroll((h) => (h ? false : h));
         return;
       }
-      if (st < prev - UP_DELTA) {
-        setNavStripHiddenByScroll((h) => (h ? false : h));
-      } else if (st > prev + DOWN_DELTA) {
+      if (st >= threshold) {
         setNavStripHiddenByScroll((h) => (!h ? true : h));
       }
     };
 
     const onScroll = () => {
-      if (hideCategoryNavStrip) {
-        setNavStripHiddenByScroll(false);
-        lastScrollTopRef.current = root.scrollTop;
-        return;
-      }
-      if (pinNavStripOnScroll) {
-        setNavStripHiddenByScroll(false);
-        lastScrollTopRef.current = root.scrollTop;
-        return;
-      }
       if (scrollNavRafRef.current != null) return;
       scrollNavRafRef.current = requestAnimationFrame(() => {
         scrollNavRafRef.current = null;
@@ -604,7 +621,7 @@ function TopNavInner({
     };
 
     root.addEventListener("scroll", onScroll, { passive: true });
-    lastScrollTopRef.current = root.scrollTop;
+    processScroll();
     return () => {
       root.removeEventListener("scroll", onScroll);
       if (scrollNavRafRef.current != null) {
@@ -612,7 +629,7 @@ function TopNavInner({
         scrollNavRafRef.current = null;
       }
     };
-  }, [atlasScrollPortEl, hideCategoryNavStrip, pinNavStripOnScroll]);
+  }, [atlasScrollPortEl, hideCategoryNavStrip, pinNavStripOnScroll, navHideScrollThresholdPx]);
 
   const handleRootClick = useCallback((id: string) => {
     setHoveredL2Id(null);
@@ -654,7 +671,8 @@ function TopNavInner({
   }, [atlasScrollPortEl, clearFilter, onNavigate, onPreviewNavigate, onSearchChange]);
 
   /* Scroll architecture:
-     1) `h-dvh min-h-0` fixes shell height to the viewport.
+     1) `h-full min-h-atlas-vvh min-h-0` fills #root (`--atlas-vvh` from visualViewport + theme.css)
+        so the shell matches the visible webview when browser chrome overlaps content.
      2) Main content scrolls in a full-bleed layer (`absolute inset-0`); a **fixed** top spacer
         (`--atlas-main-scroll-top-gutter`) clears the typical chrome so the first grid row stays
         readable. Nav height changes (collapse, L2/L3, detail mode) no longer resize the spacer —
@@ -662,11 +680,17 @@ function TopNavInner({
      3) Wordmark + category strip + subcategory drawer sit in `pointer-events-none` stack; interactive
         rows use `pointer-events-auto`. L1 and L2/L3 share one frosted flex column (single
         `backdrop-filter`) so the drawer matches the category bar; horizontal clip stays on the portal
-        row only. Scroll-collapse uses **instant** height. */
+        row only. Scroll-collapse animates category chrome height with a short fade/slide (respects reduced motion). */
   return (
     <div
-      className="relative h-dvh min-h-0 w-full overflow-hidden"
-      style={{ backgroundColor: ATLAS_AMBIENT_BG, transition: ATLAS_AMBIENT_TRANSITION }}
+      data-atlas-viewport-shell="topnav"
+      className="relative h-full min-h-atlas-vvh min-h-0 w-full overflow-hidden"
+      style={{
+        backgroundColor: ATLAS_AMBIENT_BG,
+        transition: ATLAS_AMBIENT_TRANSITION,
+        height: "var(--atlas-vvh, 100svh)",
+        maxHeight: "var(--atlas-vvh, 100svh)",
+      }}
     >
       <div
         ref={setAtlasScrollPortEl}
@@ -680,6 +704,7 @@ function TopNavInner({
       >
         <AtlasScrollPortContext.Provider value={atlasScrollPortEl ?? undefined}>
           <div
+            ref={mainScrollTopGutterRef}
             className="shrink-0"
             style={{ height: "var(--atlas-main-scroll-top-gutter)" }}
             aria-hidden
@@ -691,9 +716,11 @@ function TopNavInner({
           <div
             className="flex min-h-[min-content] flex-col"
             style={{
-              minHeight: "calc(100dvh - var(--atlas-main-scroll-top-gutter))",
-              paddingTop: 20,
-              paddingBottom: 20,
+              minHeight:
+                "max(calc(100% - var(--atlas-main-scroll-top-gutter)), calc(var(--atlas-vvh, 100svh) - var(--atlas-main-scroll-top-gutter)))",
+              paddingTop: 4,
+              paddingBottom:
+                "calc(20px + max(env(safe-area-inset-bottom), 0px) + max(0px, 100lvh - 100svh))",
             }}
           >
             {locationKey ? (
@@ -720,13 +747,18 @@ function TopNavInner({
           >
             <button
               type="button"
-              onClick={resetToAll}
+              onClick={() => {
+                window.location.assign("/");
+              }}
               className={`atlas-wordmark-home flex min-w-0 cursor-pointer items-center gap-2.5 text-left ${isMobile ? "max-w-full" : ""}`}
             >
-              <NfaMark
-                className="atlas-nfa-mark-target block h-9 w-9 shrink-0 text-[#e8e0d0]"
-                style={nfaMarkStyle}
-              />
+              <span
+                ref={nfaMarkTransformHostRef}
+                className="atlas-nfa-mark-target inline-block h-9 w-9 shrink-0"
+                style={nfaMarkHostStyle}
+              >
+                <NfaMark className="block h-9 w-9 text-[#e8e0d0]" />
+              </span>
               <span
                 className={`min-w-0 whitespace-nowrap text-[#e8e0d0] ${isMobile ? "atlas-wordmark-fluid max-w-full" : ""}`}
                 style={
@@ -755,9 +787,9 @@ function TopNavInner({
                 }}
                 className="rounded-full border border-white/15 bg-white/[0.06] px-3 py-1 text-white/75 hover:text-white transition-colors"
                 style={ATLAS_GRID_SUBHEAD_MUTED_STYLE}
-                aria-label="Back to browse"
+                aria-label={isMobile ? "Back" : "Back to browse"}
               >
-                Back to browse
+                {isMobile ? "Back" : "Back to browse"}
               </button>
             )}
           </div>
@@ -802,19 +834,8 @@ function TopNavInner({
       </div>
 
       <div
-        className={`${
-          navStripHiddenByScroll && !pinNavStripOnScroll
-            ? "pointer-events-auto shrink-0 overflow-hidden"
-            : "pointer-events-auto shrink-0 overflow-visible"
-        }${hideCategoryNavStrip ? " invisible pointer-events-none select-none" : ""}`}
-        style={{
-          height: navStripSlotHeight,
-          minHeight: navStripHiddenByScroll && !pinNavStripOnScroll ? 0 : undefined,
-          pointerEvents:
-            hideCategoryNavStrip || (navStripHiddenByScroll && !pinNavStripOnScroll)
-              ? "none"
-              : undefined,
-        }}
+        className={`pointer-events-auto shrink-0 overflow-hidden${hideCategoryNavStrip ? " invisible pointer-events-none select-none" : ""}`}
+        style={categoryNavSlotStyle}
         aria-hidden={
           hideCategoryNavStrip || (navStripHiddenByScroll && !pinNavStripOnScroll)
             ? true
@@ -840,7 +861,7 @@ function TopNavInner({
       >
         <div
           className={`flex w-full min-h-0 shrink-0 flex-col ${navStripSlotHeight != null ? "h-full" : ""}`}
-          style={atlasChromeGlassRowStyle(prefersReducedMotion, { omitTopInset: true })}
+          style={categoryNavChromeColumnStyle}
         >
           <div
             ref={navStripMeasureRef}

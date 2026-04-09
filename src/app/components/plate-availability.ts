@@ -1,6 +1,7 @@
 import { type FiberProfile, type PlateType, worldNames } from "../data/atlas-data";
 import { fibers as bundledFibers } from "../data/fibers";
 import { dataSource } from "../data/data-provider";
+import { quoteDetailCardCountForFiber } from "../utils/plate-layout";
 import { getValidYoutubeEmbedEntries, hasAnyValidYoutubeEmbed } from "../utils/youtube-embed-urls";
 
 const bundledFiberIdSet = new Set(bundledFibers.map((f) => f.id));
@@ -98,6 +99,10 @@ export function getAvailablePlates(fiber: FiberProfile): PlateType[] {
     if (pt === "youtubeEmbed") {
       const n = getValidYoutubeEmbedEntries(fiber).length;
       return Array.from({ length: n }, () => "youtubeEmbed" as PlateType);
+    }
+    if (pt === "quote") {
+      const n = quoteDetailCardCountForFiber(fiber.id);
+      return Array.from({ length: n }, () => "quote" as PlateType);
     }
     return [pt];
   });

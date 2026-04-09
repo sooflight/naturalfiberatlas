@@ -1,17 +1,14 @@
 import type { GalleryImageEntry } from "../data/atlas-data";
 import { useState, useEffect, useCallback, useRef, useLayoutEffect } from "react";
+import { createPortal } from "react-dom";
 import { AnimatePresence, motion, useMotionValue, useTransform, animate } from "motion/react";
 import { useImagePipeline } from "../context/image-pipeline";
 import {
   X,
   ChevronLeft,
   ChevronRight,
-  Maximize2,
-  Minimize2,
   Pause,
   Play,
-  Eye,
-  EyeOff,
 } from "lucide-react";
 
 interface LightboxProps {
@@ -99,6 +96,29 @@ interface SlideProps {
   maxWidthCss: string;
   maxHeightCss: string;
   onZoomLockChange?: (locked: boolean) => void;
+  /** When both are set (and not in morph), `width`/`height` on the hero img reserve layout before decode. */
+  intrinsicWidth?: number;
+  intrinsicHeight?: number;
+}
+
+/** Smallest integer pair for HTML `width`/`height` that preserves aspect (ratio-only; not pixel size). */
+function layoutHintDimensions(w: number | undefined, h: number | undefined): { w: number; h: number } | null {
+  if (w != null && h != null && w > 0 && h > 0) {
+    const g = gcd(Math.round(w), Math.round(h));
+    return { w: Math.max(1, Math.round(w) / g), h: Math.max(1, Math.round(h) / g) };
+  }
+  return null;
+}
+
+function gcd(a: number, b: number): number {
+  let x = Math.abs(a);
+  let y = Math.abs(b);
+  while (y !== 0) {
+    const t = y;
+    y = x % y;
+    x = t;
+  }
+  return Math.max(1, x);
 }
 
 function getTouchDistance(touches: TouchList): number {
@@ -118,6 +138,8 @@ function LightboxSlide({
   maxWidthCss,
   maxHeightCss,
   onZoomLockChange,
+  intrinsicWidth,
+  intrinsicHeight,
 }: SlideProps) {
   const [loaded, setLoaded] = useState(() => {
     if (!targetSrc) return false;
@@ -233,6 +255,8 @@ function LightboxSlide({
     }
   }, [targetSrc, loaded]);
 
+  const layoutHint = !isInMorph ? layoutHintDimensions(intrinsicWidth, intrinsicHeight) : null;
+
   const roundedClip = !isInMorph;
   const radiusStyle = roundedClip
     ? ({
@@ -277,6 +301,13 @@ function LightboxSlide({
             ...(roundedClip ? radiusStyle : {}),
           }}
         >
+        {!loaded && layoutHint && (
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 border border-white/[0.08] bg-white/[0.04]"
+            style={roundedClip ? radiusStyle : {}}
+          />
+        )}
         {!loaded && lqipSrc && (
           <img
             src={lqipSrc}
@@ -296,7 +327,9 @@ function LightboxSlide({
           ref={imgRef}
           src={targetSrc}
           alt={alt}
-          className="pointer-events-none min-h-0 min-w-0 select-none"
+          width={!loaded && layoutHint ? layoutHint.w : undefined}
+          height={!loaded && layoutHint ? layoutHint.h : undefined}
+          className="pointer-events-none relative z-[1] min-h-0 min-w-0 select-none"
           style={{
             maxWidth: isInMorph ? "100%" : maxWidthCss,
             maxHeight: isInMorph ? "100%" : maxHeightCss,
@@ -689,17 +722,20 @@ export function Lightbox({
     ? "calc(100vw - max(2rem, env(safe-area-inset-left) + env(safe-area-inset-right)) - 2rem)"
     : "calc(100vw - max(1rem, env(safe-area-inset-left) + env(safe-area-inset-right)))";
   const maxHeightCss = chromeActive
-    ? "calc(100dvh - max(2rem, env(safe-area-inset-top) + env(safe-area-inset-bottom)) - 11rem)"
-    : "calc(100dvh - max(1.5rem, env(safe-area-inset-top) + env(safe-area-inset-bottom)) - 1rem)";
+    ? "calc(var(--atlas-vvh, 100dvh) - max(2rem, env(safe-area-inset-top) + env(safe-area-inset-bottom)) - 11rem)"
+    : "calc(var(--atlas-vvh, 100dvh) - max(1.5rem, env(safe-area-inset-top) + env(safe-area-inset-bottom)) - 1rem)";
 
   const safeTop = "max(12px, env(safe-area-inset-top))";
   const safeBottom = "max(12px, env(safe-area-inset-bottom))";
   const safeX = "max(16px, env(safe-area-inset-left))";
 
-  return (
+  /* Portal to document.body so `position: fixed` is viewport-relative. The atlas scroll port
+   * (TopNav) uses `transform: translateZ(0)`, which makes fixed descendants use that scroller as
+   * their containing block and appear offset / clipped when the user has scrolled. */
+  const modal = (
     <motion.div
       ref={modalRef}
-      className="fixed inset-0 z-[100] flex flex-col bg-transparent overscroll-none"
+      className="atlas-fixed-fill-screen z-[100] flex flex-col bg-transparent overscroll-none"
       role="dialog"
       aria-modal="true"
       aria-label={`${fiberName} image gallery`}
@@ -713,7 +749,7 @@ export function Lightbox({
       </span>
 
       <motion.div
-        className="absolute inset-0 bg-black/92 backdrop-blur-2xl"
+        className="absolute inset-0 z-0 bg-black/92 backdrop-blur-2xl pointer-events-auto"
         style={{ opacity: dragOpacity }}
         onClick={handleClose}
         initial={{ backdropFilter: "blur(0px)" }}
@@ -721,11 +757,27 @@ export function Lightbox({
         transition={{ duration: BACKDROP_DURATION * 1.6, ease: IMAGE_EASE }}
       />
 
-      <div className="relative z-10 flex flex-1 flex-col min-h-0 min-w-0">
+      <div className="relative z-10 flex flex-1 flex-col min-h-0 min-w-0 pointer-events-none">
+        {/* Persistent close — icon only; pointer-events-auto so it works while chrome uses none */}
+        <button
+          type="button"
+          onClick={handleClose}
+          aria-label="Close gallery"
+          className="absolute z-[45] pointer-events-auto flex items-center justify-center rounded-full p-2 bg-black/45 border border-white/12 text-white/75 hover:text-white hover:border-white/25 transition-[color,border-color] duration-200 cursor-pointer"
+          style={{ top: safeTop, left: safeX }}
+        >
+          <X size={16} strokeWidth={2} />
+        </button>
+
         {/* Top chrome — overlays stage */}
         <motion.div
           className="absolute left-0 right-0 z-30 flex items-center justify-between gap-2 pointer-events-none"
-          style={{ top: 0, paddingTop: safeTop, paddingLeft: safeX, paddingRight: safeX }}
+          style={{
+            top: 0,
+            paddingTop: safeTop,
+            paddingLeft: `calc(${safeX} + 2.5rem)`,
+            paddingRight: safeX,
+          }}
           initial={{ opacity: 0 }}
           animate={{ opacity: chromeActive ? 1 : 0 }}
           transition={{ duration: 0.35, ease: IMAGE_EASE }}
@@ -759,94 +811,70 @@ export function Lightbox({
                 {slideshowPlaying ? <Pause size={14} /> : <Play size={14} />}
               </button>
             )}
-            <button
-              type="button"
-              onClick={() => void toggleBrowserFullscreen()}
-              aria-label={browserFullscreen ? "Exit fullscreen" : "Enter fullscreen"}
-              className="flex items-center justify-center p-2 rounded-full bg-white/[0.06] border border-white/10 text-white/50 hover:text-white/80 hover:border-white/20 transition-[color,border-color] duration-200 cursor-pointer"
-            >
-              {browserFullscreen ? <Minimize2 size={14} /> : <Maximize2 size={14} />}
-            </button>
-            <button
-              type="button"
-              onClick={() => setChromeVisible(false)}
-              aria-label="Hide captions and thumbnails"
-              className="flex items-center justify-center p-2 rounded-full bg-white/[0.06] border border-white/10 text-white/50 hover:text-white/80 hover:border-white/20 transition-[color,border-color] duration-200 cursor-pointer"
-            >
-              <EyeOff size={14} />
-            </button>
-            <button
-              type="button"
-              onClick={handleClose}
-              aria-label="Close gallery"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.06] border border-white/10 text-white/50 hover:text-white/80 hover:border-white/20 transition-[color,border-color] duration-200 cursor-pointer"
-              style={{ fontSize: "11px" }}
-            >
-              <X size={14} />
-            </button>
           </div>
         </motion.div>
 
         {!chromeActive && (
           <div
-            className="absolute left-0 right-0 z-40 flex items-center justify-between gap-2 pointer-events-auto"
-            style={{ top: 0, paddingTop: safeTop, paddingLeft: safeX, paddingRight: safeX }}
+            className="absolute left-0 right-0 z-40 flex items-center justify-end gap-2 pointer-events-auto"
+            style={{
+              top: 0,
+              paddingTop: safeTop,
+              paddingLeft: `calc(${safeX} + 2.5rem)`,
+              paddingRight: safeX,
+            }}
           >
             <button
               type="button"
               onClick={() => setChromeVisible(true)}
               aria-label="Show captions and controls"
-              className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-black/50 border border-white/15 text-white/70 hover:text-white hover:border-white/30 text-[11px] font-medium cursor-pointer backdrop-blur-md"
+              className="px-3 py-1.5 rounded-full bg-black/50 border border-white/15 text-white/70 hover:text-white hover:border-white/30 text-[11px] font-medium cursor-pointer backdrop-blur-md"
             >
-              <Eye size={14} />
               Show UI
-            </button>
-            <button
-              type="button"
-              onClick={handleClose}
-              aria-label="Close gallery"
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/50 border border-white/15 text-white/80 hover:text-white hover:border-white/30 text-[11px] font-medium cursor-pointer backdrop-blur-md"
-            >
-              <X size={14} />
-              Close
             </button>
           </div>
         )}
 
-        {/* Stage — vertical dismiss + horizontal nav */}
+        {/* Stage — vertical dismiss + horizontal nav; pointer-events-none so backdrop receives letterbox clicks */}
         <motion.div
-          className="relative flex-1 flex items-center justify-center min-h-0 px-4 sm:px-8"
+          className="relative flex-1 flex items-center justify-center min-h-0 px-4 sm:px-8 pointer-events-none"
           style={{
             y: dragY,
             scale: dragScale,
             paddingTop: chromeActive ? "3.25rem" : safeTop,
             paddingBottom: chromeActive ? "10rem" : safeBottom,
           }}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          onPointerCancel={handlePointerCancel}
         >
           <AnimatePresence initial={false} custom={direction} mode="sync">
             <motion.div
               key={current}
-              className="absolute inset-4 sm:inset-8 flex items-center justify-center"
+              className="absolute inset-4 sm:inset-8 flex items-center justify-center pointer-events-none"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: CROSSFADE_DURATION, ease: IMAGE_EASE }}
             >
-              <LightboxSlide
-                targetSrc={targetSrc}
-                lqipSrc={lqipSrc}
-                alt={img.title ?? `${fiberName} ${current + 1}`}
-                isInMorph={isInMorph}
-                heroStyle={heroStyle}
-                heroRef={heroRef}
-                maxWidthCss={maxWidthCss}
-                maxHeightCss={maxHeightCss}
-                onZoomLockChange={handleZoomLockChange}
-              />
+              <div
+                className="pointer-events-auto relative inline-flex max-h-full max-w-full min-h-0 min-w-0 items-center justify-center"
+                onPointerDown={handlePointerDown}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerCancel}
+              >
+                <LightboxSlide
+                  targetSrc={targetSrc}
+                  lqipSrc={lqipSrc}
+                  alt={img.title ?? `${fiberName} ${current + 1}`}
+                  isInMorph={isInMorph}
+                  heroStyle={heroStyle}
+                  heroRef={heroRef}
+                  maxWidthCss={maxWidthCss}
+                  maxHeightCss={maxHeightCss}
+                  onZoomLockChange={handleZoomLockChange}
+                  intrinsicWidth={img.width}
+                  intrinsicHeight={img.height}
+                />
+              </div>
             </motion.div>
           </AnimatePresence>
 
@@ -970,4 +998,6 @@ export function Lightbox({
       </div>
     </motion.div>
   );
+
+  return createPortal(modal, document.body);
 }

@@ -56,6 +56,8 @@ import {
   LayoutGrid,
   Youtube,
   ExternalLink,
+  Lightbulb,
+  X,
 } from "lucide-react";
 import { getValidYoutubeEmbedEntries } from "../utils/youtube-embed-urls";
 import { YouTubeEmbedFrame } from "./youtube-embed-frame";
@@ -64,6 +66,7 @@ import { useImagePipeline } from "../context/image-pipeline";
 import { useImageAnalysis } from "../hooks/use-image-brightness";
 import { dataSource } from "../data/data-provider";
 import type { GalleryImageEntry } from "../data/atlas-data";
+import { QUOTE_MAX_QUOTES_PER_CARD } from "../utils/plate-layout";
 
 /* ── Shared primitives ── */
 import {
@@ -84,12 +87,25 @@ const warmA = accent.warm;
 const coolA = accent.cool;
 const neutA = accent.neutral;
 
+/**
+ * Morph shell corner radius — must match `GlassCard` `shellRoundClass`.
+ * If the outer clip (`overflow-hidden`) uses a tighter curve than the glass
+ * shell + border ring, the orbiting border is visibly cut off at the corners.
+ */
+const SCREEN_PLATE_SHELL_ROUND = "rounded-[2rem]";
+
+/** Match lightbox: keep the dismiss control clear of notches and home indicator. */
+const SCREEN_PLATE_SAFE_TOP = "max(12px, env(safe-area-inset-top))";
+const SCREEN_PLATE_SAFE_X = "max(16px, env(safe-area-inset-left))";
+
 /** A plate available for arrow-key cycling */
 export interface ScreenPlateEntry {
   plateType: PlateType;
   cellIndex: number;
   /** When `plateType` is `youtubeEmbed`, which video index this slide shows (mobile may use several slides with the same cellIndex). */
   youtubeEmbedSlot?: number;
+  /** When `plateType` is `quote`, which quote chunk (max `QUOTE_MAX_QUOTES_PER_CARD` quotes per slide). */
+  quoteChunkSlot?: number;
 }
 
 interface ScreenPlateProps {
@@ -98,6 +114,8 @@ interface ScreenPlateProps {
   initialPlateType: PlateType;
   /** Disambiguates multiple contact-sheet slides (grid cell or mobile chunk index). */
   initialCellIndex?: number;
+  /** Disambiguates multiple Quote slides when `initialCellIndex` is shared (e.g. mobile). */
+  initialQuoteChunkSlot?: number;
   /** Ordered list of all navigable plates for this fiber (storytelling order) */
   plates: ScreenPlateEntry[];
   /** Bounding rect of the source grid cell — morph origin */
@@ -121,29 +139,64 @@ const MORPH_SPRING = {
   mass: 1,
 };
 
-/** Neighbor card peek (px), derived from viewport height. */
+/** Neighbor card peek (px), derived from scrollport height. */
 function neighborPeekPx(viewportHeight: number): number {
-  return Math.round(Math.min(52, Math.max(28, viewportHeight * 0.055)));
+  return Math.round(Math.min(140, Math.max(56, viewportHeight * 0.125)));
 }
 
 /**
  * Peek layout: each slide has height (V − 2×peek); scroller has top/bottom padding peek.
  * Slides use scroll-snap-align: center so each card is vertically centered in the viewport,
  * showing ~peek px of the previous card above and the next card below (symmetric).
- * Snapped scroll positions: scrollTop = index × slideStridePx.
+ *
+ * Do not derive the active slide from scrollTop ÷ slideStridePx: padding + snap settling
+ * can land between “ideal” positions and round to the wrong index (e.g. Identity opens Video).
  */
 function peekScrollMetrics(viewportHeight: number, plateCount: number) {
-  if (plateCount <= 1) {
+  if (plateCount <= 1 || viewportHeight <= 0) {
+    return { peekPx: 0, slideStridePx: Math.max(0, viewportHeight) };
+  }
+  const desired = neighborPeekPx(viewportHeight);
+  const maxPeek = Math.max(0, Math.floor((viewportHeight - 176) / 2));
+  const peekPx = Math.min(desired, maxPeek);
+  if (peekPx < 20) {
     return { peekPx: 0, slideStridePx: viewportHeight };
   }
-  const peekPx = neighborPeekPx(viewportHeight);
   return { peekPx, slideStridePx: viewportHeight - 2 * peekPx };
+}
+
+/** Slide whose vertical center is closest to the scroller’s viewport center (padding-safe). */
+function dominantSlideIndexFromScroller(root: HTMLElement, slideCount: number): number {
+  if (slideCount <= 1) return 0;
+  const rootRect = root.getBoundingClientRect();
+  if (rootRect.height <= 0) return 0;
+  const centerY = rootRect.top + rootRect.height / 2;
+  const sections = root.querySelectorAll<HTMLElement>("[data-screen-plate-slide]");
+  let best = 0;
+  let bestDist = Infinity;
+  sections.forEach((node, i) => {
+    const r = node.getBoundingClientRect();
+    if (r.height <= 0) return;
+    const mid = r.top + r.height / 2;
+    const d = Math.abs(mid - centerY);
+    if (d < bestDist) {
+      bestDist = d;
+      best = i;
+    }
+  });
+  return Math.max(0, Math.min(slideCount - 1, best));
+}
+
+function scrollPlateSlideIntoView(root: HTMLElement, slideIndex: number, behavior: ScrollBehavior) {
+  const target = root.querySelector<HTMLElement>(`[data-screen-plate-slide="${slideIndex}"]`);
+  target?.scrollIntoView({ block: "center", inline: "nearest", behavior });
 }
 
 export function ScreenPlate({
   fiber,
   initialPlateType,
   initialCellIndex,
+  initialQuoteChunkSlot,
   plates,
   sourceRect,
   getCellRect,
@@ -166,23 +219,41 @@ export function ScreenPlate({
   }, [imageAnalysis]);
 
   const initialIndex = useMemo(() => {
+    const matchesSlotDisambiguators = (p: ScreenPlateEntry) => {
+      if (initialPlateType === "youtubeEmbed") return true;
+      if (initialPlateType === "quote" && initialQuoteChunkSlot !== undefined) {
+        return (p.quoteChunkSlot ?? 0) === initialQuoteChunkSlot;
+      }
+      return true;
+    };
     if (initialCellIndex !== undefined) {
       const byCell = plates.findIndex(
-        (p) => p.plateType === initialPlateType && p.cellIndex === initialCellIndex,
+        (p) =>
+          p.plateType === initialPlateType &&
+          p.cellIndex === initialCellIndex &&
+          matchesSlotDisambiguators(p),
       );
       if (byCell >= 0) return byCell;
     }
-    const idx = plates.findIndex((p) => p.plateType === initialPlateType);
+    const idx = plates.findIndex(
+      (p) => p.plateType === initialPlateType && matchesSlotDisambiguators(p),
+    );
     return idx >= 0 ? idx : 0;
-  }, [plates, initialPlateType, initialCellIndex]);
+  }, [plates, initialPlateType, initialCellIndex, initialQuoteChunkSlot]);
 
   const [currentIndex, setCurrentIndex] = useState(initialIndex);
   const [entered, setEntered] = useState(false);
   const [entranceComplete, setEntranceComplete] = useState(false);
+  const [scrollportSize, setScrollportSize] = useState(() => ({
+    w: typeof window !== "undefined" ? window.innerWidth : 1280,
+    h: typeof window !== "undefined" ? window.innerHeight : 800,
+  }));
   const modalRef = useRef<HTMLDivElement>(null);
   const plateScrollRef = useRef<HTMLDivElement>(null);
   const currentIndexRef = useRef(initialIndex);
   const scrollRafRef = useRef<number | null>(null);
+  /** When false, ignore scroll-driven index updates so early scroll events (before snap settles) cannot snap to the wrong plate (e.g. Identity → Video). */
+  const scrollSyncReadyRef = useRef(false);
   currentIndexRef.current = currentIndex;
 
   /* ── Track exit state ── */
@@ -220,14 +291,14 @@ export function ScreenPlate({
 
   /* ── Vertical snap-scroll: sync active plate from scroll position ── */
   const syncIndexFromScroll = useCallback(() => {
+    if (!scrollSyncReadyRef.current) return;
     const el = plateScrollRef.current;
     if (!el) return;
     const V = el.clientHeight;
     if (V <= 0) return;
-    const { slideStridePx } = peekScrollMetrics(V, plates.length);
-    const raw = plates.length <= 1 ? el.scrollTop / V : el.scrollTop / slideStridePx;
-    const clamped = Math.max(0, Math.min(plates.length - 1, Math.round(raw)));
-    setCurrentIndex((prev) => (prev !== clamped ? clamped : prev));
+    const next =
+      plates.length <= 1 ? 0 : dominantSlideIndexFromScroller(el, plates.length);
+    setCurrentIndex((prev) => (prev !== next ? next : prev));
   }, [plates.length]);
 
   const onPlateScroll = useCallback(() => {
@@ -254,58 +325,97 @@ export function ScreenPlate({
 
   /* Jump to the opened plate as soon as layout height is known (no smooth scroll) */
   useLayoutEffect(() => {
+    scrollSyncReadyRef.current = false;
     const el = plateScrollRef.current;
-    if (!el) return;
-    const V = el.clientHeight;
-    if (V <= 0) return;
-    const { slideStridePx } = peekScrollMetrics(V, plates.length);
-    el.scrollTop = plates.length <= 1 ? initialIndex * V : initialIndex * slideStridePx;
+    if (!el) {
+      return () => {
+        scrollSyncReadyRef.current = false;
+      };
+    }
+    if (el.clientHeight <= 0) {
+      return () => {
+        scrollSyncReadyRef.current = false;
+      };
+    }
+    if (plates.length <= 1) {
+      el.scrollTop = 0;
+      scrollSyncReadyRef.current = true;
+    } else {
+      scrollPlateSlideIntoView(el, initialIndex, "auto");
+      setCurrentIndex(initialIndex);
+      let raf1 = 0;
+      let raf2 = 0;
+      raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => {
+          const root = plateScrollRef.current;
+          if (root) {
+            scrollPlateSlideIntoView(root, initialIndex, "auto");
+          }
+          setCurrentIndex(initialIndex);
+          scrollSyncReadyRef.current = true;
+        });
+      });
+      return () => {
+        cancelAnimationFrame(raf1);
+        cancelAnimationFrame(raf2);
+        scrollSyncReadyRef.current = false;
+      };
+    }
     setCurrentIndex(initialIndex);
+
+    return () => {
+      scrollSyncReadyRef.current = false;
+    };
   }, [initialIndex, plates.length]);
 
-  /* Keep snap position when the card viewport is resized */
+  /* Sync layout metrics to the real scrollport; keep snap position on resize */
   useEffect(() => {
     const el = plateScrollRef.current;
     if (!el || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver(() => {
-      const V = el.clientHeight;
-      if (V <= 0) return;
+    const apply = () => {
+      const w = el.clientWidth;
+      const h = el.clientHeight;
+      if (w > 0 && h > 0) {
+        setScrollportSize((prev) => (prev.w === w && prev.h === h ? prev : { w, h }));
+      }
+      if (h <= 0) return;
       const idx = currentIndexRef.current;
-      const { slideStridePx } = peekScrollMetrics(V, plates.length);
-      el.scrollTop = plates.length <= 1 ? idx * V : idx * slideStridePx;
-    });
+      if (plates.length <= 1) {
+        el.scrollTop = 0;
+        scrollSyncReadyRef.current = true;
+        return;
+      }
+      scrollPlateSlideIntoView(el, idx, "auto");
+      if (!scrollSyncReadyRef.current) {
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            scrollSyncReadyRef.current = true;
+          });
+        });
+      }
+    };
+    apply();
+    const ro = new ResizeObserver(apply);
     ro.observe(el);
     return () => ro.disconnect();
-  }, []);
+  }, [plates.length]);
 
   /* ── Navigation (keyboard; touch uses native snap scroll) ── */
   const goNext = useCallback(() => {
     const el = plateScrollRef.current;
     if (!el || plates.length <= 1) return;
-    const V = el.clientHeight;
-    if (V <= 0) return;
-    const { slideStridePx } = peekScrollMetrics(V, plates.length);
-    const i = Math.round(
-      plates.length <= 1 ? el.scrollTop / V : el.scrollTop / slideStridePx,
-    );
-    const next = Math.min(plates.length - 1, i + 1);
-    const top = plates.length <= 1 ? next * V : next * slideStridePx;
-    el.scrollTo({ top, behavior: "smooth" });
+    if (el.clientHeight <= 0) return;
+    const next = Math.min(plates.length - 1, currentIndexRef.current + 1);
+    scrollPlateSlideIntoView(el, next, "smooth");
     setCurrentIndex(next);
   }, [plates.length]);
 
   const goPrev = useCallback(() => {
     const el = plateScrollRef.current;
     if (!el || plates.length <= 1) return;
-    const V = el.clientHeight;
-    if (V <= 0) return;
-    const { slideStridePx } = peekScrollMetrics(V, plates.length);
-    const i = Math.round(
-      plates.length <= 1 ? el.scrollTop / V : el.scrollTop / slideStridePx,
-    );
-    const prev = Math.max(0, i - 1);
-    const top = plates.length <= 1 ? prev * V : prev * slideStridePx;
-    el.scrollTo({ top, behavior: "smooth" });
+    if (el.clientHeight <= 0) return;
+    const prev = Math.max(0, currentIndexRef.current - 1);
+    scrollPlateSlideIntoView(el, prev, "smooth");
     setCurrentIndex(prev);
   }, [plates.length]);
 
@@ -337,10 +447,11 @@ export function ScreenPlate({
     return () => window.removeEventListener("keydown", onKey);
   }, [entered, goNext, goPrev, onClose]);
 
-  /* ── Layout measurements ── */
-  const vw = typeof window !== "undefined" ? window.innerWidth : 1280;
-  const vh = typeof window !== "undefined" ? window.innerHeight : 800;
+  /* ── Layout measurements (scrollport-sized so snap/peek match the real overlay) ── */
+  const vw = scrollportSize.w;
+  const vh = scrollportSize.h;
   const isMobile = vw < 640;
+  const multiPlate = plates.length > 1;
 
   const { peekPx, slideStridePx } = useMemo(
     () => peekScrollMetrics(vh, plates.length),
@@ -348,10 +459,13 @@ export function ScreenPlate({
   );
 
   const target = useMemo(() => {
-    const p = isMobile ? 12 : 40;
-    const slotH = plates.length <= 1 ? vh : slideStridePx;
+    /* Extra gutter on narrow viewports so the morphed card sits clear of edges and browser chrome. */
+    const p = isMobile ? 20 : 40;
+    const slotH = multiPlate ? slideStridePx : vh;
+    /* Match section vertical padding: single plate keeps airy insets; multi-plate uses tight padding so peek shows card chrome. */
+    const slidePadY = multiPlate ? (isMobile ? 36 : 40) : isMobile ? 52 : 80;
     const availW = vw - p * 2;
-    const availH = slotH - p * 2;
+    const availH = Math.max(160, slotH - p * 2 - slidePadY);
     let w = availH * 0.75;
     let h = availH;
     if (w > availW) {
@@ -359,7 +473,7 @@ export function ScreenPlate({
       h = availW * (4 / 3);
     }
     return { width: w, height: h, left: (vw - w) / 2, top: (vh - h) / 2 };
-  }, [vw, vh, isMobile, plates.length, slideStridePx]);
+  }, [vw, vh, isMobile, multiPlate, slideStridePx]);
 
   const exitRect = useMemo(() => {
     const rect = getCellRect(current.cellIndex);
@@ -390,7 +504,8 @@ export function ScreenPlate({
       case "silkChiffon":
       case "silkOrganza":
         return <SilkVariantPlate plateType={pt} />;
-      case "quote": return <QuoteScreenPlate fiber={fiber} />;
+      case "quote":
+        return <QuoteScreenPlate fiber={fiber} quoteChunkIndex={entry.quoteChunkSlot ?? 0} />;
       case "youtubeEmbed":
         return <YouTubeScreenPlate fiber={fiber} slotIndex={entry.youtubeEmbedSlot ?? 0} />;
       case "trade": return <TradeScreenPlate fiber={fiber} />;
@@ -422,7 +537,7 @@ export function ScreenPlate({
   const overlay = (
     <motion.div
       ref={modalRef}
-      className="fixed inset-0 z-[90] overflow-hidden"
+      className="atlas-fixed-fill-screen z-[90] overflow-hidden"
       role="dialog"
       aria-modal="true"
       aria-label={`${fiber.name} detail viewer`}
@@ -464,15 +579,18 @@ export function ScreenPlate({
           return (
             <section
               key={`screen-slide-${index}`}
-              className={`pointer-events-none flex w-full shrink-0 snap-center snap-always items-center justify-center box-border p-3 sm:p-10 ${
-                plates.length <= 1 ? "min-h-full" : ""
-              }`}
+              data-screen-plate-slide={index}
+              className={`pointer-events-none flex w-full shrink-0 snap-center snap-always items-center justify-center box-border px-3 ${
+                multiPlate
+                  ? "pt-[max(8px,env(safe-area-inset-top,0px))] pb-[max(10px,env(safe-area-inset-bottom,0px))] sm:px-10 sm:pt-4 sm:pb-4"
+                  : "pt-[max(12px,env(safe-area-inset-top,0px))] pb-[max(16px,env(safe-area-inset-bottom,0px))] sm:px-10 sm:pt-10 sm:pb-10"
+              } ${plates.length <= 1 ? "min-h-full" : ""}`}
               style={plates.length > 1 ? { height: slideStridePx, minHeight: slideStridePx } : undefined}
               aria-hidden={!isCurrent}
               inert={!isCurrent || undefined}
             >
               <motion.div
-                className={`pointer-events-auto rounded-3xl overflow-hidden screen-plate-morph${
+                className={`pointer-events-auto ${SCREEN_PLATE_SHELL_ROUND} overflow-hidden screen-plate-morph${
                   entered ? " morph-settled" : ""
                 }`}
                 style={{
@@ -490,13 +608,22 @@ export function ScreenPlate({
                 <div className="h-full w-full" style={{ containerType: "inline-size" }}>
                   <GlassCard
                     fillContainer
+                    shellRoundClass={SCREEN_PLATE_SHELL_ROUND}
                     isHoverable={false}
                     ambientImage={fiber.image}
                     contentDensity={plateDensity}
                   >
-                    <div className="h-full overflow-y-auto overflow-x-hidden">
+                    <DetailScrollRegion
+                      wrapperClassName="h-full min-h-0"
+                      scrollClassName="overscroll-y-contain"
+                      scrollStyle={{
+                        WebkitOverflowScrolling: "touch",
+                        paddingTop: 8,
+                        paddingBottom: 12,
+                      }}
+                    >
                       {renderContent(entry)}
-                    </div>
+                    </DetailScrollRegion>
                   </GlassCard>
                 </div>
               </motion.div>
@@ -504,6 +631,16 @@ export function ScreenPlate({
           );
         })}
       </div>
+
+      <button
+        type="button"
+        onClick={onClose}
+        aria-label="Close detail view"
+        className="absolute z-[95] pointer-events-auto flex items-center justify-center rounded-full p-2 bg-black/45 border border-white/12 text-white/75 hover:text-white hover:border-white/25 transition-[color,border-color] duration-200 cursor-pointer"
+        style={{ top: SCREEN_PLATE_SAFE_TOP, left: SCREEN_PLATE_SAFE_X }}
+      >
+        <X size={16} strokeWidth={2} />
+      </button>
     </motion.div>
   );
 
@@ -527,23 +664,23 @@ function IdentityScreenPlate({ fiber }: { fiber: FiberProfile }) {
       style={{ padding: "clamp(20px, 6.5cqi, 40px)" }}
     >
       <SectionLabel icon={Layers}>Identity</SectionLabel>
-      <div className={`w-[${sp.xl}] h-px bg-[${warmA}]/50 mb-[${sp.lg}] shrink-0`} />
-      <div className="flex-1 min-w-0 min-h-0 overflow-y-auto">
-        <p
-          lang="en"
-          className={`${T.secondary} detail-prose antialiased [text-wrap:pretty] hyphens-auto`}
-          style={{
-            fontSize: "clamp(14px, 5.2cqi, 30px)",
-            lineHeight: 1.75,
-            letterSpacing: "0.01em",
-            fontWeight: 450,
-            color: "rgba(255, 255, 255, 0.9)",
-            textRendering: "optimizeLegibility",
-          }}
-        >
-          {fiber.about}
-        </p>
-      </div>
+      <div className={`w-[${sp.xl}] h-px bg-[${warmA}]/50 mb-[${sp.xl}] shrink-0`} />
+      <DetailScrollRegion
+        lang="en"
+        wrapperClassName="flex-1 min-h-0 min-w-0"
+        scrollClassName={`${T.secondary} detail-prose antialiased [text-wrap:pretty] hyphens-auto`}
+        scrollStyle={{
+          fontSize: "clamp(14px, 5.2cqi, 24px)",
+          lineHeight: 1.85,
+          letterSpacing: "0.055em",
+          paddingTop: sp.lg,
+          fontWeight: 450,
+          color: "rgba(255, 255, 255, 0.9)",
+          textRendering: "optimizeLegibility",
+        }}
+      >
+        {fiber.about}
+      </DetailScrollRegion>
     </div>
   );
 }
@@ -558,7 +695,7 @@ function PropertiesScreenPlate({ fiber }: { fiber: FiberProfile }) {
     <div className={`h-full flex flex-col min-h-0 ${pad}`}>
       <SectionLabel icon={LayoutGrid}>Properties</SectionLabel>
       <div className={`w-[${sp.xl}] h-px bg-[${warmA}]/50 mb-[${sp.md}] shrink-0`} />
-      <div className="flex-1 min-h-0 overflow-y-auto">
+      <DetailScrollRegion wrapperClassName="flex-1 min-h-0">
         <div className="min-h-full flex flex-col justify-center">
           <div className={`flex flex-col gap-[${sp.sm}]`}>
             <div className={`grid grid-cols-2 gap-[${sp.xs}]`}>
@@ -592,13 +729,43 @@ function PropertiesScreenPlate({ fiber }: { fiber: FiberProfile }) {
             )}
           </div>
         </div>
-      </div>
+      </DetailScrollRegion>
     </div>
   );
 }
 
 /* ── INSIGHT (Editorial — warm accent, expanded) ── */
 function InsightScreenPlate({ fiber, half }: { fiber: FiberProfile; half: 1 | 2 | 3 }) {
+  const insightKey = `insight${half}` as "insight1" | "insight2" | "insight3";
+  const explicit = fiber[insightKey];
+  if (
+    explicit &&
+    typeof explicit.title === "string" &&
+    typeof explicit.content === "string" &&
+    explicit.title.trim() !== "" &&
+    explicit.content.trim() !== ""
+  ) {
+    return (
+      <div className={`h-full flex flex-col min-h-0 ${pad}`}>
+        <SectionLabel icon={Lightbulb} iconColor={`text-[${warmA}]/70`}>
+          {explicit.title}
+        </SectionLabel>
+        <div className={`w-full h-px bg-gradient-to-r from-[${warmA}]/35 via-white/10 to-transparent mb-[${sp.sm}] shrink-0`} />
+        <DetailScrollRegion
+          wrapperClassName="flex-1 min-h-0"
+          scrollClassName={`${T.secondary} detail-prose antialiased [text-wrap:pretty] hyphens-auto`}
+        >
+          <div
+            className="whitespace-pre-line"
+            style={{ fontSize: "clamp(12px, 4cqi, 22px)", lineHeight: 1.65 }}
+          >
+            {explicit.content}
+          </div>
+        </DetailScrollRegion>
+      </div>
+    );
+  }
+
   const parts = splitAboutText(fiber.about, 3);
   const segment = parts[half - 1];
   const text = segment ? insightExcerptFromAboutPart(segment, half) : "";
@@ -606,22 +773,24 @@ function InsightScreenPlate({ fiber, half }: { fiber: FiberProfile; half: 1 | 2 
   if (!text) return null;
 
   return (
-    <div className={`h-full flex flex-col ${pad}`}>
-      <div className={`flex-1 min-h-0 flex flex-col justify-center gap-[${sp.md}]`}>
-        <div className="relative">
-          <div aria-hidden="true" className={`absolute inset-0 border-l-[2px] border-[${warmA}]/40 pointer-events-none`} />
-          <p className={`${T.primary} detail-prose`} style={{ fontSize: "clamp(14px, 5.2cqi, 24px)", lineHeight: 1.6, fontFamily: "'Pica', serif", letterSpacing: "0.08em", paddingLeft: sp.lg }}>
-            {text}
-          </p>
-        </div>
+    <div className={`h-full flex flex-col min-h-0 ${pad}`}>
+      <DetailScrollRegion wrapperClassName="flex-1 min-h-0">
+        <div className={`min-h-full flex flex-col justify-center gap-[${sp.lg}] py-[${sp.xs}]`}>
+          <div className="relative">
+            <div aria-hidden="true" className={`absolute inset-0 border-l-[2px] border-[${warmA}]/40 pointer-events-none`} />
+            <p className={`${T.primary} detail-prose`} style={{ fontSize: "clamp(14px, 5.2cqi, 24px)", lineHeight: 1.6, fontFamily: "'Pica', serif", letterSpacing: "0.08em", paddingLeft: sp.lg }}>
+              {text}
+            </p>
+          </div>
 
-        <div className={`flex items-center gap-[${sp.xs}]`}>
-          <div className={`w-[${sp.lg}] h-px bg-[${warmA}]/30 shrink-0`} />
-          <span className={`text-[${warmA}]/60 uppercase tracking-[0.15em]`} style={{ fontSize: "clamp(8px, 2.8cqi, 12px)" }}>
-            {fiber.name} &mdash; {half === 1 ? "Origins" : half === 2 ? "Depth" : "Context"}
-          </span>
+          <div className={`flex items-center gap-[${sp.xs}] shrink-0`}>
+            <div className={`w-[${sp.lg}] h-px bg-[${warmA}]/30 shrink-0`} />
+            <span className={`text-[${warmA}]/60 uppercase tracking-[0.15em]`} style={{ fontSize: "clamp(8px, 2.8cqi, 12px)" }}>
+              {fiber.name} &mdash; {half === 1 ? "Origins" : half === 2 ? "Depth" : "Context"}
+            </span>
+          </div>
         </div>
-      </div>
+      </DetailScrollRegion>
     </div>
   );
 }
@@ -676,51 +845,58 @@ function YouTubeScreenPlate({ fiber, slotIndex = 0 }: { fiber: FiberProfile; slo
 }
 
 /* ── QUOTE (Editorial — warm accent, expanded) ── */
-function QuoteScreenPlate({ fiber }: { fiber: FiberProfile }) {
+function QuoteScreenPlate({ fiber, quoteChunkIndex = 0 }: { fiber: FiberProfile; quoteChunkIndex?: number }) {
   const quotes = dataSource.getQuoteData()[fiber.id] ?? [];
   const sentences = fiber.about.match(/[^.!?]+[.!?]+/g) ?? [fiber.about];
   const pullQuote = sentences.slice(0, 3).join(" ").trim();
   const hasQuotes = quotes.length > 0;
+  const start = quoteChunkIndex * QUOTE_MAX_QUOTES_PER_CARD;
+  const visibleQuotes = hasQuotes ? quotes.slice(start, start + QUOTE_MAX_QUOTES_PER_CARD) : [];
 
   return (
-    <div className={`h-full flex flex-col ${pad}`}>
+    <div className={`h-full flex flex-col min-h-0 ${pad}`}>
       <span className={`text-[${warmA}]/25 shrink-0`} style={{ fontSize: "clamp(40px, 16cqi, 80px)", lineHeight: 0.6, fontFamily: "'PICA', 'Pica', serif" }}>&ldquo;</span>
 
-      <div className={`flex-1 min-h-0 flex flex-col justify-center gap-[${sp.md}] pt-[${sp.sm}]`}>
-        {hasQuotes ? (
-          quotes.map((q, i) => (
-            <div key={i} className={`flex flex-col gap-[${sp.sm}]`}>
+      <DetailScrollRegion wrapperClassName="flex-1 min-h-0">
+        <div className={`min-h-full flex flex-col justify-center gap-[${sp.lg}] pt-[${sp.md}] pb-[${sp.sm}]`}>
+          {visibleQuotes.length > 0 ? (
+            visibleQuotes.map((q, i) => (
+              <div key={i} className={`flex flex-col gap-[${sp.md}]`}>
+                <div className="relative">
+                  <div aria-hidden="true" className={`absolute inset-0 border-l-[2px] border-[${warmA}]/40 pointer-events-none`} />
+                  <p className={`${T.primary} detail-prose`} style={{ fontSize: "clamp(15px, 5.8cqi, 28px)", lineHeight: 1.55, fontFamily: "'Pica', serif", letterSpacing: "0.08em", paddingLeft: sp.lg }}>
+                    {q.text}
+                  </p>
+                </div>
+                <div className={`flex items-center gap-[${sp.xs}] shrink-0`}>
+                  <div className={`w-[${sp.lg}] h-px bg-[${warmA}]/30 shrink-0`} />
+                  <span className={`text-[${warmA}]/60 uppercase tracking-[0.15em]`} style={{ fontSize: "clamp(8px, 2.8cqi, 12px)" }}>
+                    {q.attribution}
+                  </span>
+                </div>
+                {i < visibleQuotes.length - 1 && (
+                  <div className={`w-full h-px bg-white/[0.08] shrink-0 mt-[${sp.xs}]`} aria-hidden />
+                )}
+              </div>
+            ))
+          ) : !hasQuotes ? (
+            <>
               <div className="relative">
                 <div aria-hidden="true" className={`absolute inset-0 border-l-[2px] border-[${warmA}]/40 pointer-events-none`} />
                 <p className={`${T.primary} detail-prose`} style={{ fontSize: "clamp(15px, 5.8cqi, 28px)", lineHeight: 1.55, fontFamily: "'Pica', serif", letterSpacing: "0.08em", paddingLeft: sp.lg }}>
-                  {q.text}
+                  {pullQuote}
                 </p>
               </div>
-              <div className={`flex items-center gap-[${sp.xs}]`}>
+              <div className={`flex items-center gap-[${sp.xs}] shrink-0`}>
                 <div className={`w-[${sp.lg}] h-px bg-[${warmA}]/30 shrink-0`} />
                 <span className={`text-[${warmA}]/60 uppercase tracking-[0.15em]`} style={{ fontSize: "clamp(8px, 2.8cqi, 12px)" }}>
-                  {q.attribution}
+                  {fiber.name}
                 </span>
               </div>
-            </div>
-          ))
-        ) : (
-          <>
-            <div className="relative">
-              <div aria-hidden="true" className={`absolute inset-0 border-l-[2px] border-[${warmA}]/40 pointer-events-none`} />
-              <p className={`${T.primary} detail-prose`} style={{ fontSize: "clamp(15px, 5.8cqi, 28px)", lineHeight: 1.55, fontFamily: "'Pica', serif", letterSpacing: "0.08em", paddingLeft: sp.lg }}>
-                {pullQuote}
-              </p>
-            </div>
-            <div className={`flex items-center gap-[${sp.xs}]`}>
-              <div className={`w-[${sp.lg}] h-px bg-[${warmA}]/30 shrink-0`} />
-              <span className={`text-[${warmA}]/60 uppercase tracking-[0.15em]`} style={{ fontSize: "clamp(8px, 2.8cqi, 12px)" }}>
-                {fiber.name}
-              </span>
-            </div>
-          </>
-        )}
-      </div>
+            </>
+          ) : null}
+        </div>
+      </DetailScrollRegion>
     </div>
   );
 }
@@ -735,22 +911,25 @@ function TradeScreenPlate({ fiber }: { fiber: FiberProfile }) {
     { icon: MapPin, label: "Sourcing", value: fiber.regions.join(", ") },
   ];
   return (
-    <div className={`h-full flex flex-col ${pad}`}>
+    <div className={`h-full flex flex-col min-h-0 ${pad}`}>
       <SectionLabel icon={DollarSign}>Source &amp; Trade</SectionLabel>
-      <StackedDataRowsExpanded rows={rows} accentHex={coolA} />
-
-      {/* Contextual metadata footer */}
-      <div className={`grid grid-cols-2 gap-[${sp.xs}] mt-[${sp.md}]`}>
-        {[
-          { label: "Origin", value: fiber.profilePills.origin },
-          { label: "Fiber Type", value: fiber.profilePills.fiberType },
-        ].map((item) => (
-          <div key={item.label} className={`p-[${sp.sm}] rounded-lg bg-white/[0.03] border border-white/[0.05]`}>
-            <span className={`tracking-[0.15em] uppercase ${T.tertiary} block mb-[clamp(1px,0.5cqi,3px)]`} style={{ fontSize: "clamp(8px, 2.5cqi, 10px)", fontWeight: 600 }}>{item.label}</span>
-            <span className={`${T.primary} capitalize`} style={{ fontSize: "clamp(10px, 3.2cqi, 14px)", fontWeight: 500 }}>{item.value}</span>
+      <div className={`w-[${sp.xl}] h-px bg-[${warmA}]/50 mb-[${sp.sm}] shrink-0`} />
+      <DetailScrollRegion wrapperClassName="flex-1 min-h-0">
+        <div className={`min-h-full flex flex-col justify-center gap-[${sp.lg}] pb-[${sp.sm}]`}>
+          <StackedDataRowsExpanded rows={rows} accentHex={coolA} />
+          <div className={`grid grid-cols-2 gap-[${sp.xs}] shrink-0`}>
+            {[
+              { label: "Origin", value: fiber.profilePills.origin },
+              { label: "Fiber Type", value: fiber.profilePills.fiberType },
+            ].map((item) => (
+              <div key={item.label} className={`p-[${sp.sm}] rounded-lg bg-white/[0.03] border border-white/[0.05]`}>
+                <span className={`tracking-[0.15em] uppercase ${T.tertiary} block mb-[clamp(1px,0.5cqi,3px)]`} style={{ fontSize: "clamp(8px, 2.5cqi, 10px)", fontWeight: 600 }}>{item.label}</span>
+                <span className={`${T.primary} capitalize`} style={{ fontSize: "clamp(10px, 3.2cqi, 14px)", fontWeight: 500 }}>{item.value}</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      </DetailScrollRegion>
     </div>
   );
 }
@@ -770,23 +949,26 @@ function AnatomyScreenPlate({ fiber }: { fiber: FiberProfile }) {
   ];
 
   return (
-    <div className={`h-full flex flex-col ${pad}`}>
+    <div className={`h-full flex flex-col min-h-0 ${pad}`}>
       <SectionLabel icon={Dna}>Anatomy</SectionLabel>
-      <StackedDataRowsExpanded rows={rows} accentHex={coolA} />
-
-      {/* Contextual metadata footer */}
-      <div className={`grid grid-cols-3 gap-[${sp.xs}] mt-[${sp.md}]`}>
-        {[
-          { label: "Scientific", value: fiber.profilePills.scientificName },
-          { label: "Plant Part", value: fiber.profilePills.plantPart },
-          { label: "Hand", value: fiber.profilePills.handFeel },
-        ].map((item) => (
-          <div key={item.label} className={`p-[${sp.sm}] rounded-lg bg-white/[0.03] border border-white/[0.05]`}>
-            <span className={`tracking-[0.15em] uppercase ${T.tertiary} block mb-[clamp(1px,0.5cqi,3px)]`} style={{ fontSize: "clamp(7px, 2.2cqi, 9px)", fontWeight: 600 }}>{item.label}</span>
-            <span className={`${T.primary} capitalize`} style={{ fontSize: "clamp(9px, 3cqi, 12px)", fontWeight: 500 }}>{item.value}</span>
+      <div className={`w-[${sp.xl}] h-px bg-[${warmA}]/50 mb-[${sp.sm}] shrink-0`} />
+      <DetailScrollRegion wrapperClassName="flex-1 min-h-0">
+        <div className={`min-h-full flex flex-col justify-center gap-[${sp.lg}] pb-[${sp.sm}]`}>
+          <StackedDataRowsExpanded rows={rows} accentHex={coolA} />
+          <div className={`grid grid-cols-3 gap-[${sp.xs}] shrink-0`}>
+            {[
+              { label: "Scientific", value: fiber.profilePills.scientificName },
+              { label: "Plant Part", value: fiber.profilePills.plantPart },
+              { label: "Hand", value: fiber.profilePills.handFeel },
+            ].map((item) => (
+              <div key={item.label} className={`p-[${sp.sm}] rounded-lg bg-white/[0.03] border border-white/[0.05]`}>
+                <span className={`tracking-[0.15em] uppercase ${T.tertiary} block mb-[clamp(1px,0.5cqi,3px)]`} style={{ fontSize: "clamp(7px, 2.2cqi, 9px)", fontWeight: 600 }}>{item.label}</span>
+                <span className={`${T.primary} capitalize`} style={{ fontSize: "clamp(9px, 3cqi, 12px)", fontWeight: 500 }}>{item.value}</span>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      </DetailScrollRegion>
     </div>
   );
 }
@@ -804,10 +986,14 @@ function CareScreenPlate({ fiber }: { fiber: FiberProfile }) {
   ];
 
   return (
-    <div className={`h-full flex flex-col ${pad}`}>
+    <div className={`h-full flex flex-col min-h-0 ${pad}`}>
       <SectionLabel icon={Shirt}>Care &amp; Use</SectionLabel>
-      <StackedDataRowsExpanded rows={rows} accentHex={coolA} />
-
+      <div className={`w-[${sp.xl}] h-px bg-[${warmA}]/50 mb-[${sp.sm}] shrink-0`} />
+      <DetailScrollRegion wrapperClassName="flex-1 min-h-0">
+        <div className={`min-h-full flex flex-col justify-center gap-[${sp.md}] pb-[${sp.sm}]`}>
+          <StackedDataRowsExpanded rows={rows} accentHex={coolA} />
+        </div>
+      </DetailScrollRegion>
     </div>
   );
 }
@@ -817,33 +1003,43 @@ function ProcessScreenPlate({ fiber }: { fiber: FiberProfile }) {
   const steps = dataSource.getProcessData()[fiber.id] ?? [];
   if (steps.length === 0) return null;
   return (
-    <div className={`h-full flex flex-col ${pad}`}>
+    <div className={`h-full flex flex-col min-h-0 ${pad}`}>
       <SectionLabel icon={Layers}>Process</SectionLabel>
-      <div className={`flex-1 flex flex-col justify-center min-h-0`}>
-        {steps.map((step, i) => (
-          <div key={step.name} className={`flex gap-[${sp.md}] items-stretch ${i === 0 ? `pt-[${sp.md}]` : ""}`}>
-            <div className="flex flex-col items-center flex-shrink-0 self-stretch">
-              <div
-                className={`rounded-full shrink-0 bg-[${neutA}]/10 border border-[${neutA}]/25 flex items-center justify-center`}
-                style={{ width: "clamp(28px, 8cqi, 44px)", height: "clamp(28px, 8cqi, 44px)" }}
-              >
-                <span className={`text-[${neutA}]/70`} style={{ fontSize: "clamp(11px, 3.5cqi, 16px)", fontWeight: 700 }}>{i + 1}</span>
+      <div className={`w-[${sp.xl}] h-px bg-[${warmA}]/50 mb-[${sp.sm}] shrink-0`} />
+      <DetailScrollRegion wrapperClassName="flex-1 min-h-0">
+        {/* No gap-y between rows — step padding drives rhythm so the timeline rail stays continuous */}
+        <div className={`min-h-full flex flex-col justify-center py-[clamp(6px,2cqi,14px)] pb-[clamp(10px,3cqi,20px)]`}>
+          {steps.map((step, i) => (
+            <div key={`${step.name}-${i}`} className="flex gap-[clamp(8px,3cqi,18px)] items-stretch">
+              <div className="flex flex-col items-center flex-shrink-0 self-stretch w-[clamp(26px,7.5cqi,40px)]">
+                <div
+                  className={`rounded-full shrink-0 bg-[${neutA}]/10 border border-[${neutA}]/25 flex items-center justify-center`}
+                  style={{ width: "clamp(26px, 7.5cqi, 42px)", height: "clamp(26px, 7.5cqi, 42px)" }}
+                >
+                  <span className={`text-[${neutA}]/70`} style={{ fontSize: "clamp(10px, 3.2cqi, 15px)", fontWeight: 700 }}>{i + 1}</span>
+                </div>
+                {i < steps.length - 1 && <div className={`flex-1 w-px min-h-[8px] bg-white/[${ink.ghost}]`} />}
               </div>
-              {i < steps.length - 1 && <div className={`flex-1 w-px min-h-[6px] bg-white/[${ink.ghost}]`} />}
+              <div
+                className={`min-w-0 flex flex-col gap-[clamp(4px,1cqi,8px)] ${i < steps.length - 1 ? "pb-[clamp(16px,6.5cqi,40px)]" : ""}`}
+              >
+                <span
+                  className={`${T.primary} block [overflow-wrap:anywhere]`}
+                  style={{ fontSize: "clamp(12px, 4cqi, 19px)", fontWeight: 600, lineHeight: 1.35 }}
+                >
+                  {step.name}
+                </span>
+                <span
+                  className={`${T.tertiary} block [overflow-wrap:anywhere] [text-wrap:pretty]`}
+                  style={{ fontSize: "clamp(11px, 3.6cqi, 17px)", lineHeight: 1.58 }}
+                >
+                  {step.detail}
+                </span>
+              </div>
             </div>
-            <div
-              className={`min-w-0 flex flex-col gap-[clamp(5px,1.2cqi,10px)] ${i < steps.length - 1 ? "pb-[clamp(28px,10cqi,48px)]" : ""}`}
-            >
-              <span className={`${T.primary} block`} style={{ fontSize: "clamp(13px, 4.5cqi, 19px)", fontWeight: 600, lineHeight: 1.3 }}>
-                {step.name}
-              </span>
-              <span className={`${T.tertiary} block`} style={{ fontSize: "clamp(12px, 4cqi, 17px)", lineHeight: 1.55 }}>
-                {step.detail}
-              </span>
-            </div>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      </DetailScrollRegion>
     </div>
   );
 }

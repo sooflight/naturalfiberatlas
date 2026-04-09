@@ -12,7 +12,7 @@
  * prop for the target quality tier.
  */
 
-import { useState, useEffect, useRef, memo } from "react";
+import { useState, useEffect, useRef, memo, useCallback } from "react";
 import { useImagePipeline } from "../context/image-pipeline";
 
 interface ProgressiveImageProps {
@@ -35,6 +35,8 @@ interface ProgressiveImageProps {
    * Default is "cover" (via CSS). Set to "contain" for lightbox usage.
    */
   objectFit?: "cover" | "contain";
+  /** Fires once per `src` when the target image cannot be loaded (no broken-icon placeholder). */
+  onLoadError?: () => void;
 }
 
 /**
@@ -57,6 +59,7 @@ export const ProgressiveImage = memo(function ProgressiveImage({
   draggable,
   skipLqip = false,
   objectFit,
+  onLoadError,
 }: ProgressiveImageProps) {
   const pipeline = useImagePipeline();
 
@@ -66,14 +69,32 @@ export const ProgressiveImage = memo(function ProgressiveImage({
   // Check if this target was already loaded in a previous mount
   const alreadyCached = !!(targetSrc && loadedUrls.has(targetSrc));
   const [targetLoaded, setTargetLoaded] = useState(alreadyCached);
+  const [loadFailed, setLoadFailed] = useState(false);
+  const failureReportedRef = useRef(false);
   /** Delayed flag — stays true for LQIP_LINGER_MS after targetLoaded,
    *  preventing the LQIP from unmounting before the target's opacity
    *  transition completes. */
   const [lqipDismissed, setLqipDismissed] = useState(alreadyCached);
   const imgRef = useRef<HTMLImageElement>(null);
+  const onLoadErrorRef = useRef(onLoadError);
+  onLoadErrorRef.current = onLoadError;
+
+  const reportTargetFailure = useCallback(() => {
+    if (failureReportedRef.current) return;
+    failureReportedRef.current = true;
+    setLoadFailed(true);
+    setLqipDismissed(true);
+    onLoadErrorRef.current?.();
+  }, []);
+
+  useEffect(() => {
+    failureReportedRef.current = false;
+    setLoadFailed(false);
+  }, [src, targetSrc]);
 
   // Skip LQIP entirely if the image is already cached or skipLqip is set
-  const showLqip = !skipLqip && !alreadyCached && !lqipDismissed && !!lqipSrc;
+  const showLqip =
+    !loadFailed && !skipLqip && !alreadyCached && !lqipDismissed && !!lqipSrc;
 
   // Delayed LQIP dismiss — keep placeholder visible during target fade-in
   useEffect(() => {
@@ -109,18 +130,27 @@ export const ProgressiveImage = memo(function ProgressiveImage({
     };
 
     img.onerror = () => {
-      // On error, show whatever we have (LQIP or nothing)
-      if (!cancelled) setTargetLoaded(true);
+      if (!cancelled) reportTargetFailure();
     };
 
     return () => {
       cancelled = true;
     };
-  }, [targetSrc, alreadyCached]);
+  }, [targetSrc, alreadyCached, reportTargetFailure]);
 
   if (!src) return null;
 
   const decorative = !alt.trim();
+
+  if (loadFailed) {
+    return (
+      <div
+        className={`progressive-image-wrapper ${className}`}
+        style={{ ...style, position: "relative", overflow: "hidden" }}
+        aria-hidden
+      />
+    );
+  }
 
   return (
     <div
@@ -136,6 +166,7 @@ export const ProgressiveImage = memo(function ProgressiveImage({
           className="progressive-image-lqip"
           draggable={false}
           style={objectFit ? { objectFit } : undefined}
+          onError={() => setLqipDismissed(true)}
         />
       )}
 
@@ -149,6 +180,7 @@ export const ProgressiveImage = memo(function ProgressiveImage({
         loading={loading}
         draggable={draggable}
         style={objectFit ? { objectFit } : undefined}
+        onError={reportTargetFailure}
       />
     </div>
   );

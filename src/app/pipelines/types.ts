@@ -18,6 +18,8 @@ export type GlassAtlasPreset =
   | "lqip"         // Low-quality image placeholder (~60×80, q_20)
   | "ambient"      // GlassCard ambient underlayer (~400×534)
   | "filmstrip"    // Film-strip thumbnails (~220×293)
+  /** Top nav portal / path / children thumbs — 4:3 to match CSS `aspect-ratio: 4/3` (~144×108, ~2× DPR vs 72px strip) */
+  | "navThumb"
   | "seeAlso"      // Small square thumbnails in SeeAlso plate (~80×80)
   | "solo"         // Solo gallery plate image (~320×427)
   | "duo"          // Duo gallery plate image (~320×200)

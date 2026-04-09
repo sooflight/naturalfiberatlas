@@ -16,7 +16,6 @@ import {
   fibers,
   getGalleryImages,
   processData,
-  quoteData,
   worldNames,
   type FiberProfile,
   type FiberIndexEntry,
@@ -92,8 +91,8 @@ export function classifyZone(
    ══════════════════════════════════════════════════════════ */
 
 const PLATE_ZONE_PREFS: [PlateType, Zone[]][] = [
-  /* Ring 1 — Immediate context */
-  ["about",          ["right", "left", "below-right", "below-left", "below", "above-right", "above-left", "above"]],
+  /* Ring 1 — Identity stays beside the hero title card (same row), never above/below as first choice */
+  ["about",          ["right", "left"]],
   ["properties",     ["left", "right", "below", "below-right", "below-left", "above", "above-right", "above-left"]],
   /* Anatomy — keep adjacent to hero (title card); assign early before ring-2/3 consume nearby cells */
   ["anatomy",        ["below", "above", "right", "left", "below-right", "below-left", "above-right", "above-left"]],
@@ -158,7 +157,7 @@ function filterAvailablePlates(fiberId: string): [PlateType, Zone[]][] {
       case "care":
         return !!careData[fiberId];
       case "quote":
-        return (quoteData[fiberId] ?? []).length > 0;
+        return (dataSource.getQuoteData()[fiberId] ?? []).length > 0;
       case "youtubeEmbed":
         return fiber ? hasAnyValidYoutubeEmbed(fiber) : false;
       case "insight1":
@@ -210,6 +209,33 @@ function pickBestCellForZonePrefs(
   return bestCell;
 }
 
+/**
+ * Row-major pool prefix, but always includes the hero's immediate horizontal neighbors
+ * when they are eligible candidates so Identity (about) can use zone "right" / "left".
+ */
+export function buildLayoutCandidatePool(
+  allCandidatesSorted: number[],
+  requiredPoolSize: number,
+  selectedIndex: number,
+  cols: number,
+): Set<number> {
+  const pool = new Set(allCandidatesSorted.slice(0, requiredPoolSize));
+  const candidateSet = new Set(allCandidatesSorted);
+  const selCol = selectedIndex % cols;
+  const horizontal: number[] = [];
+  if (selCol > 0) horizontal.push(selectedIndex - 1);
+  if (selCol < cols - 1) horizontal.push(selectedIndex + 1);
+  const mustInclude = horizontal.filter((i) => candidateSet.has(i));
+  for (const i of mustInclude) pool.add(i);
+  while (pool.size > requiredPoolSize) {
+    const sortedDesc = [...pool].sort((a, b) => b - a);
+    const victim = sortedDesc.find((i) => !mustInclude.includes(i));
+    if (victim === undefined) break;
+    pool.delete(victim);
+  }
+  return pool;
+}
+
 function expandYoutubePlateRows(
   fiberId: string,
   plates: [PlateType, Zone[]][],
@@ -231,12 +257,48 @@ function expandYoutubePlateRows(
   return out;
 }
 
+function expandQuotePlateRows(
+  fiberId: string,
+  plates: [PlateType, Zone[]][],
+): [PlateType, Zone[]][] {
+  const nCards = quoteDetailCardCountForFiber(fiberId);
+  if (nCards <= 1) return plates;
+
+  const out: [PlateType, Zone[]][] = [];
+  for (const row of plates) {
+    if (row[0] === "quote") {
+      for (let i = 0; i < nCards; i++) {
+        out.push(row);
+      }
+    } else {
+      out.push(row);
+    }
+  }
+  return out;
+}
+
 /* ══════════════════════════════════════════════════════════
    Gallery queue builder
    ══════════════════════════════════════════════════════════ */
 
 /** Max thumbnails per contact-sheet detail card; overflow becomes additional cards. */
 export const CONTACT_SHEET_MAX_IMAGES_PER_CARD = 12;
+
+/**
+ * After at least one full card (`CONTACT_SHEET_MAX_IMAGES_PER_CARD`), a trailing
+ * run shorter than this count is not given its own card — those images stay in
+ * the lightbox only. (Remainders 1–2 are hidden from the grid; 3+ get a final card.)
+ */
+export const CONTACT_SHEET_MIN_TAIL_FOR_OWN_CARD = 3;
+
+/** Max curated quotes per Quote detail card; overflow becomes additional quote cards. */
+export const QUOTE_MAX_QUOTES_PER_CARD = 3;
+
+export function quoteDetailCardCountForFiber(fiberId: string): number {
+  const n = (dataSource.getQuoteData()[fiberId] ?? []).length;
+  if (n <= 0) return 0;
+  return Math.ceil(n / QUOTE_MAX_QUOTES_PER_CARD);
+}
 
 export interface GalleryCardDescriptor {
   type: "contactSheet";
@@ -247,9 +309,17 @@ export interface GalleryCardDescriptor {
 
 export function chunkGalleryForContactSheets(all: GalleryImageEntry[]): GalleryCardDescriptor[] {
   if (all.length === 0) return [];
-  const out: GalleryCardDescriptor[] = [];
   const max = CONTACT_SHEET_MAX_IMAGES_PER_CARD;
-  for (let start = 0; start < all.length; start += max) {
+  const fullCards = Math.floor(all.length / max);
+  const remainder = all.length % max;
+  const omitSparseTail =
+    fullCards >= 1 &&
+    remainder > 0 &&
+    remainder < CONTACT_SHEET_MIN_TAIL_FOR_OWN_CARD;
+  const visibleLen = omitSparseTail ? all.length - remainder : all.length;
+
+  const out: GalleryCardDescriptor[] = [];
+  for (let start = 0; start < visibleLen; start += max) {
     out.push({
       type: "contactSheet",
       images: all.slice(start, start + max),
@@ -284,6 +354,8 @@ export interface PlateLayoutResult {
   plateAssignments: Map<number, PlateType>;
   /** For `youtubeEmbed` cells only: which video index (0-based) that cell shows. */
   youtubeEmbedSlotByCell: Map<number, number>;
+  /** For `quote` cells only: which quote chunk (0-based) that card shows (up to `QUOTE_MAX_QUOTES_PER_CARD` quotes each). */
+  quoteChunkSlotByCell: Map<number, number>;
   profileInhaleDelays: Map<number, number>;
   detailInhaleDelays: Map<number, number>;
   profileExhaleDelays: Map<number, number>;
@@ -297,6 +369,7 @@ export interface PlateLayoutResult {
 const EMPTY_RESULT: PlateLayoutResult = {
   plateAssignments: new Map(),
   youtubeEmbedSlotByCell: new Map(),
+  quoteChunkSlotByCell: new Map(),
   profileInhaleDelays: new Map(),
   detailInhaleDelays: new Map(),
   profileExhaleDelays: new Map(),
@@ -335,6 +408,7 @@ export function computePlateLayout(
   const galleryStartIndex = new Map<number, number>();
   const exitOffsets = new Map<number, { x: number; y: number }>();
   const youtubeEmbedSlotByCell = new Map<number, number>();
+  const quoteChunkSlotByCell = new Map<number, number>();
   const consumed = new Set<number>();
 
   /** Manhattan distance from a cell index to the selected cell */
@@ -348,7 +422,10 @@ export function computePlateLayout(
   const galleryQueue = buildGalleryQueue(selectedId, galleryOverride);
 
   /* ── Step 0b: Compute required pool size from data-available plates ── */
-  const availablePlates = expandYoutubePlateRows(selectedId, filterAvailablePlates(selectedId));
+  const availablePlates = expandQuotePlateRows(
+    selectedId,
+    expandYoutubePlateRows(selectedId, filterAvailablePlates(selectedId)),
+  );
   const fiber = getFiberForPlateAvailability(selectedId);
   const hasSeeAlso = fiber && fiber.seeAlso.length > 0;
   const requiredPoolSize =
@@ -380,11 +457,16 @@ export function computePlateLayout(
   }
 
   const allCandidates = [...realCandidates, ...virtualCandidates].sort((a, b) => a - b);
-  const pool = new Set(allCandidates.slice(0, requiredPoolSize));
+  const pool = buildLayoutCandidatePool(
+    allCandidates,
+    requiredPoolSize,
+    selectedIndex,
+    cols,
+  );
 
   const aboutPrefs = PLATE_ZONE_PREFS.find(([pt]) => pt === "about")?.[1];
   let identityPreassigned = false;
-  /* Identity (about): claim best hero-adjacent cell before gallery — contact sheet used to win "right". */
+  /* Identity (about): claim left/right of hero before gallery; pool always includes those neighbors when eligible. */
   if (aboutPrefs) {
     const identityCell = pickBestCellForZonePrefs(pool, selectedIndex, cols, aboutPrefs, consumed);
     if (identityCell !== null) {
@@ -446,6 +528,7 @@ export function computePlateLayout(
 
   /* ── Step 2: Assign named plates to pool cells by zone preference ── */
   let nextYoutubeSlot = 0;
+  let nextQuoteChunkSlot = 0;
   for (const [plateType, prefs] of availablePlates) {
     if (plateType === "about" && identityPreassigned) continue;
     let bestCell: number | null = null;
@@ -466,6 +549,9 @@ export function computePlateLayout(
       assignments.set(bestCell, plateType);
       if (plateType === "youtubeEmbed") {
         youtubeEmbedSlotByCell.set(bestCell, nextYoutubeSlot++);
+      }
+      if (plateType === "quote") {
+        quoteChunkSlotByCell.set(bestCell, nextQuoteChunkSlot++);
       }
       consumed.add(bestCell);
       pool.delete(bestCell);
@@ -576,6 +662,7 @@ export function computePlateLayout(
   return {
     plateAssignments: assignments,
     youtubeEmbedSlotByCell,
+    quoteChunkSlotByCell,
     profileInhaleDelays: profInhale,
     detailInhaleDelays: detInhale,
     profileExhaleDelays: profExhale,

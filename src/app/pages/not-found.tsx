@@ -16,7 +16,7 @@ export function NotFoundPage() {
   }, []);
 
   return (
-    <div className="min-h-dvh bg-[#111111] text-white flex items-center justify-center">
+    <div className="min-h-atlas-vvh bg-[#111111] text-white flex items-center justify-center">
       <main className="text-center space-y-6 px-6" aria-labelledby="not-found-heading">
         <h1
           id="not-found-heading"

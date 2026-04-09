@@ -9,7 +9,7 @@
  * production detail cards, but with editable overlays.
  */
 
-import { useState, useCallback, useEffect, useRef, useMemo } from "react";
+import { useState, useCallback, useEffect, useRef, useMemo, type CSSProperties } from "react";
 import { useAtlasData } from "../../context/atlas-data-context";
 import { type FiberProfile, mergeFiberGalleryWithFallback } from "../../data/atlas-data";
 import { dataSource } from "../../data/data-provider";
@@ -414,51 +414,108 @@ function TagAdder({ onAdd }: { onAdd: (tag: string) => void }) {
   );
 }
 
-/* ── 3. Insight Cards (read-only preview with link to About) ── */
+const INSIGHT_CARD_DEFAULT_TITLES: Record<1 | 2 | 3, string> = {
+  1: "Insight 1 — Origins",
+  2: "Insight 2 — Depth",
+  3: "Insight 3 — Context",
+};
+
+export function isActiveFiberInsightOverride(
+  v: FiberProfile["insight1"] | undefined,
+): v is { title: string; content: string } {
+  return (
+    !!v &&
+    typeof v.title === "string" &&
+    typeof v.content === "string" &&
+    v.title.trim().length > 0 &&
+    v.content.trim().length > 0
+  );
+}
+
+/* ── 3. Insight Cards (About-derived by default; optional custom title + body) ── */
 export function InsightCard({
   fiber,
   half,
+  onUpdate,
 }: {
   fiber: FiberProfile;
   half: 1 | 2 | 3;
+  onUpdate: (patch: Partial<FiberProfile>) => void;
 }) {
+  const insightKey = `insight${half}` as "insight1" | "insight2" | "insight3";
+  const explicit = fiber[insightKey];
+  const usingExplicit = isActiveFiberInsightOverride(explicit);
+
   const parts = splitAboutText(fiber.about, 3);
   const segment = parts[half - 1];
-  if (!segment) return null;
-  const text = insightExcerptFromAboutPart(segment, half);
-  if (!text) return null;
+  const autoContent = segment ? insightExcerptFromAboutPart(segment, half) : "";
+  const hasAutoBody = !!autoContent;
+
+  if (!hasAutoBody && !usingExplicit) return null;
+
+  const defaultTitle = INSIGHT_CARD_DEFAULT_TITLES[half];
+  const titleValue = usingExplicit ? explicit.title : defaultTitle;
+  const contentValue = usingExplicit ? explicit.content : autoContent;
+
+  const persistInsight = (next: { title: string; content: string }) => {
+    onUpdate({ [insightKey]: { title: next.title, content: next.content } } as Partial<FiberProfile>);
+  };
+
+  const clearInsightOverride = () => {
+    onUpdate({ [insightKey]: undefined } as Partial<FiberProfile>);
+  };
+
+  const quoteStyle: CSSProperties = {
+    fontSize: "13px",
+    lineHeight: 1.55,
+    fontFamily: "'PICA', 'Pica', serif",
+    letterSpacing: "0.06em",
+  };
 
   return (
     <EditableCardShell fiber={fiber} minHeight={140}>
       <div className="p-5">
-        <div className="flex items-center gap-2 mb-3">
-          <span
-            className="text-white/40 uppercase tracking-[0.14em] flex-1"
+        <div className="flex items-start gap-2 mb-3">
+          <InlineText
+            value={titleValue}
+            onChange={(v) => persistInsight({ title: v, content: contentValue })}
+            className="text-white/40 uppercase tracking-[0.14em] flex-1 min-w-0"
             style={{ fontSize: "11px", fontWeight: 600 }}
-          >
-            Insight {half} — {half === 1 ? "Origins" : half === 2 ? "Depth" : "Context"}
-          </span>
-          <span
-            className="px-1.5 py-0.5 rounded bg-[#5D9A6D]/[0.06] border border-[#5D9A6D]/10 text-[#5D9A6D]/50"
-            style={{ fontSize: "8px" }}
-          >
-            auto
-          </span>
+            placeholder={defaultTitle}
+          />
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <span
+              className={
+                usingExplicit
+                  ? "px-1.5 py-0.5 rounded bg-blue-400/[0.06] border border-blue-400/10 text-blue-400/55"
+                  : "px-1.5 py-0.5 rounded bg-[#5D9A6D]/[0.06] border border-[#5D9A6D]/10 text-[#5D9A6D]/50"
+              }
+              style={{ fontSize: "8px" }}
+            >
+              {usingExplicit ? "custom" : "auto"}
+            </span>
+            {usingExplicit ? (
+              <button
+                type="button"
+                onClick={clearInsightOverride}
+                className="text-blue-400/45 hover:text-blue-400/70 cursor-pointer transition-colors"
+                style={{ fontSize: "8px", fontWeight: 600, letterSpacing: "0.06em", textTransform: "uppercase" }}
+              >
+                Reset
+              </button>
+            ) : null}
+          </div>
         </div>
 
-        {/* Blockquote */}
         <div className="border-l-2 border-[#5D9A6D]/30 pl-4">
-          <p
-            className="text-white/[0.88]"
-            style={{
-              fontSize: "13px",
-              lineHeight: 1.55,
-              fontFamily: "'PICA', 'Pica', serif",
-              letterSpacing: "0.06em",
-            }}
-          >
-            {text}
-          </p>
+          <InlineText
+            value={contentValue}
+            onChange={(v) => persistInsight({ title: titleValue, content: v })}
+            className="text-white/[0.88] block w-full"
+            style={quoteStyle}
+            multiline
+            placeholder="Insight text…"
+          />
         </div>
 
         <div className="flex items-center gap-2 mt-3">
@@ -474,7 +531,9 @@ export function InsightCard({
         </div>
 
         <p className="text-white/20 mt-2 italic" style={{ fontSize: "9px" }}>
-          Pull-quote from each third of About; edit About for full narrative on Identity
+          {usingExplicit
+            ? "Custom copy is shown on the public Insight plate. Reset to follow About again."
+            : "Pull-quote from this third of About; edit title or body here to override."}
         </p>
       </div>
     </EditableCardShell>
@@ -1178,12 +1237,15 @@ export function CardEditor({ fiberId, onOpenGalleryStudio, onScrollToFormSection
         {/* About */}
         <AboutCard fiber={draft} onUpdate={pushUpdate} />
 
-        {/* Insights (auto-generated) */}
-        {sentences.length >= 2 && (
-          <>
-            <InsightCard fiber={draft} half={1} />
-            <InsightCard fiber={draft} half={2} />
-          </>
+        {/* Insights */}
+        {(sentences.length >= 2 || isActiveFiberInsightOverride(draft.insight1)) && (
+          <InsightCard fiber={draft} half={1} onUpdate={pushUpdate} />
+        )}
+        {(sentences.length >= 2 || isActiveFiberInsightOverride(draft.insight2)) && (
+          <InsightCard fiber={draft} half={2} onUpdate={pushUpdate} />
+        )}
+        {(sentences.length >= 3 || isActiveFiberInsightOverride(draft.insight3)) && (
+          <InsightCard fiber={draft} half={3} onUpdate={pushUpdate} />
         )}
 
         {/* Profile Pills */}

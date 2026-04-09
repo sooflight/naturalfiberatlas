@@ -30,3 +30,4 @@ coverage/
 *.backup.ts
 *.backup.1.ts
 *.backup.2.ts
+.vercel

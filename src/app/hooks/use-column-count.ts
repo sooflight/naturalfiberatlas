@@ -4,13 +4,16 @@
  * Breakpoints:
  *   < 640px   → 2 cols  (mobile phones)
  *   < 960px   → 3 cols  (tablets / small laptops)
- *   < 1360px  → 4 cols  (standard desktops)
- *   ≥ 1360px  → 5 cols  (large monitors — cards grow unbounded)
+ *   < 1280px  → 4 cols  (standard desktops)
+ *   ≥ 1280px  → 5 cols  (large monitors — width capped via ATLAS_GRID_5COL_MAX_WIDTH_CLASS)
  *
  * Gap syncs with Tailwind's gap-2.5 (< 640) / sm:gap-3 (≥ 640).
  */
 
 import { useState, useEffect } from "react";
+
+/** Keeps five-column cards from stretching on ultrawide viewports. */
+export const ATLAS_GRID_5COL_MAX_WIDTH_CLASS = "max-w-[min(100%,1440px)]";
 
 interface ColumnConfig {
   cols: number;
@@ -20,7 +23,7 @@ interface ColumnConfig {
 function getColumnConfig(width: number): ColumnConfig {
   if (width < 640) return { cols: 2, gridGap: "0.625rem" };
   if (width < 960) return { cols: 3, gridGap: "0.75rem" };
-  if (width < 1360) return { cols: 4, gridGap: "0.75rem" };
+  if (width < 1280) return { cols: 4, gridGap: "0.75rem" };
   return { cols: 5, gridGap: "0.75rem" };
 }
 

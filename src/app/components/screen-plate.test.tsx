@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { ScreenPlate, type ScreenPlateEntry } from "./screen-plate";
 import { fibers } from "../data/fibers";
@@ -85,6 +85,28 @@ describe("ScreenPlate", () => {
     expect(screen.getByTestId("screen-plate-snap-scroll")).toBeInTheDocument();
   });
 
+  it("renders a persistent close control that calls onClose", () => {
+    const onClose = vi.fn();
+    const plates: ScreenPlateEntry[] = [{ plateType: "about", cellIndex: 0 }];
+
+    render(
+      <ScreenPlate
+        fiber={baseFiber}
+        initialPlateType="about"
+        plates={plates}
+        sourceRect={sourceRect}
+        getCellRect={() => null}
+        onClose={onClose}
+        onSelectFiber={() => {}}
+      />,
+    );
+
+    const closeBtn = screen.getByRole("button", { name: /close detail view/i });
+    expect(closeBtn).toBeInTheDocument();
+    fireEvent.click(closeBtn);
+    expect(onClose).toHaveBeenCalledTimes(1);
+  });
+
   it("keeps the centered 3:4 card frame inside fullscreen overlay", () => {
     const plates: ScreenPlateEntry[] = [
       { plateType: "about", cellIndex: 0 },
@@ -106,7 +128,7 @@ describe("ScreenPlate", () => {
     const morphCards = document.body.querySelectorAll(".screen-plate-morph");
     expect(morphCards.length).toBe(2);
     const first = morphCards[0] as HTMLDivElement;
-    expect(first.className).toContain("rounded-3xl");
+    expect(first.className).toContain("rounded-[2rem]");
     const w = Number.parseFloat(first.style.width);
     const h = Number.parseFloat(first.style.height);
     expect(w).toBeGreaterThan(200);

@@ -64,6 +64,12 @@ const pillColors = {
 
 type PillKey = keyof typeof pillColors;
 
+function isProfilePillPlaceholder(value: string): boolean {
+  const t = value.trim();
+  if (!t) return true;
+  return /^n\/a$/i.test(t);
+}
+
 function Pill({
   colorKey,
   children,
@@ -290,6 +296,23 @@ export function ProfileCard({
     previousIndex,
   ]);
 
+  const topPillEntries = profilePills
+    ? ([
+        ["scientificName", profilePills.scientificName, 0] as const,
+        ["plantPart", profilePills.plantPart, 60] as const,
+        ["handFeel", profilePills.handFeel, 120] as const,
+      ] satisfies ReadonlyArray<readonly [PillKey, string, number]>)
+    : [];
+  const bottomPillEntries = profilePills
+    ? ([
+        ["fiberType", profilePills.fiberType, 70] as const,
+        ["era", profilePills.era, 130] as const,
+        ["origin", profilePills.origin, 190] as const,
+      ] satisfies ReadonlyArray<readonly [PillKey, string, number]>)
+    : [];
+  const visibleTopPills = topPillEntries.filter(([, v]) => !isProfilePillPlaceholder(v));
+  const visibleBottomPills = bottomPillEntries.filter(([, v]) => !isProfilePillPlaceholder(v));
+
   return (
     <GlassCard
       as="button"
@@ -396,38 +419,30 @@ export function ProfileCard({
       )}
 
       {/* ── Property pills — top zone ── */}
-      {profilePills && (
+      {visibleTopPills.length > 0 && (
         <div
           className={`absolute top-[6%] right-[8%] z-[2] flex flex-wrap gap-[clamp(3px,1.2cqi,6px)] pointer-events-none pill-zone ${revealed}`}
           style={{ left: "clamp(10px,5cqi,20px)" }}
         >
-          <Pill colorKey="scientificName" delay={0}>
-            {profilePills.scientificName}
-          </Pill>
-          <Pill colorKey="plantPart" delay={60}>
-            {profilePills.plantPart}
-          </Pill>
-          <Pill colorKey="handFeel" delay={120}>
-            {profilePills.handFeel}
-          </Pill>
+          {visibleTopPills.map(([colorKey, text, delay]) => (
+            <Pill key={colorKey} colorKey={colorKey} delay={delay}>
+              {text}
+            </Pill>
+          ))}
         </div>
       )}
 
       {/* ── Property pills — bottom zone (above name) ── */}
-      {profilePills && (
+      {visibleBottomPills.length > 0 && (
         <div
           className={`absolute bottom-[6%] right-[8%] z-[2] flex flex-wrap gap-[clamp(3px,1.2cqi,6px)] pointer-events-none pill-zone ${revealed}`}
           style={{ left: "clamp(10px,5cqi,20px)" }}
         >
-          <Pill colorKey="fiberType" delay={70}>
-            {profilePills.fiberType}
-          </Pill>
-          <Pill colorKey="era" delay={130}>
-            {profilePills.era}
-          </Pill>
-          <Pill colorKey="origin" delay={190}>
-            {profilePills.origin}
-          </Pill>
+          {visibleBottomPills.map(([colorKey, text, delay]) => (
+            <Pill key={colorKey} colorKey={colorKey} delay={delay}>
+              {text}
+            </Pill>
+          ))}
         </div>
       )}
 

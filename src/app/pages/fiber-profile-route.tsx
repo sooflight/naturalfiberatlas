@@ -16,7 +16,7 @@ export function FiberRouteOutlet() {
   }
   if (!decoded || !dataSource.getFiberById(decoded)) {
     return (
-      <div className="fixed inset-0 z-[120] min-h-dvh bg-[#111111] overflow-auto">
+      <div className="atlas-fixed-fill-screen z-[120] bg-[#111111] overflow-auto">
         <NotFoundPage />
       </div>
     );

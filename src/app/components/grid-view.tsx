@@ -16,7 +16,7 @@ import { ProfileCard } from "./profile-card";
 import { useImageAnalysis } from "../hooks/use-image-brightness";
 import { useFiberDetail, prefetchFiberDetails } from "../hooks/use-fiber-detail";
 import { useMagneticTilt } from "../hooks/use-magnetic-tilt";
-import { useColumnCount } from "../hooks/use-column-count";
+import { ATLAS_GRID_5COL_MAX_WIDTH_CLASS, useColumnCount } from "../hooks/use-column-count";
 import { usePrefersReducedMotion } from "../hooks/use-prefers-reduced-motion";
 import { useAmbientGridRow } from "../hooks/use-ambient-grid-row";
 import { useVirtualGrid } from "../hooks/use-virtual-grid";
@@ -107,7 +107,13 @@ function emitDebugProbe(_hypothesisId: string, _location: string, _message: stri
   /* Local agent-ingest removed — re-enable only with VITE_ATLAS_DEBUG_INGEST if needed. */
 }
 
-/** Strong odd-column drop (Pinterest-style); same in browse + detail to avoid vertical layout jump. */
+/**
+ * Strong odd-column drop (Pinterest-style). Applied via `translateY` on each grid cell.
+ * Browse and detail use the **same** per-column values so opening a profile does not reshuffle the rhythm.
+ *
+ * Every cell in a column must share one offset (derived only from `colIndex % cols`): transforms
+ * do not affect layout flow, so mixing offsets within a column makes lower cards overlap upper ones.
+ */
 function gridColumnStaggerPx(colIndex: number, cols: number, reducedMotion: boolean): number {
   if (reducedMotion || cols < 2) return 0;
   if (colIndex % 2 === 0) return 0;
@@ -549,6 +555,11 @@ export function GridView({
     [selectedId, fiberIndex],
   );
 
+  const selectedGridIndex = useMemo(
+    () => (selectedId ? filtered.findIndex((f) => f.id === selectedId) : -1),
+    [filtered, selectedId],
+  );
+
   const hasSeenExternalFilterRef = useRef(false);
   /* useLayoutEffect: clear selection before path/URL useEffects in the same turn (avoids URL sync re-opening detail). */
   useLayoutEffect(() => {
@@ -574,6 +585,7 @@ export function GridView({
   const {
     plateAssignments,
     youtubeEmbedSlotByCell,
+    quoteChunkSlotByCell,
     profileInhaleDelays,
     detailInhaleDelays,
     profileExhaleDelays,
@@ -638,6 +650,7 @@ export function GridView({
   const { screenPlateInfo, screenPlateEntries, getCellRect, openScreenPlate, closeScreenPlate } = useScreenPlateState(
     plateAssignments,
     youtubeEmbedSlotByCell,
+    quoteChunkSlotByCell,
     filtered,
     cellRefs,
     indexRefs,
@@ -653,10 +666,15 @@ export function GridView({
       screenFiber ?? selectedFiberDetail,
     );
     let mobileYoutubeSlot = 0;
+    let mobileQuoteChunkSlot = 0;
     const entries: ScreenPlateEntry[] = avail.map((pt) => {
       if (pt === "youtubeEmbed") {
         const slot = mobileYoutubeSlot++;
         return { plateType: pt, cellIndex: 0, youtubeEmbedSlot: slot };
+      }
+      if (pt === "quote") {
+        const slot = mobileQuoteChunkSlot++;
+        return { plateType: pt, cellIndex: 0, quoteChunkSlot: slot };
       }
       return { plateType: pt, cellIndex: 0 };
     });
@@ -1355,7 +1373,7 @@ export function GridView({
         }}
       >
         <div
-          className="w-full min-w-0 shrink-0"
+          className={`min-w-0 shrink-0 w-full ${cols === 5 ? `mx-auto ${ATLAS_GRID_5COL_MAX_WIDTH_CLASS}` : ""}`}
           style={{ marginBottom: `calc(3 * ${columnGap} + ${gridVisualBottomClearancePx}px)` }}
         >
         <div
@@ -1475,6 +1493,7 @@ export function GridView({
                                     plateType: pt,
                                     sourceRect: el.getBoundingClientRect(),
                                     cellIndex: index,
+                                    quoteChunkSlot: quoteChunkSlotByCell.get(index),
                                   });
                                 }
                               }}
@@ -1482,6 +1501,7 @@ export function GridView({
                               galleryStartIndex={gallerySlotStartIndex.get(index) ?? 0}
                               galleryIndex={index}
                               youtubeEmbedSlot={youtubeEmbedSlotByCell.get(index) ?? 0}
+                              quoteChunkSlot={quoteChunkSlotByCell.get(index) ?? 0}
                             />
                           </Suspense>
                         </motion.div>
@@ -1555,6 +1575,7 @@ export function GridView({
                                       plateType: pt,
                                       sourceRect: el.getBoundingClientRect(),
                                       cellIndex: index,
+                                      quoteChunkSlot: quoteChunkSlotByCell.get(index),
                                     });
                                   }
                                 }}
@@ -1562,6 +1583,7 @@ export function GridView({
                                 galleryStartIndex={gallerySlotStartIndex.get(index) ?? 0}
                                 galleryIndex={index}
                                 youtubeEmbedSlot={youtubeEmbedSlotByCell.get(index) ?? 0}
+                                quoteChunkSlot={quoteChunkSlotByCell.get(index) ?? 0}
                               />
                             </Suspense>
                           </motion.div>
@@ -1662,6 +1684,7 @@ export function GridView({
               fiber={selectedFiberDetail}
               initialPlateType={screenPlateInfo.plateType}
               initialCellIndex={screenPlateInfo.cellIndex}
+              initialQuoteChunkSlot={screenPlateInfo.quoteChunkSlot}
               plates={plates}
               sourceRect={screenPlateInfo.sourceRect}
               getCellRect={plateGetCellRect}

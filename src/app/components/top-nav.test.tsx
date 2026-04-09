@@ -111,26 +111,34 @@ describe("TopNav search sync", () => {
     });
   });
 
-  it("resets to All when the wordmark is clicked", () => {
+  it("navigates home with a full page load when the wordmark is clicked", () => {
+    const assignMock = vi.fn();
+    vi.stubGlobal("location", { assign: assignMock } as unknown as Location);
+
     const onNavigate = vi.fn();
     const onSearchChange = vi.fn();
 
-    render(
-      <TopNav
-        activeNodeId="fiber"
-        onNavigate={onNavigate}
-        externalSearch="cotton"
-        onSearchChange={onSearchChange}
-        visibleProfileCount={42}
-      >
-        <div>content</div>
-      </TopNav>,
-    );
+    try {
+      render(
+        <TopNav
+          activeNodeId="fiber"
+          onNavigate={onNavigate}
+          externalSearch="cotton"
+          onSearchChange={onSearchChange}
+          visibleProfileCount={42}
+        >
+          <div>content</div>
+        </TopNav>,
+      );
 
-    fireEvent.click(screen.getByRole("button", { name: "Natural Fiber Atlas" }));
+      fireEvent.click(screen.getByRole("button", { name: "Natural Fiber Atlas" }));
 
-    expect(onNavigate).toHaveBeenCalledWith("home");
-    expect(onSearchChange).toHaveBeenCalledWith("");
+      expect(assignMock).toHaveBeenCalledWith("/");
+      expect(onNavigate).not.toHaveBeenCalled();
+      expect(onSearchChange).not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
   });
 
   it("renders visible profile count next to the word mark", () => {
@@ -188,9 +196,40 @@ describe("TopNav search sync", () => {
       </TopNav>,
     );
 
-    const shell = container.querySelector(".relative.h-dvh.min-h-0.w-full.overflow-hidden");
+    const shell = container.querySelector(".relative.h-full.min-h-atlas-vvh.min-h-0.w-full.overflow-hidden");
     expect(shell).not.toBeNull();
-    expect(shell).toHaveClass("h-dvh");
+    expect(shell).toHaveClass("h-full");
+    expect(shell).toHaveClass("min-h-atlas-vvh");
     expect(shell).toHaveClass("min-h-0");
+  });
+
+  it("pins shell height to atlas visual viewport fallback", () => {
+    const { container } = render(
+      <TopNav activeNodeId={null} onNavigate={() => {}}>
+        <div>content</div>
+      </TopNav>,
+    );
+
+    const shell = container.querySelector('[data-atlas-viewport-shell="topnav"]') as HTMLElement | null;
+    expect(shell).not.toBeNull();
+    expect(shell?.style.height).toBe("var(--atlas-vvh, 100svh)");
+    expect(shell?.style.maxHeight).toBe("var(--atlas-vvh, 100svh)");
+  });
+
+  it("accounts for dynamic mobile browser chrome in bottom content padding", () => {
+    const { container } = render(
+      <TopNav activeNodeId={null} onNavigate={() => {}}>
+        <div>content</div>
+      </TopNav>,
+    );
+
+    const scrollFill = container.querySelector(
+      ".flex.min-h-\\[min-content\\].flex-col",
+    ) as HTMLElement | null;
+    expect(scrollFill).not.toBeNull();
+    const paddingBottom = scrollFill?.style.paddingBottom ?? "";
+    expect(paddingBottom).toContain("safe-area-inset-bottom");
+    expect(paddingBottom).toContain("100lvh");
+    expect(paddingBottom).toContain("100svh");
   });
 });

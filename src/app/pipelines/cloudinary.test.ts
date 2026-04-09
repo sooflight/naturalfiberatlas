@@ -29,13 +29,21 @@ describe("CloudinaryPipeline", () => {
     );
   });
 
-  it("does not double-wrap fetch URLs", () => {
+  it("unwraps stored image/fetch URLs to remote https by default (fetch-restricted Cloudinary accounts)", () => {
     vi.stubEnv("VITE_CLOUDINARY_FETCH_REMOTE", "true");
-    const once = pipeline.transform("https://example.com/x.jpg", "grid")!;
-    expect(pipeline.transform(once, "grid")).toBe(once);
+    const wrapped = pipeline.transform("https://example.com/x.jpg", "grid")!;
+    expect(wrapped).toContain("/image/fetch/");
+    expect(pipeline.transform(wrapped, "grid")).toBe("https://example.com/x.jpg");
   });
 
-  it("applies grid transforms to stored canonical fetch URLs (no inline transforms)", () => {
+  it("decodes canonical fetch URLs to remote https when prefer fetch delivery is off", () => {
+    const src =
+      "https://res.cloudinary.com/demo/image/fetch/https%3A%2F%2Fexample.com%2Fx.jpg";
+    expect(pipeline.transform(src, "grid")).toBe("https://example.com/x.jpg");
+  });
+
+  it("applies grid transforms to stored canonical fetch URLs when prefer fetch delivery is on", () => {
+    vi.stubEnv("VITE_CLOUDINARY_PREFER_FETCH_DELIVERY", "true");
     const src =
       "https://res.cloudinary.com/demo/image/fetch/https%3A%2F%2Fexample.com%2Fx.jpg";
     expect(pipeline.transform(src, "grid")).toBe(
@@ -43,7 +51,8 @@ describe("CloudinaryPipeline", () => {
     );
   });
 
-  it("replaces stale inline transforms on fetch URLs when preset changes", () => {
+  it("replaces stale inline transforms on fetch URLs when prefer fetch delivery is on", () => {
+    vi.stubEnv("VITE_CLOUDINARY_PREFER_FETCH_DELIVERY", "true");
     const withOld =
       "https://res.cloudinary.com/demo/image/fetch/w_10,h_10,c_fill,f_auto,q_auto/https%3A%2F%2Fexample.com%2Fx.jpg";
     expect(pipeline.transform(withOld, "lightbox")).toBe(
@@ -56,6 +65,13 @@ describe("CloudinaryPipeline", () => {
     const out = pipeline.transform(src, "grid");
     expect(out).toBe(
       "https://res.cloudinary.com/demo/image/upload/w_320,h_427,c_fill,f_auto,q_auto/v123/atlas/fiber.jpg",
+    );
+  });
+
+  it("applies navThumb as 4:3 for top-nav portal thumbnails", () => {
+    const src = "https://res.cloudinary.com/demo/image/upload/v123/atlas/fiber.jpg";
+    expect(pipeline.transform(src, "navThumb")).toBe(
+      "https://res.cloudinary.com/demo/image/upload/w_144,h_108,c_fill,f_auto,q_auto/v123/atlas/fiber.jpg",
     );
   });
 

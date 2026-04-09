@@ -43,6 +43,8 @@ interface DetailCardProps {
   contentDelay?: number;
   /** When `plateType` is `youtubeEmbed`, which video URL row to show (from merged fiber data). */
   youtubeEmbedSlot?: number;
+  /** When `plateType` is `quote`, which quote chunk this card shows (up to 3 quotes per chunk). */
+  quoteChunkSlot?: number;
 }
 
 export function DetailCard({
@@ -56,6 +58,7 @@ export function DetailCard({
   galleryIndex = 0,
   contentDelay = 0,
   youtubeEmbedSlot = 0,
+  quoteChunkSlot = 0,
 }: DetailCardProps) {
   const isGallery = plateType === "contactSheet";
   const canScreen = !NON_SCREEN_PLATES.includes(plateType);
@@ -114,7 +117,7 @@ export function DetailCard({
       case "seeAlso":
         return <SeeAlsoPlate fiber={fiber} onSelect={onSelectFiber} />;
       case "quote":
-        return <QuotePlate fiber={fiber} />;
+        return <QuotePlate fiber={fiber} quoteChunkIndex={quoteChunkSlot} />;
       case "youtubeEmbed":
         return <YouTubeEmbedPlate fiber={fiber} slotIndex={youtubeEmbedSlot} />;
       default:

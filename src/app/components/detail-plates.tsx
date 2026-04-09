@@ -4,6 +4,7 @@ import { useImagePipeline } from "../context/image-pipeline";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type FiberProfile, type GalleryImageEntry, type QuoteEntry } from "../data/atlas-data";
 import { dataSource } from "../data/data-provider";
+import { QUOTE_MAX_QUOTES_PER_CARD } from "../utils/plate-layout";
 import { resolveRegionDots, InteractiveWorldMap, SustainabilityRadar, getSustainabilityMetrics } from "./map-helpers";
 import {
   Droplets,
@@ -202,16 +203,10 @@ export function PropertiesPlate({ fiber }: { fiber: FiberProfile }) {
   );
 }
 
-type FiberWithOptionalInsights = FiberProfile & {
-  insight1?: { title?: string; content?: string };
-  insight2?: { title?: string; content?: string };
-  insight3?: { title?: string; content?: string };
-};
-
 /* ═══ 1b ─ INSIGHT (Editorial — warm accent) ═══ */
 export function InsightPlate({ fiber, half }: { fiber: FiberProfile; half: 1 | 2 | 3 }) {
   const insightKey = `insight${half}` as "insight1" | "insight2" | "insight3";
-  const explicitInsight = (fiber as FiberWithOptionalInsights)[insightKey];
+  const explicitInsight = fiber[insightKey];
 
   if (
     explicitInsight &&
@@ -371,7 +366,7 @@ function QuotePlatePullFromAbout({ fiber, pullQuote }: { fiber: FiberProfile; pu
   );
 }
 
-function QuotePlateCurated({ visibleQuotes }: { fiber: FiberProfile; visibleQuotes: QuoteEntry[] }) {
+function QuotePlateCurated({ visibleQuotes }: { visibleQuotes: QuoteEntry[] }) {
   return (
     <div className={`h-full flex flex-col min-h-0 ${pad}`}>
       <span className={`text-[${warmA}]/20 shrink-0`} style={{ fontSize: "clamp(18px, 8cqi, 36px)", fontFamily: "'PICA', 'Pica', serif", lineHeight: 0.7 }}>&ldquo;</span>
@@ -411,7 +406,14 @@ function QuotePlateCurated({ visibleQuotes }: { fiber: FiberProfile; visibleQuot
   );
 }
 
-export function QuotePlate({ fiber }: { fiber: FiberProfile }) {
+export function QuotePlate({
+  fiber,
+  quoteChunkIndex = 0,
+}: {
+  fiber: FiberProfile;
+  /** Which quote card when curated quotes are split across multiple detail cards (max `QUOTE_MAX_QUOTES_PER_CARD` per card). */
+  quoteChunkIndex?: number;
+}) {
   const quotes = dataSource.getQuoteData()[fiber.id] ?? [];
 
   if (quotes.length === 0) {
@@ -420,8 +422,10 @@ export function QuotePlate({ fiber }: { fiber: FiberProfile }) {
     return <QuotePlatePullFromAbout fiber={fiber} pullQuote={pullQuote} />;
   }
 
-  const visibleQuotes = quotes.slice(0, 2);
-  return <QuotePlateCurated fiber={fiber} visibleQuotes={visibleQuotes} />;
+  const start = quoteChunkIndex * QUOTE_MAX_QUOTES_PER_CARD;
+  const visibleQuotes = quotes.slice(start, start + QUOTE_MAX_QUOTES_PER_CARD);
+  if (visibleQuotes.length === 0) return null;
+  return <QuotePlateCurated visibleQuotes={visibleQuotes} />;
 }
 
 /* ═══ 3 ─ REGIONS (Discovery — neutral accent) ═══ */
@@ -799,26 +803,31 @@ export function ProcessPlate({ fiber }: { fiber: FiberProfile }) {
       <SectionLabel icon={Layers}>Process</SectionLabel>
       <div className={`w-[${sp.xl}] h-px bg-[${warmA}]/50 mb-[${sp.sm}] shrink-0`} />
       <DetailScrollRegion wrapperClassName="flex-1 min-h-0">
-        <div className={`min-h-full flex flex-col justify-center py-[${sp.xl}]`}>
+        <div className="min-h-full flex flex-col justify-center py-[clamp(6px,2.5cqi,22px)] pb-[clamp(10px,3.5cqi,26px)]">
           <div className="flex flex-col">
             {steps.map((step, i) => (
               <div
                 key={`${step.name}-${i}`}
-                className={`flex gap-[${sp.md}] items-stretch`}
+                className="flex gap-[clamp(8px,3cqi,18px)] items-stretch"
               >
-                <div className="flex flex-col items-center flex-shrink-0 self-stretch">
-                  <div className={`w-[${sp.xl}] h-[${sp.xl}] rounded-full bg-[${neutA}]/10 border border-[${neutA}]/25 flex items-center justify-center shrink-0`}>
-                    <span className={`text-[${neutA}]/70`} style={{ fontSize: "clamp(10px, 3cqi, 14px)", fontWeight: 700 }}>{i + 1}</span>
+                <div className="flex flex-col items-center flex-shrink-0 self-stretch w-[clamp(22px,6.5cqi,32px)]">
+                  <div
+                    className={`rounded-full bg-[${neutA}]/10 border border-[${neutA}]/25 flex items-center justify-center shrink-0`}
+                    style={{ width: "clamp(22px, 6.5cqi, 32px)", height: "clamp(22px, 6.5cqi, 32px)" }}
+                  >
+                    <span className={`text-[${neutA}]/70`} style={{ fontSize: "clamp(9px, 2.8cqi, 13px)", fontWeight: 700 }}>{i + 1}</span>
                   </div>
-                  {i < steps.length - 1 && <div className={`flex-1 w-px min-h-[6px] bg-white/[${ink.ghost}]`} />}
+                  {i < steps.length - 1 && <div className={`flex-1 w-px min-h-[8px] bg-white/[${ink.ghost}]`} />}
                 </div>
-                <div className={`min-w-0 flex flex-col gap-[clamp(4px,1cqi,8px)] pb-[${sp.md}]`}>
-                  <span className={`${T.primary} block [overflow-wrap:anywhere]`} style={{ fontSize: "clamp(12px, 3.8cqi, 16px)", fontWeight: 600 }}>{step.name}</span>
+                <div className={`min-w-0 flex flex-col gap-[clamp(3px,0.9cqi,7px)] ${i < steps.length - 1 ? "pb-[clamp(12px,5cqi,18px)]" : ""}`}>
+                  <span className={`${T.primary} block [overflow-wrap:anywhere]`} style={{ fontSize: "clamp(11px, 3.5cqi, 16px)", fontWeight: 600, lineHeight: 1.32 }}>
+                    {step.name}
+                  </span>
                   <span
-                    className={`${T.tertiary} block [overflow-wrap:anywhere]`}
+                    className={`${T.tertiary} block [overflow-wrap:anywhere] [text-wrap:pretty]`}
                     style={{
-                      fontSize: "clamp(11px, 3.2cqi, 14px)",
-                      lineHeight: 1.5,
+                      fontSize: "clamp(10px, 3cqi, 14px)",
+                      lineHeight: 1.58,
                     }}
                   >
                     {step.detail}

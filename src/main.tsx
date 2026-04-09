@@ -4,8 +4,11 @@ import App from "./app/App";
 import "./styles/index.css";
 import { isAdminEnabled } from "./app/config/admin-access";
 import { syncAtlasStorageFromFrontendSource } from "./app/utils/admin/dev-storage-sync";
+import { installAtlasVisualViewportHeightSync } from "./app/utils/atlas-visual-viewport-height";
 
 async function bootstrap() {
+  installAtlasVisualViewportHeightSync();
+
   if (isAdminEnabled()) {
     await syncAtlasStorageFromFrontendSource();
   }

@@ -2413,11 +2413,6 @@ const galleryMap: Record<string, GalleryImageEntry[]> = {
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628741/atlas/s0ugxnzkm9qd3p1tmfcj.jpg", "Knitting — reference"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628755/atlas/fchfpm7iojih7vvsqqcs.jpg", "Knitting — reference"),
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1775628788/atlas/cz9w1i3k437lfwgqqncf.jpg", "Knitting — reference"),
-    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619379/atlas/jtv4qymbqpncu4dfnjfw.jpg", "Knitting — hero"),
-    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fhelenkaminski.com%2Fcdn%2Fshop%2Ffiles%2Fstitches-1080x1350_0001_helen_kaminski_SS25_Kirana_crochet_stitch_612x.jpg%3Fv%3D1765934435", "Kirana stitch detail"),
-    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fhelenkaminski.com%2Fcdn%2Fshop%2Ffiles%2Fstitches-1080x1350_0002_helen_kaminski_SS25_Mala_crochet_stitch_612x.jpg%3Fv%3D1765934435", "Mala stitch detail"),
-    img("https://res.cloudinary.com/dawxvzlte/image/fetch/https%3A%2F%2Fmedia.jamesdunloptextiles.com%2Fimage-transform%2F8cu89TjtOYIFJGZftnClsWL5NRc%3D%2Ffit%3Dcover%2Cwidth%3D563%2Cheight%3D423%2Cformat%3Dauto%2Fhttps%3A%2F%2Fmedia.jamesdunloptextiles.com%2Fmedia%2Fnews%2F2022_05%2F26ea8bc023cf110f9f112c336a2e8315--knit-crochet-spinning_MqRLCCU.jpg", "Knit, crochet, and spinning studio"),
-    img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619350/atlas/xbyvbhkqvsoodplxb8de.jpg", "Cable knit texture"),
   ],
   "block-print": [
     img("https://res.cloudinary.com/dawxvzlte/image/upload/v1771619651/atlas/dxneiijpebu9cqqvnxfj.jpg", "Block printing"),

@@ -30,7 +30,7 @@ export function AdminRedirectPage({ baseUrl }: AdminRedirectPageProps) {
   }, [baseUrl, pathname, search]);
 
   return (
-    <div className="flex min-h-dvh items-center justify-center bg-[#060606] text-white">
+    <div className="flex min-h-atlas-vvh items-center justify-center bg-[#060606] text-white">
       <div className="flex flex-col items-center gap-4">
         <div className="w-8 h-8 border-2 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
         <p className="text-sm text-neutral-400">Redirecting to admin...</p>

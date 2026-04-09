@@ -48,7 +48,9 @@
 
 @media (max-width: 767px) {
   :root {
-    --atlas-main-scroll-top-gutter: 15rem;
+    /* Tighter than 15rem: scroll spacer matched closer to wordmark + search + L1 strip;
+       L2/L3 drawers still overlay the grid per TopNav scroll architecture. */
+    --atlas-main-scroll-top-gutter: 13.75rem;
   }
 }
 
@@ -68,16 +70,48 @@
     @apply border-border outline-ring/50 border-0;
   }
 
+  /* Percentage height chain + WebKit fill-available: on iOS Safari, `100dvh` alone can
+     leave a strip of body background above the bottom browser chrome; fill-available
+     tracks the visible web view more reliably.
+     `--atlas-vvh` (px) is set from `visualViewport.height` in main.tsx so the shell
+     matches the *visible* webview when browser UI overlaps content (e.g. Android Chrome). */
+  html {
+    font-size: var(--font-size);
+    height: 100%;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    min-height: var(--atlas-vvh);
+  }
+
+  html {
+    height: var(--atlas-vvh);
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: var(--font-ui);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     -webkit-tap-highlight-color: transparent;
+    height: 100%;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    min-height: var(--atlas-vvh);
   }
 
-  html {
-    font-size: var(--font-size);
+  body {
+    height: var(--atlas-vvh);
+  }
+
+  #root {
+    height: 100%;
+    min-height: 100dvh;
+    min-height: -webkit-fill-available;
+    min-height: var(--atlas-vvh);
+  }
+
+  #root {
+    height: var(--atlas-vvh);
   }
 
   h1 {
@@ -131,6 +165,24 @@
   }
 }
 
+@layer utilities {
+  .min-h-atlas-vvh {
+    min-height: var(--atlas-vvh, 100svh);
+  }
+
+  /*
+   * `fixed inset-0` uses the layout viewport; on mobile browsers the toolbar can sit on top of
+   * that region. Pin height to `--atlas-vvh` (visual viewport) so overlays match what users see.
+   */
+  .atlas-fixed-fill-screen {
+    position: fixed;
+    inset-inline: 0;
+    top: 0;
+    width: 100%;
+    height: var(--atlas-vvh, 100svh);
+  }
+}
+
 blockquote,
 q,
 .detail-prose.italic {
@@ -171,6 +223,19 @@ q,
     opacity: 0;
     transform: skewX(-15deg) translateX(350%);
   }
+}
+
+/* Perimeter feather — the diagonal gradient is smooth along 105deg, but the shine
+   layer is still a rectangle; this mask soft-fades all four edges to transparency. */
+.glass-specular-sweep {
+  mask-image:
+    linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%),
+    linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%);
+  mask-composite: intersect;
+  -webkit-mask-image:
+    linear-gradient(to right, transparent 0%, black 18%, black 82%, transparent 100%),
+    linear-gradient(to bottom, transparent 0%, black 14%, black 86%, transparent 100%);
+  -webkit-mask-composite: source-in;
 }
 
 .group\/glass:hover .glass-specular-sweep {

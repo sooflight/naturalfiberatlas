@@ -115,7 +115,7 @@ export function AboutPage() {
 
   return (
     <div
-      className="min-h-dvh bg-[#111111] text-white relative overflow-hidden"
+      className="min-h-atlas-vvh bg-[#111111] text-white relative overflow-hidden"
       style={{
         transition: "margin-right 0.4s cubic-bezier(0.25, 1, 0.5, 1)",
         marginRight: adminMode ? "min(400px, 90vw)" : 0,

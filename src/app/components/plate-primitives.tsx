@@ -410,7 +410,7 @@ export function StackedDataRowsExpanded({
   accentHex?: string;
 }) {
   return (
-    <div className={`flex-1 flex flex-col justify-center gap-[${sp.lg}]`}>
+    <div className={`flex flex-col gap-[${sp.lg}]`}>
       {rows.map((r, i) => (
         <div key={r.label} className={`flex flex-col gap-[${sp.xs}]`}>
           {i > 0 && <div className={`w-full h-px bg-white/[0.06] mb-[${sp.xs}]`} />}

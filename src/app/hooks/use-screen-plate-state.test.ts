@@ -38,7 +38,7 @@ describe("useScreenPlateState", () => {
     };
 
     const { result } = renderHook(() =>
-      useScreenPlateState(plateAssignments, new Map(), filtered, cellRefs, indexRefs),
+      useScreenPlateState(plateAssignments, new Map(), new Map(), filtered, cellRefs, indexRefs),
     );
 
     const rect = result.current.getCellRect(5);
@@ -60,7 +60,7 @@ describe("useScreenPlateState", () => {
     };
 
     const { result } = renderHook(() =>
-      useScreenPlateState(plateAssignments, new Map(), filtered, cellRefs, indexRefs),
+      useScreenPlateState(plateAssignments, new Map(), new Map(), filtered, cellRefs, indexRefs),
     );
 
     expect(result.current.screenPlateEntries.map((entry) => entry.plateType)).toEqual([

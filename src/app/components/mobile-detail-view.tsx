@@ -62,6 +62,10 @@ const CASCADE_DURATION = 0.55;  // individual plate reveal duration
 const CASCADE_EASE = [0.25, 1, 0.5, 1] as unknown as import("framer-motion").Easing;
 const CASCADE_DISTANCE = 28;    // px vertical travel
 
+/** Scroll padding after last section: safe area + approximate dynamic browser chrome (lvh−svh). */
+const MOBILE_DETAIL_END_SCROLL_GUTTER =
+  "calc(max(3rem, env(safe-area-inset-bottom, 0px)) + max(0px, 100lvh - 100svh))";
+
 /* ═══════════════════════════════════════════════════════════════════
    useCascadeReveal — Wave-aware stagger for IntersectionObserver.
    Plates entering the viewport within WAVE_WINDOW ms of each other
@@ -167,7 +171,11 @@ interface MobileDetailViewProps {
   onSelectFiber: (id: string) => void;
   onOpenLightbox: (imageIndex?: number, sourceRect?: DOMRect) => void;
   /** Callback to open the fullscreen ScreenPlate view (same as desktop) */
-  onOpenScreenPlate?: (plateType: PlateType, sourceRect: DOMRect) => void;
+  onOpenScreenPlate?: (
+    plateType: PlateType,
+    sourceRect: DOMRect,
+    meta?: { quoteChunkSlot?: number; youtubeEmbedSlot?: number },
+  ) => void;
 }
 
 export function MobileDetailView({
@@ -277,7 +285,7 @@ export function MobileDetailView({
   }, []);
 
   /* ── Plate renderer ── */
-  const renderPlate = (plateType: PlateType, youtubeEmbedSlot = 0) => {
+  const renderPlate = (plateType: PlateType, youtubeEmbedSlot = 0, quoteChunkSlot = 0) => {
     switch (plateType) {
       case "about":
         return <AboutPlate fiber={fiber} />;
@@ -297,7 +305,7 @@ export function MobileDetailView({
       case "silkOrganza":
         return <SilkVariantPlate plateType={plateType} />;
       case "quote":
-        return <QuotePlate fiber={fiber} />;
+        return <QuotePlate fiber={fiber} quoteChunkIndex={quoteChunkSlot} />;
       case "youtubeEmbed":
         return <YouTubeEmbedPlate fiber={fiber} slotIndex={youtubeEmbedSlot} />;
       case "trade":
@@ -322,12 +330,19 @@ export function MobileDetailView({
   // Total sections = hero + plates + gallery (if present)
   const totalSections = 1 + plates.length + (hasGallery ? 1 : 0);
   const youtubePlateCount = plates.filter((p) => p === "youtubeEmbed").length;
+  const quotePlateCount = plates.filter((p) => p === "quote").length;
   const dotLabels = [
     "Hero",
     ...plates.map((p, i) => {
-      if (p !== "youtubeEmbed") return plateLabelMap[p] ?? p;
-      const slot = plates.slice(0, i).filter((x) => x === "youtubeEmbed").length;
-      return youtubePlateCount > 1 ? `Video ${slot + 1}` : plateLabelMap.youtubeEmbed ?? p;
+      if (p === "youtubeEmbed") {
+        const slot = plates.slice(0, i).filter((x) => x === "youtubeEmbed").length;
+        return youtubePlateCount > 1 ? `Video ${slot + 1}` : plateLabelMap.youtubeEmbed ?? p;
+      }
+      if (p === "quote") {
+        const slot = plates.slice(0, i).filter((x) => x === "quote").length;
+        return quotePlateCount > 1 ? `Quotes ${slot + 1}` : plateLabelMap.quote ?? p;
+      }
+      return plateLabelMap[p] ?? p;
     }),
     ...(hasGallery ? ["Gallery"] : []),
   ];
@@ -336,7 +351,7 @@ export function MobileDetailView({
     <AnimatePresence>
       {!isDismissing && (
         <motion.div
-          className="fixed inset-0 z-[60]"
+          className="atlas-fixed-fill-screen z-[60]"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
@@ -374,7 +389,7 @@ export function MobileDetailView({
             <section
               className="mobile-detail-snap relative"
               style={{
-                minHeight: "85vh",
+                minHeight: "85dvh",
                 scrollSnapAlign: "start",
               }}
               ref={(el) => { if (el) sectionRefs.current.set(0, el); }}
@@ -476,11 +491,16 @@ export function MobileDetailView({
                 plateType === "youtubeEmbed"
                   ? plates.slice(0, i).filter((p) => p === "youtubeEmbed").length
                   : 0;
+              const quoteChunkSlot =
+                plateType === "quote" ? plates.slice(0, i).filter((p) => p === "quote").length : 0;
 
               const openScreenPlateFromRect = (e: React.MouseEvent<HTMLElement> | { currentTarget: HTMLElement }) => {
                 if (!canScreen) return;
                 const target = e.currentTarget;
-                onOpenScreenPlate(plateType, target.getBoundingClientRect());
+                onOpenScreenPlate(plateType, target.getBoundingClientRect(), {
+                  ...(plateType === "youtubeEmbed" ? { youtubeEmbedSlot } : {}),
+                  ...(plateType === "quote" ? { quoteChunkSlot } : {}),
+                });
               };
 
               return (
@@ -488,7 +508,7 @@ export function MobileDetailView({
                   key={`${plateType}-${i}`}
                   className="mobile-detail-snap px-3"
                   style={{
-                    minHeight: plateType === "seeAlso" ? "40vh" : "70vh",
+                    minHeight: plateType === "seeAlso" ? "40dvh" : "70dvh",
                     scrollSnapAlign: "start",
                     paddingTop: "clamp(12px, 3vw, 20px)",
                     paddingBottom: "clamp(12px, 3vw, 20px)",
@@ -514,7 +534,7 @@ export function MobileDetailView({
                       backdropFilter: "blur(12px) saturate(0.9)",
                       WebkitBackdropFilter: "blur(12px) saturate(0.9)",
                       border: "1px solid rgba(255, 255, 255, 0.06)",
-                      minHeight: plateType === "seeAlso" ? "auto" : "min(60vh, 400px)",
+                      minHeight: plateType === "seeAlso" ? "auto" : "min(60dvh, 400px)",
                       cursor: canScreen ? "pointer" : undefined,
                     }}
                     onClick={canScreen ? (e) => {
@@ -543,7 +563,7 @@ export function MobileDetailView({
 
                     {/* Plate content */}
                     <div className="relative z-10">
-                      {renderPlate(plateType, youtubeEmbedSlot)}
+                      {renderPlate(plateType, youtubeEmbedSlot, quoteChunkSlot)}
                     </div>
                   </motion.div>
                 </section>
@@ -558,7 +578,7 @@ export function MobileDetailView({
                 <section
                   className="mobile-detail-snap px-3"
                   style={{
-                    minHeight: "50vh",
+                    minHeight: "50dvh",
                     scrollSnapAlign: "start",
                     paddingTop: "clamp(12px, 3vw, 20px)",
                     paddingBottom: "clamp(12px, 3vw, 20px)",
@@ -588,8 +608,8 @@ export function MobileDetailView({
               );
             })()}
 
-            {/* Bottom safe area spacer */}
-            <div style={{ height: "max(3rem, env(safe-area-inset-bottom, 0px))" }} />
+            {/* Bottom spacer: safe area + dynamic browser chrome (lvh−svh) when `dvh`/`--atlas-vvh` lag */}
+            <div style={{ height: MOBILE_DETAIL_END_SCROLL_GUTTER }} />
           </motion.div>
 
           {/* ═══ Plate Indicator Dots ═══ */}

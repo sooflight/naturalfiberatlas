@@ -18,6 +18,9 @@ function resolveSheetColumns(imageCount: number): number {
   return 3;
 }
 
+const TILE_BUTTON_CLASS =
+  "block w-full overflow-hidden rounded-md border border-white/[0.14] bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60";
+
 export function ProfileImageExperience({
   fiberName,
   images,
@@ -54,7 +57,7 @@ export function ProfileImageExperience({
               <button
                 type="button"
                 aria-label={`Show image ${displayIndex} for ${fiberName}${labelSuffix}`}
-                className="block w-full overflow-hidden rounded-md border border-white/[0.14] bg-white/[0.03] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60"
+                className={TILE_BUTTON_CLASS}
                 onClick={(event) => {
                   onFilmstripActivate?.(index, event.currentTarget);
                 }}

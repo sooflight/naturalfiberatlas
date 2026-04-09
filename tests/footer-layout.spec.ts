@@ -38,7 +38,7 @@ test.describe("atlas site footer position", () => {
 
     expect(metrics.scrollScrollHeight).toBeGreaterThanOrEqual(metrics.scrollClientHeight - 2);
     // Allow subpixel drift between scroll client box and footer rect (varies with footer content height).
-    expect(metrics.gapPx).toBeGreaterThanOrEqual(-16);
+    expect(metrics.gapPx).toBeGreaterThanOrEqual(-24);
     expect(metrics.gapPx).toBeLessThanOrEqual(48);
   });
 

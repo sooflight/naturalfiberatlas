@@ -95,4 +95,28 @@ describe("Lightbox image sizing", () => {
     expect(heroImage).toHaveStyle({ objectFit: "contain" });
   });
 
+  it("sets width/height layout hints from gallery metadata before load", async () => {
+    render(
+      <Lightbox
+        images={[
+          {
+            url: "https://example.com/sized.jpg",
+            title: "Sized",
+            width: 800,
+            height: 1200,
+          },
+        ]}
+        fiberName="Hemp"
+        onClose={() => {}}
+      />,
+    );
+
+    const heroImage = await screen.findByAltText("Sized");
+    expect(heroImage).toHaveAttribute("width", "2");
+    expect(heroImage).toHaveAttribute("height", "3");
+    fireEvent.load(heroImage);
+    expect(heroImage).not.toHaveAttribute("width");
+    expect(heroImage).not.toHaveAttribute("height");
+  });
+
 });

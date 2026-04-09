@@ -37,6 +37,7 @@ import {
   ProfileHeroCard,
   AboutCard,
   InsightCard,
+  isActiveFiberInsightOverride,
   TradeCard,
   ProfilePillsCard,
   SeeAlsoCard,
@@ -656,21 +657,21 @@ function UnifiedEditorContent({
             <AboutCard fiber={draft} onUpdate={pushUpdate} />
           </div>
 
-          {/* ── Insights (auto-generated, read-only) ── */}
-          {sentences.length >= 2 && (
-            <>
-              <div data-editor-section="Insights">
-                <InsightCard fiber={draft} half={1} />
-              </div>
-              <div data-editor-section="Insights">
-                <InsightCard fiber={draft} half={2} />
-              </div>
-              {sentences.length >= 3 && (
-                <div data-editor-section="Insights">
-                  <InsightCard fiber={draft} half={3} />
-                </div>
-              )}
-            </>
+          {/* ── Insights (About-derived by default; editable overrides insight1–3) ── */}
+          {(sentences.length >= 2 || isActiveFiberInsightOverride(draft.insight1)) && (
+            <div data-editor-section="Insights">
+              <InsightCard fiber={draft} half={1} onUpdate={pushUpdate} />
+            </div>
+          )}
+          {(sentences.length >= 2 || isActiveFiberInsightOverride(draft.insight2)) && (
+            <div data-editor-section="Insights">
+              <InsightCard fiber={draft} half={2} onUpdate={pushUpdate} />
+            </div>
+          )}
+          {(sentences.length >= 3 || isActiveFiberInsightOverride(draft.insight3)) && (
+            <div data-editor-section="Insights">
+              <InsightCard fiber={draft} half={3} onUpdate={pushUpdate} />
+            </div>
           )}
 
           {/* ── Profile Pills ── */}

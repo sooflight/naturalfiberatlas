@@ -4,6 +4,7 @@
  * without shrinking the grid’s <main> (which would paint cards under this panel).
  */
 
+import { ATLAS_GRID_5COL_MAX_WIDTH_CLASS } from "../hooks/use-column-count";
 import { NfaMark } from "./nfa-mark";
 import {
   ATLAS_GRID_SUBHEAD_MUTED_STYLE,
@@ -41,7 +42,7 @@ export function AtlasSiteFooter({ cols, columnGap, className }: AtlasSiteFooterP
       className={className ? `w-full shrink-0 ${className}` : "w-full shrink-0"}
     >
       <div
-        className="mx-auto w-full"
+        className={`mx-auto w-full ${cols === 5 ? ATLAS_GRID_5COL_MAX_WIDTH_CLASS : ""}`}
         style={{
           paddingBottom: "max(0.75rem, env(safe-area-inset-bottom, 0px))",
         }}

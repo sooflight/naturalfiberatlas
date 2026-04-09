@@ -16,6 +16,8 @@ export interface ScreenPlateInfo {
   cellIndex: number;
   /** When true, opened from MobileDetailView — use mobile plate list and sourceRect for exit morph */
   fromMobileDetail?: boolean;
+  /** Disambiguates multiple Quote slides when `cellIndex` alone is not unique (e.g. mobile). */
+  quoteChunkSlot?: number;
 }
 
 export interface ScreenPlateState {
@@ -29,6 +31,7 @@ export interface ScreenPlateState {
 export function useScreenPlateState(
   plateAssignments: Map<number, PlateType>,
   youtubeEmbedSlotByCell: Map<number, number>,
+  quoteChunkSlotByCell: Map<number, number>,
   filtered: FiberIndexEntry[],
   cellRefs: MutableRefObject<Map<string, HTMLDivElement>>,
   indexRefs: MutableRefObject<Map<number, HTMLDivElement>>,
@@ -39,11 +42,13 @@ export function useScreenPlateState(
   const screenPlateEntries = useMemo((): ScreenPlateEntry[] => {
     const entries: ScreenPlateEntry[] = [];
     for (const [cellIndex, pt] of plateAssignments) {
-      const slot = youtubeEmbedSlotByCell.get(cellIndex);
+      const ytSlot = youtubeEmbedSlotByCell.get(cellIndex);
+      const quoteSlot = quoteChunkSlotByCell.get(cellIndex);
       entries.push({
         plateType: pt,
         cellIndex,
-        ...(pt === "youtubeEmbed" && slot !== undefined ? { youtubeEmbedSlot: slot } : {}),
+        ...(pt === "youtubeEmbed" && ytSlot !== undefined ? { youtubeEmbedSlot: ytSlot } : {}),
+        ...(pt === "quote" && quoteSlot !== undefined ? { quoteChunkSlot: quoteSlot } : {}),
       });
     }
     const order = new Map(namedPlates.map((p, i) => [p, i]));
@@ -54,7 +59,7 @@ export function useScreenPlateState(
       return a.cellIndex - b.cellIndex;
     });
     return entries;
-  }, [plateAssignments, youtubeEmbedSlotByCell]);
+  }, [plateAssignments, youtubeEmbedSlotByCell, quoteChunkSlotByCell]);
 
   /** Live cellRef → DOMRect lookup for exit morph. Supports virtual cells via indexRefs. */
   const getCellRect = useCallback(

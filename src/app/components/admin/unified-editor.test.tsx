@@ -66,6 +66,7 @@ vi.mock("./card-editor", () => ({
   ProfileHeroCard: () => <div>hero</div>,
   AboutCard: () => <div>about</div>,
   InsightCard: () => <div>insight</div>,
+  isActiveFiberInsightOverride: () => false,
   TradeCard: () => <div>trade</div>,
   ProfilePillsCard: () => <div>pills</div>,
   SeeAlsoCard: () => <div>see also</div>,

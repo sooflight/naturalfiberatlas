@@ -9,16 +9,19 @@ const GRID_TRANSFORM = "w_320,h_427,c_fill,f_auto,q_auto";
 /** Must match {@link PRESET_TRANSFORMS.lightbox} in cloudinary.ts */
 const LIGHTBOX_TRANSFORM = "w_1400,f_auto,q_auto";
 
+/** Accepts Cloudinary-sized delivery, fetch+transform, or direct https after fetch-URL unwrap (restricted fetch accounts). */
 function gridUrlIsResized(url: string): boolean {
   if (!url.startsWith("http")) return true;
   if (url.includes("/image/fetch/") && url.includes(GRID_TRANSFORM)) return true;
-  return url.includes("res.cloudinary.com") && url.includes(GRID_TRANSFORM);
+  if (url.includes("res.cloudinary.com") && url.includes(GRID_TRANSFORM)) return true;
+  return /^https:\/\//i.test(url) && !url.includes("res.cloudinary.com");
 }
 
 function lightboxUrlIsResized(url: string): boolean {
   if (!url.startsWith("http")) return true;
   if (url.includes("/image/fetch/") && url.includes(LIGHTBOX_TRANSFORM)) return true;
-  return url.includes("res.cloudinary.com") && url.includes(LIGHTBOX_TRANSFORM);
+  if (url.includes("res.cloudinary.com") && url.includes(LIGHTBOX_TRANSFORM)) return true;
+  return /^https:\/\//i.test(url) && !url.includes("res.cloudinary.com");
 }
 
 describe("profile image grid delivery audit", () => {
