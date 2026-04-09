@@ -1,5 +1,6 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
+import { inject } from "@vercel/analytics";
 import App from "./app/App";
 import "./styles/index.css";
 import { isAdminEnabled } from "./app/config/admin-access";
@@ -12,6 +13,10 @@ async function bootstrap() {
   if (isAdminEnabled()) {
     await syncAtlasStorageFromFrontendSource();
   }
+  
+  // Initialize Vercel Analytics
+  inject();
+  
   const rootElement = document.getElementById("root");
   if (!rootElement) {
     throw new Error('Root container "#root" not found');
